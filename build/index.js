@@ -4,6 +4,7 @@ Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
+<<<<<<< HEAD
 var _this3 = this;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -130,6 +131,18 @@ exports['default'] = function callee$0$0(bot) {
         return context$1$0.stop();
     }
   }, null, _this3);
+=======
+exports['default'] = function (bot) {
+  // read configurations from bot.config, users set bot.config in `config.js`
+  var config = bot.config.template;
+
+  // Add a help record for your plugin's commands
+  // When the user issues `help`, there will be a list of command names along
+  // with their short description (second argument).
+  // If the user issues `help` with a command name, like `help example`,
+  // the long description (last argument) will be shown.
+  bot.help('example', 'shows an example', 'example <name>');
+>>>>>>> 315007bd2ed6cde977cf9282ca85a1b2a696ad08
 };
 
 module.exports = exports['default'];
