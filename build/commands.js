@@ -16,10 +16,6 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _locus = require('locus');
-
-var _locus2 = _interopRequireDefault(_locus);
-
 exports['default'] = function callee$0$0(bot, uri) {
   var listTodos, MIN_SIMILARITY, setTodos, updateListener;
   return regeneratorRuntime.async(function callee$0$0$(context$1$0) {
