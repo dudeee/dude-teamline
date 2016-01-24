@@ -5,11 +5,12 @@ import { request } from './utils';
 import sync from './sync-users';
 import commands from './commands';
 import management from './management';
+import _ from 'lodash'
 
 export default async bot => {
   const { numbers } = bot.utils;
   let server = await teamline(bot.config.teamline);
-  let uri = server.info.uri + bot.config.teamline.crud.prefix || '/';
+  let uri = server.info.uri + (_.get(bot, 'config.teamline.crud.prefix') || '');
 
   commands(bot, uri);
   management(bot, uri);

@@ -1,6 +1,6 @@
 {
   "name": "bolt-teamline",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Help employees to track their tasks and progress",
   "main": "build/index.js",
   "scripts": {
@@ -28,7 +28,7 @@
   "dependencies": {
     "lodash": "4.0.0",
     "moment": "2.11.1",
-    "teamline": "0.2.*",
+    "teamline": "0.2.1",
     "unirest": "0.4.2"
   }
 }
