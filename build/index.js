@@ -34,6 +34,10 @@ var _management = require('./management');
 
 var _management2 = _interopRequireDefault(_management);
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 exports['default'] = function callee$0$0(bot) {
   var numbers, server, uri, job, stats;
   return regeneratorRuntime.async(function callee$0$0$(context$1$0) {
@@ -47,7 +51,7 @@ exports['default'] = function callee$0$0(bot) {
 
       case 3:
         server = context$1$0.sent;
-        uri = server.info.uri + bot.config.teamline.crud.prefix || '/';
+        uri = server.info.uri + (_lodash2['default'].get(bot, 'config.teamline.crud.prefix') || '');
 
         (0, _commands2['default'])(bot, uri);
         (0, _management2['default'])(bot, uri);
