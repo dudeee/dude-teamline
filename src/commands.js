@@ -1,6 +1,5 @@
 import { printList, findEmployee, request, fuzzy } from './utils';
 import _ from 'lodash';
-import locus from 'locus';
 
 export default async (bot, uri) => {
   bot.listen(/teamline my (\w+)\s?(\w+)?/i, async message => {
