@@ -1,5 +1,4 @@
 import unirest from 'unirest';
-import _ from 'lodash';
 
 export async function request(...args) {
   return new Promise((resolve, reject) => {
@@ -8,80 +7,39 @@ export async function request(...args) {
 
       resolve(response.body);
     });
-  })
+  });
 }
 
 export const printList = (list, empty = 'Nothing to show 😶') => {
   if (!list.length) return empty;
 
-  list = list.sort((a, b) => {
-    return a.id - b.id;
-  });/*.sort(a => {
-    return a.done ? -1 : 1;
-  });*/
+  list = list.sort((a, b) => a.id - b.id);
 
   return list.map((item, index) => {
     // let mark = typeof item.done === 'undefined' ? '' :
     //                   item.done ? '✅' : '❎';
-    let mark = '';
-    let name = item.name || (item.firstname + ' ' + item.lastname);
-    return `${mark} #${item.id} – ${name}`;
+    const name = item.name || (`${item.firstname} ${item.lastname}`);
+    if (item.Project) {
+      return `${index}. *${item.Project.name}* > ${name}`;
+    }
+
+    return `#${item.id} – ${name}`;
   }).join('\n');
-}
+};
 
 export const findEmployee = async (uri, bot, message) => {
-  let username = bot.find(message.user).name;
-  let employee = await request('get', `${uri}/employee?username=${username}`);
+  const username = bot.find(message.user).name;
+  const employee = await request('get', `${uri}/employee?username=${username}`);
 
   if (!employee) {
     return message.reply('You are not a registered employee');
   }
 
   return employee;
-}
+};
 
-const BEST_DISTANCE = 1;
-export function fuzzy(string, list) {
-  string = string.toLowerCase();
-  list = list.map(a => a.toLowerCase());
-
-  let words = string.split(' ');
-  let ps = permutations(words);
-
-  for (let i = 0; i < list.length; i++) {
-    let item = list[i];
-
-    if (string === item) return [BEST_DISTANCE, i];
-
-    let index = ps.findIndex(p => p.join(' ') === item);
-    if (index > -1) return [BEST_DISTANCE, i];
-  }
-
-  let distance = list.map(item => {
-    return jaro(string, item);
-  });
-
-  let max = Math.max(...distance);
-  let closest = distance.indexOf(max);
-
-  return [max, closest];
-}
-
-// const MAX_LENGTH = 6;
-// export function levenshtein(a, b) {
-//   if (a.length > MAX_LENGTH || b.length > MAX_LENGTH) return Infinity;
-//
-//   if (Math.min(a.length, b.length) === 0)
-//     return Math.max(a.length, b.length);
-//
-//   let x = levenshtein(a.slice(0, -1), b) + 1,
-//       y = levenshtein(a, b.slice(0, -1)) + 1,
-//       z = levenshtein(a.slice(0, -1), b.slice(0, -1)) + (a[a.length - 1] === b[b.length - 1] ? 0 : 1);
-//   return Math.min(x, y, z);
-// }
-//
 function jaro(a, b) {
-  let matchingDistance = Math.floor(Math.max(a.length, b.length) / 2) - 1;
+  const matchingDistance = Math.floor(Math.max(a.length, b.length) / 2) - 1;
 
   let m = 0;
   let t = 0;
@@ -91,10 +49,10 @@ function jaro(a, b) {
       continue;
     }
 
-    var min = Math.max(0, i - matchingDistance),
-        max = i + matchingDistance + 1;
+    const min = Math.max(0, i - matchingDistance);
+    const max = i + matchingDistance + 1;
 
-    let range = b.slice(min, max);
+    const range = b.slice(min, max);
 
     if (range.indexOf(a[i]) > -1) {
       m++;
@@ -104,20 +62,20 @@ function jaro(a, b) {
 
   t /= 2;
 
-  return 1/3 * (m / a.length + m / b.length + (m - t)/m) || 0;
+  return (1 / 3) * (m / a.length + m / b.length + (m - t) / m) || 0;
 }
 
 export function factoriadic(n, length) {
   let fd = [];
   let last = n;
-  for (let i = 1; true; i++) {
+  for (let i = 1; ; i++) {
     fd.unshift(last % i);
     last = Math.floor(last / i);
     if (last <= 0) break;
   }
 
   if (fd.length < length) {
-    let i = length - fd.length;
+    const i = length - fd.length;
 
     fd = new Array(i).fill(0).concat(fd);
   }
@@ -138,20 +96,55 @@ export function permutations(arr) {
   const n = arr.length;
   const b = factorial(n);
 
-  let ps = [];
+  const ps = [];
 
   for (let i = 0; i < b; i++) {
-    var fd = factoriadic(i, n);
-    var from = arr.slice(0);
-    var record = [];
+    const fd = factoriadic(i, n);
+    const from = arr.slice(0);
+    const record = [];
 
     for (let j of fd) {
       j = j || 0;
       record.push(from[j]);
       from.splice(j, 1);
     }
-    ps.push(record)
+
+    ps.push(record);
   }
 
   return ps;
+}
+
+const BEST_DISTANCE = 1;
+export function fuzzy(string, list) {
+  string = string.toLowerCase();
+  list = list.map(a => a.toLowerCase());
+
+  const words = string.split(' ');
+  const ps = permutations(words);
+
+  for (let i = 0; i < list.length; i++) {
+    const item = list[i];
+
+    if (string === item) return [BEST_DISTANCE, i];
+
+    const index = ps.findIndex(p => p.join(' ') === item);
+    if (index > -1) return [BEST_DISTANCE, i];
+  }
+
+  const distance = list.map(item => {
+    const args = item.length < string.length ? [item, string] : [string, item];
+    return jaro(...args);
+  });
+
+  const max = Math.max(...distance);
+  const closest = distance.indexOf(max);
+
+  return [max, closest];
+}
+
+export function wait(ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
 }

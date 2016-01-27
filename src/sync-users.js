@@ -2,7 +2,7 @@ import { request } from './utils';
 import _ from 'lodash';
 
 export default async function sync(bot, uri) {
-  let stats = {
+  const stats = {
     created: 0,
     updated: 0,
     deleted: 0,
@@ -12,7 +12,7 @@ export default async function sync(bot, uri) {
   await* bot.users.map(async user => {
     if (user.is_bot || user.name === 'slackbot') return true;
 
-    let record = {
+    const record = {
       username: user.name,
       email: user.profile.email,
       firstname: user.profile.first_name,
@@ -20,7 +20,7 @@ export default async function sync(bot, uri) {
       phone: user.profile.phone || null
     };
 
-    let employee = await request('get', `${uri}/employee?username=${user.name}`);
+    const employee = await request('get', `${uri}/employee?username=${user.name}`);
 
     if (employee && user.deleted) {
       stats.deleted++;
