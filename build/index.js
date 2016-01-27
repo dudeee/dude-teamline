@@ -44,8 +44,12 @@ exports['default'] = function callee$0$0(bot) {
         server = context$1$0.sent;
         uri = server.info.uri + (_lodash2['default'].get(bot, 'config.teamline.crud.prefix') || '');
 
-        (0, _commands2['default'])(bot, uri);
-        (0, _management2['default'])(bot, uri);
+        try {
+          (0, _commands2['default'])(bot, uri);
+          (0, _management2['default'])(bot, uri);
+        } catch (e) {
+          console.error(e);
+        }
 
         bot.agenda.define('ask-for-actions', function callee$1$0(job, done) {
           var d, users, RATE_LIMIT, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, user, emp, a;
@@ -240,6 +244,7 @@ exports['default'] = function callee$0$0(bot) {
         // add a help record for your plugin's commands
         bot.help('teamline', 'Manage teamline', '\nteamline todo – view your tasks for today\nteamline todo [project] > [action] – set your actions for today, separate actions by line breaks\nteamline my projects/roles/actions/teams – list models associated with you\nteamline all projects/roles/actions/teams/goals/okrs – list all models\n\nManagers have access to these commands\nteamline manage add `type` `name` – add a new object of `type` with the specified `name`\nteamline manage delete `type` `id` – delete the object of `type` with `id`\nteamline manage connect `type` `id` with `type` `id` – connect two models with each other\nExample: teamline manage connect role 1 with employee 2\n\n`type` is one of the following: okr, goal, project, team, role, company, employee\n\n*Scopes* are filters which help you find the items you want, some examples include:\ndone, undone, past (action), future (action), today (action)\n');
 
+        context$1$0.prev = 14;
         context$1$0.next = 17;
         return regeneratorRuntime.awrap((0, _syncUsers2['default'])(bot, uri));
 
@@ -247,12 +252,20 @@ exports['default'] = function callee$0$0(bot) {
         stats = context$1$0.sent;
 
         bot.log.verbose('[teamline] Synced Teamline Users with Slack\nCreated: ' + stats.created + '\nUpdated: ' + stats.updated + '\nDeleted: ' + stats.deleted + '\nUntouched: ' + stats.untouched);
+        context$1$0.next = 24;
+        break;
 
-      case 19:
+      case 21:
+        context$1$0.prev = 21;
+        context$1$0.t0 = context$1$0['catch'](14);
+
+        console.error(context$1$0.t0);
+
+      case 24:
       case 'end':
         return context$1$0.stop();
     }
-  }, null, _this3);
+  }, null, _this3, [[14, 21]]);
 };
 
 module.exports = exports['default'];

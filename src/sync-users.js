@@ -9,8 +9,8 @@ export default async function sync(bot, uri) {
     untouched: 0
   };
 
-  await* bot.users.map(async user => {
-    if (user.is_bot || user.name === 'slackbot') return true;
+  for (const user of bot.users) {
+    if (user.is_bot || user.name === 'slackbot') continue;
 
     const record = {
       username: user.name,
@@ -20,26 +20,55 @@ export default async function sync(bot, uri) {
       phone: user.profile.phone || null
     };
 
-    const employee = await request('get', `${uri}/employee?username=${user.name}`);
+    console.log(`${uri}/employee?username=${user.name}`);
+    let employee = await request('get', `${uri}/employee?username=${user.name}`);
 
     if (employee && user.deleted) {
       stats.deleted++;
-      return request('delete', `${uri}/employee/${employee.id}`);
+      request('delete', `${uri}/employee/${employee.id}`);
+      continue;
     }
 
     if (employee && _.eq(employee, user)) {
       stats.untouched++;
-      return true;
+      await updateRole(employee, user);
+      continue;
     }
 
     if (employee) {
       stats.updated++;
-      return request('put', `${uri}/employee/${employee.id}`, null, record);
+      employee = await request('put', `${uri}/employee/${employee.id}`, null, record);
+      await updateRole(employee, user);
+      continue;
     }
 
     stats.created++;
-    return request('post', `${uri}/employee`, null, record);
-  });
+    employee = await request('post', `${uri}/employee`, null, record);
+    await updateRole(employee, user);
+  }
+
+  async function updateRole(employee, user) {
+    if (!user.profile.title) return;
+
+    const roles = await request('get', `${uri}/roles`);
+    const { title } = user.profile;
+    let role = roles.find(a => a.name.toLowerCase() === title.toLowerCase());
+    let exists = false;
+
+    if (!role) {
+      console.log('creating role');
+      role = await request('post', `${uri}/role`, null, {
+        name: title
+      });
+    } else {
+      console.log('finding employee');
+      exists = await request('get', `${uri}/employee/${employee.id}/role`);
+    }
+
+    if (!exists) {
+      await request('get', `${uri}/associate/role/${role.id}/employee/${employee.id}`);
+    }
+  }
 
   return stats;
 }
