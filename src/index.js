@@ -9,8 +9,12 @@ export default async bot => {
   const server = await teamline(bot.config.teamline);
   const uri = server.info.uri + (_.get(bot, 'config.teamline.crud.prefix') || '');
 
-  commands(bot, uri);
-  management(bot, uri);
+  try {
+    commands(bot, uri);
+    management(bot, uri);
+  } catch (e) {
+    console.error(e);
+  }
 
   bot.agenda.define('ask-for-actions', async (job, done) => {
     const d = new Date();
@@ -92,11 +96,15 @@ Example: teamline manage connect role 1 with employee 2
 done, undone, past (action), future (action), today (action)
 `);
 
-  const stats = await sync(bot, uri);
+  try {
+    const stats = await sync(bot, uri);
 
-  bot.log.verbose(`[teamline] Synced Teamline Users with Slack
+    bot.log.verbose(`[teamline] Synced Teamline Users with Slack
 Created: ${stats.created}
 Updated: ${stats.updated}
 Deleted: ${stats.deleted}
 Untouched: ${stats.untouched}`);
+  } catch (e) {
+    console.error(e);
+  }
 };
