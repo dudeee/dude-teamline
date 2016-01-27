@@ -17,7 +17,7 @@ exports['default'] = function callee$0$0(bot, uri) {
     while (1) switch (context$1$0.prev = context$1$0.next) {
       case 0:
         bot.listen(/teamline manage add (\w+) (.*)/i, function callee$1$0(message) {
-          var _message$match, type, name, item;
+          var _message$match, type, name, t, item;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
@@ -25,16 +25,14 @@ exports['default'] = function callee$0$0(bot, uri) {
                 _message$match = _slicedToArray(message.match, 2);
                 type = _message$match[0];
                 name = _message$match[1];
-
-                type = type.toLowerCase();
-
+                t = type.toLowerCase();
                 context$2$0.next = 6;
-                return regeneratorRuntime.awrap((0, _utils.request)('post', uri + '/' + type, null, { name: name }));
+                return regeneratorRuntime.awrap((0, _utils.request)('post', uri + '/' + t, null, { name: name }));
 
               case 6:
                 item = context$2$0.sent;
 
-                message.reply('Created ' + type + ' #' + item.id + ' - ' + item.name);
+                message.reply('Created ' + t + ' #' + item.id + ' - ' + item.name);
 
               case 8:
               case 'end':
@@ -46,7 +44,7 @@ exports['default'] = function callee$0$0(bot, uri) {
         });
 
         bot.listen(/teamline manage done (\w+) (?:#)?(\d+)/i, function callee$1$0(message) {
-          var _message$match2, type, id, item;
+          var _message$match2, type, id, t, item;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
@@ -54,11 +52,9 @@ exports['default'] = function callee$0$0(bot, uri) {
                 _message$match2 = _slicedToArray(message.match, 2);
                 type = _message$match2[0];
                 id = _message$match2[1];
-
-                type = type.toLowerCase();
-
+                t = type.toLowerCase();
                 context$2$0.next = 6;
-                return regeneratorRuntime.awrap((0, _utils.request)('put', uri + '/' + type + '/' + id, null, {
+                return regeneratorRuntime.awrap((0, _utils.request)('put', uri + '/' + t + '/' + id, null, {
                   done: true
                 }));
 
@@ -77,7 +73,7 @@ exports['default'] = function callee$0$0(bot, uri) {
         });
 
         bot.listen(/teamline manage undone (\w+) (?:#)?(\d+)/i, function callee$1$0(message) {
-          var _message$match3, type, id, item;
+          var _message$match3, type, id, t, item;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
@@ -85,11 +81,9 @@ exports['default'] = function callee$0$0(bot, uri) {
                 _message$match3 = _slicedToArray(message.match, 2);
                 type = _message$match3[0];
                 id = _message$match3[1];
-
-                type = type.toLowerCase();
-
+                t = type.toLowerCase();
                 context$2$0.next = 6;
-                return regeneratorRuntime.awrap((0, _utils.request)('put', uri + '/' + type + '/' + id, null, {
+                return regeneratorRuntime.awrap((0, _utils.request)('put', uri + '/' + t + '/' + id, null, {
                   done: false
                 }));
 
@@ -108,7 +102,7 @@ exports['default'] = function callee$0$0(bot, uri) {
         });
 
         bot.listen(/teamline manage delete (\w+) (?:#)?(\d+)/i, function callee$1$0(message) {
-          var _message$match4, type, id, item;
+          var _message$match4, type, id, t, item;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
@@ -116,16 +110,14 @@ exports['default'] = function callee$0$0(bot, uri) {
                 _message$match4 = _slicedToArray(message.match, 2);
                 type = _message$match4[0];
                 id = _message$match4[1];
-
-                type = type.toLowerCase();
-
+                t = type.toLowerCase();
                 context$2$0.next = 6;
-                return regeneratorRuntime.awrap((0, _utils.request)('delete', uri + '/' + type + '/' + id));
+                return regeneratorRuntime.awrap((0, _utils.request)('delete', uri + '/' + t + '/' + id));
 
               case 6:
                 item = context$2$0.sent;
 
-                message.reply('Deleted ' + type + ' #' + id + '.');
+                message.reply('Deleted ' + type + ' #' + item.id + '.');
 
               case 8:
               case 'end':
@@ -137,20 +129,18 @@ exports['default'] = function callee$0$0(bot, uri) {
         });
 
         bot.listen(/teamline manage connect (\w+) (?:#)?(\d+) (?:with|to|->)?\s?(\w+) (?:#)?(\d+)/i, function callee$1$0(message) {
-          var _message$match5, sourceType, sourceId, targetType, targetId;
+          var _message$match5, st, sourceId, tt, targetId, sourceType, targetType;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
               case 0:
                 _message$match5 = _slicedToArray(message.match, 4);
-                sourceType = _message$match5[0];
+                st = _message$match5[0];
                 sourceId = _message$match5[1];
-                targetType = _message$match5[2];
+                tt = _message$match5[2];
                 targetId = _message$match5[3];
-
-                sourceType = sourceType.toLowerCase();
-                targetType = targetType.toLowerCase();
-
+                sourceType = st.toLowerCase();
+                targetType = tt.toLowerCase();
                 context$2$0.next = 9;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/associate/' + sourceType + '/' + sourceId + '/' + targetType + '/' + targetId));
 
@@ -175,3 +165,4 @@ exports['default'] = function callee$0$0(bot, uri) {
 };
 
 module.exports = exports['default'];
+// eslint-disable-line

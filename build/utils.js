@@ -7,10 +7,11 @@ Object.defineProperty(exports, '__esModule', {
 var _this = this;
 
 exports.request = request;
-exports.fuzzy = fuzzy;
 exports.factoriadic = factoriadic;
 exports.factorial = factorial;
 exports.permutations = permutations;
+exports.fuzzy = fuzzy;
+exports.wait = wait;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -19,10 +20,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 var _unirest = require('unirest');
 
 var _unirest2 = _interopRequireDefault(_unirest);
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
 
 function request() {
   for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
@@ -54,16 +51,17 @@ var printList = function printList(list) {
 
   list = list.sort(function (a, b) {
     return a.id - b.id;
-  }); /*.sort(a => {
-      return a.done ? -1 : 1;
-      });*/
+  });
 
   return list.map(function (item, index) {
     // let mark = typeof item.done === 'undefined' ? '' :
     //                   item.done ? '✅' : '❎';
-    var mark = '';
     var name = item.name || item.firstname + ' ' + item.lastname;
-    return mark + ' #' + item.id + ' – ' + name;
+    if (item.Project) {
+      return index + '. *' + item.Project.name + '* > ' + name;
+    }
+
+    return '#' + item.id + ' – ' + name;
   }).join('\n');
 };
 
@@ -98,61 +96,6 @@ var findEmployee = function findEmployee(uri, bot, message) {
 };
 
 exports.findEmployee = findEmployee;
-var BEST_DISTANCE = 1;
-
-function fuzzy(string, list) {
-  string = string.toLowerCase();
-  list = list.map(function (a) {
-    return a.toLowerCase();
-  });
-
-  var words = string.split(' ');
-  var ps = permutations(words);
-
-  var _loop = function (i) {
-    var item = list[i];
-
-    if (string === item) return {
-        v: [BEST_DISTANCE, i]
-      };
-
-    var index = ps.findIndex(function (p) {
-      return p.join(' ') === item;
-    });
-    if (index > -1) return {
-        v: [BEST_DISTANCE, i]
-      };
-  };
-
-  for (var i = 0; i < list.length; i++) {
-    var _ret = _loop(i);
-
-    if (typeof _ret === 'object') return _ret.v;
-  }
-
-  var distance = list.map(function (item) {
-    return jaro(string, item);
-  });
-
-  var max = Math.max.apply(Math, _toConsumableArray(distance));
-  var closest = distance.indexOf(max);
-
-  return [max, closest];
-}
-
-// const MAX_LENGTH = 6;
-// export function levenshtein(a, b) {
-//   if (a.length > MAX_LENGTH || b.length > MAX_LENGTH) return Infinity;
-//
-//   if (Math.min(a.length, b.length) === 0)
-//     return Math.max(a.length, b.length);
-//
-//   let x = levenshtein(a.slice(0, -1), b) + 1,
-//       y = levenshtein(a, b.slice(0, -1)) + 1,
-//       z = levenshtein(a.slice(0, -1), b.slice(0, -1)) + (a[a.length - 1] === b[b.length - 1] ? 0 : 1);
-//   return Math.min(x, y, z);
-// }
-//
 function jaro(a, b) {
   var matchingDistance = Math.floor(Math.max(a.length, b.length) / 2) - 1;
 
@@ -164,8 +107,8 @@ function jaro(a, b) {
       continue;
     }
 
-    var min = Math.max(0, i - matchingDistance),
-        max = i + matchingDistance + 1;
+    var min = Math.max(0, i - matchingDistance);
+    var max = i + matchingDistance + 1;
 
     var range = b.slice(min, max);
 
@@ -183,7 +126,7 @@ function jaro(a, b) {
 function factoriadic(n, length) {
   var fd = [];
   var last = n;
-  for (var i = 1; true; i++) {
+  for (var i = 1;; i++) {
     fd.unshift(last % i);
     last = Math.floor(last / i);
     if (last <= 0) break;
@@ -249,4 +192,53 @@ function permutations(arr) {
   }
 
   return ps;
+}
+
+var BEST_DISTANCE = 1;
+
+function fuzzy(string, list) {
+  string = string.toLowerCase();
+  list = list.map(function (a) {
+    return a.toLowerCase();
+  });
+
+  var words = string.split(' ');
+  var ps = permutations(words);
+
+  var _loop = function (i) {
+    var item = list[i];
+
+    if (string === item) return {
+        v: [BEST_DISTANCE, i]
+      };
+
+    var index = ps.findIndex(function (p) {
+      return p.join(' ') === item;
+    });
+    if (index > -1) return {
+        v: [BEST_DISTANCE, i]
+      };
+  };
+
+  for (var i = 0; i < list.length; i++) {
+    var _ret = _loop(i);
+
+    if (typeof _ret === 'object') return _ret.v;
+  }
+
+  var distance = list.map(function (item) {
+    var args = item.length < string.length ? [item, string] : [string, item];
+    return jaro.apply(undefined, args);
+  });
+
+  var max = Math.max.apply(Math, _toConsumableArray(distance));
+  var closest = distance.indexOf(max);
+
+  return [max, closest];
+}
+
+function wait(ms) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, ms);
+  });
 }

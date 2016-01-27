@@ -1,41 +1,69 @@
 import teamline from 'teamline';
-import moment from 'moment';
-import unirest from 'unirest';
-import { request } from './utils';
+import { request, findEmployee, printList, wait } from './utils';
 import sync from './sync-users';
 import commands from './commands';
 import management from './management';
-import _ from 'lodash'
+import _ from 'lodash';
 
 export default async bot => {
-  const { numbers } = bot.utils;
-  let server = await teamline(bot.config.teamline);
-  let uri = server.info.uri + (_.get(bot, 'config.teamline.crud.prefix') || '');
+  const server = await teamline(bot.config.teamline);
+  const uri = server.info.uri + (_.get(bot, 'config.teamline.crud.prefix') || '');
 
   commands(bot, uri);
   management(bot, uri);
 
-	bot.agenda.define('ask-for-tasks', async (job, done) => {
-		let users = bot.users;
+  bot.agenda.define('ask-for-actions', async (job, done) => {
+    const d = new Date();
+    if (d.getHours() !== 9) return;
+
+    const users = bot.users;
+
+    const RATE_LIMIT = 1000;
+
+    for (const user of users) {
+      const emp = await request('get', `${uri}/employee?username=${user.name}`);
+      const a = await request('get', `${uri}/employee/${emp.id}/actions/today`);
+      if (a.length) continue;
+
+      bot.sendMessage('mahdi', 'Hey! What are you going to do today? 😃');
+      await wait(RATE_LIMIT);
+    }
+
+    done();
+  });
+
+  bot.agenda.define('publish-actions', async (job, done) => {
+    const d = new Date();
+    if (d.getHours() !== 10) return;
+
+    const users = bot.users;
 
     await* users.map(async user => {
-      let employee = await findEmployee(uri, bot, { user });
-      let undone = await request(`${uri}/employee/${employee.id}/actions/undone`);
+      const employee = await findEmployee(uri, bot, { user: user.id });
 
-      if (undone.length) {
-        bot.sendMessage(user.name, `What are you going to do today? 😃
-Also, you have ${undone.length} actions left from yesterday, too, might want to check them out.`);
-      } else {
-    		bot.sendMessage(user.name, 'Hey! What are you going to do today? 😃');
+      const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
+      const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
+      const actions = await request('get', url);
+
+      if (!actions.length) {
+        return;
       }
+
+      const list = printList(actions);
+
+      bot.sendMessage('actions', `${name}\n${list}`);
     });
 
     done();
-	});
+  });
 
-  let job = bot.agenda.create('ask-for-tasks');
-  job.repeatAt('8:30am');
+  const job = bot.agenda.create('ask-for-actions');
+  job.repeatAt('9:00am');
   job.save();
+
+  const publishJob = bot.agenda.create('publish-actions');
+  publishJob.repeatAt('10:00am');
+  publishJob.save();
 
   /*
   teamline add \`(project)\` \`task\` – add a new action for the corresponding project
@@ -64,11 +92,11 @@ Example: teamline manage connect role 1 with employee 2
 done, undone, past (action), future (action), today (action)
 `);
 
-  let stats = await sync(bot, uri);
+  const stats = await sync(bot, uri);
 
   bot.log.verbose(`[teamline] Synced Teamline Users with Slack
 Created: ${stats.created}
 Updated: ${stats.updated}
 Deleted: ${stats.deleted}
 Untouched: ${stats.untouched}`);
-}
+};

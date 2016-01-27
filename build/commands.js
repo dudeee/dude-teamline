@@ -4,7 +4,7 @@ Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
-var _this4 = this;
+var _this3 = this;
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
@@ -17,7 +17,7 @@ var _lodash = require('lodash');
 var _lodash2 = _interopRequireDefault(_lodash);
 
 exports['default'] = function callee$0$0(bot, uri) {
-  var listTodos, MIN_SIMILARITY, setTodos, updateListener;
+  var listTodos, MIN_SIMILARITY, setTodos;
   return regeneratorRuntime.async(function callee$0$0$(context$1$0) {
     var _this = this;
 
@@ -44,64 +44,65 @@ exports['default'] = function callee$0$0(bot, uri) {
                 items = undefined;
 
                 if (!(type === 'actions' || type === 'roles')) {
-                  context$2$0.next = 13;
+                  context$2$0.next = 14;
                   break;
                 }
 
-                context$2$0.next = 12;
+                scope += '?include=Project';
+                context$2$0.next = 13;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee/' + employee.id + '/' + type + '/' + scope));
 
-              case 12:
+              case 13:
                 items = context$2$0.sent;
 
-              case 13:
+              case 14:
                 if (!(type === 'projects' || type === 'teams')) {
-                  context$2$0.next = 26;
+                  context$2$0.next = 27;
                   break;
                 }
 
-                context$2$0.next = 16;
+                context$2$0.next = 17;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee/' + employee.id + '/roles'));
 
-              case 16:
+              case 17:
                 roles = context$2$0.sent;
 
                 if (!(type === 'projects')) {
-                  context$2$0.next = 21;
+                  context$2$0.next = 22;
                   break;
                 }
 
-                context$2$0.next = 20;
+                context$2$0.next = 21;
                 return regeneratorRuntime.awrap(Promise.all(roles.map(function (role) {
                   return (0, _utils.request)('get', uri + '/role/' + role.id + '/project/' + scope);
                 })));
 
-              case 20:
+              case 21:
                 items = context$2$0.sent;
 
-              case 21:
+              case 22:
                 if (!(type === 'teams')) {
-                  context$2$0.next = 25;
+                  context$2$0.next = 26;
                   break;
                 }
 
-                context$2$0.next = 24;
+                context$2$0.next = 25;
                 return regeneratorRuntime.awrap(Promise.all(roles.map(function (role) {
                   return (0, _utils.request)('get', uri + '/role/' + role.id + '/team');
                 })));
 
-              case 24:
-                items = context$2$0.sent;
-
               case 25:
-
-                items = _lodash2['default'].flatten(items);
+                items = context$2$0.sent;
 
               case 26:
 
-                message.reply((0, _utils.printList)(items));
+                items = _lodash2['default'].flatten(items);
 
               case 27:
+
+                message.reply((0, _utils.printList)(items));
+
+              case 28:
               case 'end':
                 return context$2$0.stop();
             }
@@ -121,15 +122,16 @@ exports['default'] = function callee$0$0(bot, uri) {
                 type = type.toLowerCase();
                 scope = scope || '';
 
-                context$2$0.next = 7;
+                if (type === 'actions') scope += '?include=Project';
+                context$2$0.next = 8;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/' + type + '/' + scope));
 
-              case 7:
+              case 8:
                 list = context$2$0.sent;
 
                 message.reply((0, _utils.printList)(list));
 
-              case 9:
+              case 10:
               case 'end':
                 return context$2$0.stop();
             }
@@ -137,10 +139,8 @@ exports['default'] = function callee$0$0(bot, uri) {
         });
 
         listTodos = function listTodos(message) {
-          var employee, actions, congrats, reply;
+          var employee, url, actions;
           return regeneratorRuntime.async(function listTodos$(context$2$0) {
-            var _this2 = this;
-
             while (1) switch (context$2$0.prev = context$2$0.next) {
               case 0:
                 context$2$0.next = 2;
@@ -148,75 +148,45 @@ exports['default'] = function callee$0$0(bot, uri) {
 
               case 2:
                 employee = context$2$0.sent;
-                context$2$0.next = 5;
-                return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee/' + employee.id + '/actions/today'));
+                url = uri + '/employee/' + employee.id + '/actions/today?include=Project';
+                context$2$0.next = 6;
+                return regeneratorRuntime.awrap((0, _utils.request)('get', url));
 
-              case 5:
+              case 6:
                 actions = context$2$0.sent;
 
-                if (actions.length) {
-                  context$2$0.next = 10;
-                  break;
-                }
+                // const sentences = ['Your todo list is empty! ✌️',
+                //                    'Woohoo! Your todo list is empty! 🎈',
+                //                    'You know what? You\'re amazing! Your list is empty! 😎',
+                //                    'Surprise! Nothing to do! ⛱'];
+                // const congrats = bot.random(sentences)
 
-                congrats = bot.random('Your todo list is empty! ✌️', 'Woohoo! Your todo list is empty! 🎈', 'You know what? You\'re amazing! Your list is empty! 😎', 'Surprise! Nothing to do! ⛱');
+                // let reply = await* actions.map(async action => {
+                //   let project = await request('get', `${uri}/action/${action.id}/project`);
+                //
+                //   if (!project || !action) return Promise.resolve();
+                //
+                //   return `${project.name} > ${action.name}`;
+                // });
 
-                message.reply(congrats);
-                return context$2$0.abrupt('return');
+                // reply = reply.filter(a => a);
 
-              case 10:
-                context$2$0.next = 12;
-                return regeneratorRuntime.awrap(Promise.all(actions.map(function callee$2$0(action) {
-                  var project;
-                  return regeneratorRuntime.async(function callee$2$0$(context$3$0) {
-                    while (1) switch (context$3$0.prev = context$3$0.next) {
-                      case 0:
-                        context$3$0.next = 2;
-                        return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/action/' + action.id + '/project'));
+                message.reply((0, _utils.printList)(actions, 'Your todo list is empty! 😌'));
 
-                      case 2:
-                        project = context$3$0.sent;
-
-                        if (!(!project || !action)) {
-                          context$3$0.next = 5;
-                          break;
-                        }
-
-                        return context$3$0.abrupt('return', Promise.resolve());
-
-                      case 5:
-                        return context$3$0.abrupt('return', project.name + ' > ' + action.name);
-
-                      case 6:
-                      case 'end':
-                        return context$3$0.stop();
-                    }
-                  }, null, _this2);
-                })));
-
-              case 12:
-                reply = context$2$0.sent;
-
-                reply = reply.filter(function (a) {
-                  return a;
-                });
-
-                message.reply(reply.join('\n'));
-
-              case 15:
+              case 8:
               case 'end':
                 return context$2$0.stop();
             }
           }, null, _this);
         };
 
-        MIN_SIMILARITY = 0.3;
+        MIN_SIMILARITY = 0.8;
 
         setTodos = function setTodos(message, update) {
-          var projects, projectNames, _message$match3, cmd, actions, employee, submitted, reply;
+          var projects, projectNames, _message$match3, cmd, actions, employee, reply, d, name, url, allActions, list;
 
           return regeneratorRuntime.async(function setTodos$(context$2$0) {
-            var _this3 = this;
+            var _this2 = this;
 
             while (1) switch (context$2$0.prev = context$2$0.next) {
               case 0:
@@ -264,153 +234,184 @@ exports['default'] = function callee$0$0(bot, uri) {
 
                   if (distance > MIN_SIMILARITY) return [projectNames[index], action];
 
-                  return [null, action];
+                  // last parameter indicates we have to create the project
+                  return [project, action, true];
                 });
-
-                if (actions.length) {
-                  context$2$0.next = 10;
-                  break;
-                }
-
-                listTodos(message);
-                return context$2$0.abrupt('return');
-
-              case 10:
-                context$2$0.next = 12;
+                context$2$0.next = 9;
                 return regeneratorRuntime.awrap((0, _utils.findEmployee)(uri, bot, message));
 
-              case 12:
+              case 9:
                 employee = context$2$0.sent;
-                context$2$0.next = 15;
-                return regeneratorRuntime.awrap((0, _utils.request)('delete', uri + '/employee/' + employee.id + '/actions'));
-
-              case 15:
-                context$2$0.next = 17;
+                context$2$0.next = 12;
                 return regeneratorRuntime.awrap(Promise.all(actions.map(function callee$2$0(_ref5) {
-                  var _ref52 = _slicedToArray(_ref5, 2);
+                  var _ref52 = _slicedToArray(_ref5, 3);
 
                   var project = _ref52[0];
                   var action = _ref52[1];
-
-                  var ac, pr, employeeRoles, projectRoles, roles, roleNames, user, _ref6, _ref62, index, id;
-
+                  var create = _ref52[2];
+                  var pr, ac;
                   return regeneratorRuntime.async(function callee$2$0$(context$3$0) {
                     while (1) switch (context$3$0.prev = context$3$0.next) {
                       case 0:
-                        if (project) {
-                          context$3$0.next = 3;
+                        pr = undefined;
+
+                        if (!create) {
+                          context$3$0.next = 5;
                           break;
                         }
 
-                        message.reply('I\'m sorry, but I couldn\'t find any project called ' + project + '.');
-                        return context$3$0.abrupt('return', Promise.resolve());
+                        context$3$0.next = 4;
+                        return regeneratorRuntime.awrap((0, _utils.request)('post', uri + '/project', null, {
+                          name: project
+                        }));
 
-                      case 3:
-                        context$3$0.next = 5;
-                        return regeneratorRuntime.awrap((0, _utils.request)('post', uri + '/employee/' + employee.id + '/action', null, { name: action }));
+                      case 4:
+                        pr = context$3$0.sent;
 
                       case 5:
+                        context$3$0.next = 7;
+                        return regeneratorRuntime.awrap((0, _utils.request)('post', uri + '/employee/' + employee.id + '/action', null, { name: action }));
+
+                      case 7:
                         ac = context$3$0.sent;
-                        context$3$0.next = 8;
-                        return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/project?name=' + project));
 
-                      case 8:
-                        pr = context$3$0.sent;
-                        context$3$0.next = 11;
-                        return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/associate/action/' + ac.id + '/project/' + pr.id));
-
-                      case 11:
-                        context$3$0.next = 13;
-                        return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee/' + employee.id + '/roles'));
-
-                      case 13:
-                        employeeRoles = context$3$0.sent;
-                        context$3$0.next = 16;
-                        return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/project/' + pr.id + '/roles'));
-
-                      case 16:
-                        projectRoles = context$3$0.sent;
-                        roles = _lodash2['default'].intersectionBy(employeeRoles, projectRoles, 'id');
-
-                        if (roles.length) {
-                          context$3$0.next = 29;
+                        if (pr) {
+                          context$3$0.next = 12;
                           break;
                         }
 
-                        roleNames = projectRoles.map(function (p) {
-                          return p.name;
-                        });
-                        user = bot.find(message.user);
-                        context$3$0.next = 23;
-                        return regeneratorRuntime.awrap(bot.ask(user.name, 'What\'s your role in project *' + pr.name + '*?', roleNames));
+                        context$3$0.next = 11;
+                        return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/project?name=' + project));
 
-                      case 23:
-                        _ref6 = context$3$0.sent;
-                        _ref62 = _slicedToArray(_ref6, 1);
-                        index = _ref62[0];
-                        id = projectRoles[index].id;
-                        context$3$0.next = 29;
-                        return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/associate/role/' + id + '/employee/' + employee.id));
+                      case 11:
+                        pr = context$3$0.sent;
 
-                      case 29:
+                      case 12:
+                        context$3$0.next = 14;
+                        return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/associate/action/' + ac.id + '/project/' + pr.id));
+
+                      case 14:
                         return context$3$0.abrupt('return', ac);
 
-                      case 30:
+                      case 15:
                       case 'end':
                         return context$3$0.stop();
                     }
-                  }, null, _this3);
+                  }, null, _this2);
                 })));
 
-              case 17:
-                submitted = context$2$0.sent;
-
+              case 12:
                 if (!update) {
-                  context$2$0.next = 20;
+                  context$2$0.next = 14;
                   break;
                 }
 
                 return context$2$0.abrupt('return');
 
-              case 20:
-
-                message.on('update', updateListener.bind(null, submitted));
-
+              case 14:
                 reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
 
                 message.reply(reply);
 
+                d = new Date();
+
+                if (!(d.getHours() < 11)) {
+                  context$2$0.next = 19;
+                  break;
+                }
+
+                return context$2$0.abrupt('return');
+
+              case 19:
+                name = '@' + employee.username + ' – ' + employee.firstname + ' ' + employee.lastname;
+                url = uri + '/employee/' + employee.id + '/actions/today?include=Project';
+                context$2$0.next = 23;
+                return regeneratorRuntime.awrap((0, _utils.request)('get', url));
+
               case 23:
+                allActions = context$2$0.sent;
+                list = (0, _utils.printList)(allActions);
+
+                bot.sendMessage('actions', name + '\n' + list);
+
+              case 26:
               case 'end':
                 return context$2$0.stop();
             }
           }, null, _this);
         };
 
-        updateListener = function updateListener(submitted, message) {
-          return regeneratorRuntime.async(function updateListener$(context$2$0) {
+        // const updateListener = async (submitted, message) => {
+        //   await* submitted.map(action => {
+        //     if (!action) return Promise.resolve();
+        //
+        //     return request('delete', `${uri}/action/${action.id}`)
+        //   });
+        //
+        //   message.match = /(teamline todo(?:s?))/i.exec(message.text);
+        //   setTodos(message, true);
+        // }
+
+        bot.listen(/(?:teamline todo(?:s)?)$/i, listTodos);
+
+        bot.listen(/teamline todo(?:s)? clear/i, function callee$1$0(message) {
+          var employee;
+          return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
               case 0:
                 context$2$0.next = 2;
-                return regeneratorRuntime.awrap(Promise.all(submitted.map(function (action) {
-                  if (!action) return Promise.resolve();
-
-                  return (0, _utils.request)('delete', uri + '/action/' + action.id);
-                })));
+                return regeneratorRuntime.awrap((0, _utils.findEmployee)(uri, bot, message));
 
               case 2:
+                employee = context$2$0.sent;
+                context$2$0.next = 5;
+                return regeneratorRuntime.awrap((0, _utils.request)('delete', uri + '/employee/' + employee.id + '/actions/today'));
 
-                message.match = /(teamline todo(?:s?))/i.exec(message.text);
-                setTodos(message, true);
+              case 5:
 
-              case 4:
+                message.reply('Cleared your actions for today.');
+
+              case 6:
               case 'end':
                 return context$2$0.stop();
             }
           }, null, _this);
-        };
+        });
 
-        bot.listen(/(teamline todo(?:s?))/i, setTodos);
+        bot.listen(/(teamline todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
+
+        bot.listen(/teamline todo remove (\d+)/i, function callee$1$0(message) {
+          var _message$match4, index, employee, actions, action;
+
+          return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
+            while (1) switch (context$2$0.prev = context$2$0.next) {
+              case 0:
+                _message$match4 = _slicedToArray(message.match, 1);
+                index = _message$match4[0];
+                context$2$0.next = 4;
+                return regeneratorRuntime.awrap((0, _utils.findEmployee)(uri, bot, message));
+
+              case 4:
+                employee = context$2$0.sent;
+                context$2$0.next = 7;
+                return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee/' + employee.id + '/actions/today'));
+
+              case 7:
+                actions = context$2$0.sent;
+                context$2$0.next = 10;
+                return regeneratorRuntime.awrap((0, _utils.request)('delete', uri + '/action/' + actions[index].id));
+
+              case 10:
+                action = context$2$0.sent;
+
+                message.reply('Removed action "' + action.name + '".');
+
+              case 12:
+              case 'end':
+                return context$2$0.stop();
+            }
+          }, null, _this);
+        });
 
         // bot.listen(/teamline done (?:#)?(\d+)/i, async message => {
         //   let [id] = message.match;
@@ -438,11 +439,28 @@ exports['default'] = function callee$0$0(bot, uri) {
         //   message.reply(`Marked #${action.id} as undone.`);
         // });
 
-      case 7:
+      case 9:
       case 'end':
         return context$1$0.stop();
     }
-  }, null, _this4);
+  }, null, _this3);
 };
 
 module.exports = exports['default'];
+
+// let employeeRoles = await request('get', `${uri}/employee/${employee.id}/roles`);
+// let projectRoles = await request('get', `${uri}/project/${pr.id}/roles`);
+//
+// let roles = _.intersectionBy(employeeRoles, projectRoles, 'id');
+
+// if (!roles.length) {
+//   let roleNames = projectRoles.map(p => p.name);
+//   const user = bot.find(message.user);
+//   let [index] = await bot.ask(user.name,
+//              `What's your role in project *${pr.name}*?`, roleNames);
+//   let { id } = projectRoles[index];
+//
+//   await request('get', `${uri}/associate/role/${id}/employee/${employee.id}`);
+// }
+
+// message.on('update', updateListener.bind(null, submitted));

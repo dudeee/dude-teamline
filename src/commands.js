@@ -7,25 +7,28 @@ export default async (bot, uri) => {
     type = type.toLowerCase();
     scope = scope || '';
 
-    let employee = await findEmployee(uri, bot, message);
+    const employee = await findEmployee(uri, bot, message);
 
     let items;
 
     if (type === 'actions' || type === 'roles') {
+      scope += '?include=Project';
       items = await request('get', `${uri}/employee/${employee.id}/${type}/${scope}`);
     }
 
     if (type === 'projects' || type === 'teams') {
-      let roles = await request('get', `${uri}/employee/${employee.id}/roles`);
+      const roles = await request('get', `${uri}/employee/${employee.id}/roles`);
 
-      if (type === 'projects')
-        items = await* roles.map(role => {
-          return request('get', `${uri}/role/${role.id}/project/${scope}`);
-        });
-      if (type === 'teams')
-        items = await* roles.map(role => {
-          return request('get', `${uri}/role/${role.id}/team`);
-        });
+      if (type === 'projects') {
+        items = await* roles.map(role =>
+          request('get', `${uri}/role/${role.id}/project/${scope}`)
+        );
+      }
+      if (type === 'teams') {
+        items = await* roles.map(role =>
+          request('get', `${uri}/role/${role.id}/team`)
+        );
+      }
 
       items = _.flatten(items);
     }
@@ -38,114 +41,142 @@ export default async (bot, uri) => {
     type = type.toLowerCase();
     scope = scope || '';
 
-    let list = await request('get', `${uri}/${type}/${scope}`);
+    if (type === 'actions') scope += '?include=Project';
+    const list = await request('get', `${uri}/${type}/${scope}`);
 
     message.reply(printList(list));
   });
 
-	const listTodos = async (message) => {
-		let employee = await findEmployee(uri, bot, message);
-		const actions = await request('get', `${uri}/employee/${employee.id}/actions/today`)
+  const listTodos = async (message) => {
+    const employee = await findEmployee(uri, bot, message);
+    const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
+    const actions = await request('get', url);
 
-		if (!actions.length) {
-	    let congrats = bot.random('Your todo list is empty! ✌️', 'Woohoo! Your todo list is empty! 🎈',
-	                              'You know what? You\'re amazing! Your list is empty! 😎', 'Surprise! Nothing to do! ⛱')
-			message.reply(congrats);
-			return;
-		}
+    // const sentences = ['Your todo list is empty! ✌️',
+    //                    'Woohoo! Your todo list is empty! 🎈',
+    //                    'You know what? You\'re amazing! Your list is empty! 😎',
+    //                    'Surprise! Nothing to do! ⛱'];
+    // const congrats = bot.random(sentences)
 
-		let reply = await* actions.map(async action => {
-			let project = await request('get', `${uri}/action/${action.id}/project`);
+    // let reply = await* actions.map(async action => {
+    //   let project = await request('get', `${uri}/action/${action.id}/project`);
+    //
+    //   if (!project || !action) return Promise.resolve();
+    //
+    //   return `${project.name} > ${action.name}`;
+    // });
 
-			if (!project || !action) return Promise.resolve();
+    // reply = reply.filter(a => a);
 
-			return `${project.name} > ${action.name}`;
-		});
+    message.reply(printList(actions, 'Your todo list is empty! 😌'));
+  };
 
-		reply = reply.filter(a => a);
+  const MIN_SIMILARITY = 0.8;
+  const setTodos = async (message, update) => {
+    const projects = await request('get', `${uri}/projects`);
+    const projectNames = projects.map(project => project.name);
 
-		message.reply(reply.join('\n'));
-	}
+    const [cmd] = message.match;
 
-	const MIN_SIMILARITY = 0.3;
-	const setTodos = async (message, update) => {
-		const projects = await request('get', `${uri}/projects`);
-		const projectNames = projects.map(project => project.name);
-
-		let [cmd] = message.match;
-
-		let actions = message.text
-		.slice(cmd.length + message.text.indexOf(cmd))
-		.split('\n')
-		.filter(a => a) // filter out empty lines
-		.map(a => a.split('&gt;'))
-		.map(([project, action]) => [project.trim(), action.trim()] )
-		.filter(([project, action]) => project && action)
+    const actions = message.text
+    .slice(cmd.length + message.text.indexOf(cmd))
+    .split('\n')
+    .filter(a => a) // filter out empty lines
+    .map(a => a.split('&gt;'))
+    .map(([project, action]) => [project.trim(), action.trim()])
+    .filter(([project, action]) => project && action)
     // Find the most similar project name available, we don't want to bug the user
-		.map(([project, action]) => {
-			let [distance, index] = fuzzy(project, projectNames);
+    .map(([project, action]) => {
+      const [distance, index] = fuzzy(project, projectNames);
 
-			if (distance > MIN_SIMILARITY) return [ projectNames[index], action ];
+      if (distance > MIN_SIMILARITY) return [projectNames[index], action];
 
-			return [ null, action ]
-		});
+      // last parameter indicates we have to create the project
+      return [project, action, true];
+    });
 
-		if (!actions.length) {
-			listTodos(message);
-			return;
-		}
+    const employee = await findEmployee(uri, bot, message);
+    await* actions.map(async ([project, action, create]) => {
+      let pr;
 
-		let employee = await findEmployee(uri, bot, message);
-
-		await request('delete', `${uri}/employee/${employee.id}/actions`);
-
-		let submitted = await* actions.map(async ([project, action]) => {
-			if (!project) {
-				message.reply(`I'm sorry, but I couldn't find any project called ${project}.`);
-				return Promise.resolve();
-			}
-
-			let ac = await request('post', `${uri}/employee/${employee.id}/action`, null, { name: action });
-			let pr = await request('get', `${uri}/project?name=${project}`);
-			await request('get', `${uri}/associate/action/${ac.id}/project/${pr.id}`);
-      let employeeRoles = await request('get', `${uri}/employee/${employee.id}/roles`);
-      let projectRoles = await request('get', `${uri}/project/${pr.id}/roles`);
-
-      let roles = _.intersectionBy(employeeRoles, projectRoles, 'id');
-
-      if (!roles.length) {
-        let roleNames = projectRoles.map(p => p.name);
-        const user = bot.find(message.user);
-        let [index] = await bot.ask(user.name, `What's your role in project *${pr.name}*?`, roleNames);
-        let { id } = projectRoles[index];
-
-        await request('get', `${uri}/associate/role/${id}/employee/${employee.id}`);
+      if (create) {
+        pr = await request('post', `${uri}/project`, null, {
+          name: project
+        });
       }
 
-			return ac;
-		});
+      const ac = await request('post', `${uri}/employee/${employee.id}/action`,
+                               null, { name: action });
+      if (!pr) pr = await request('get', `${uri}/project?name=${project}`);
+      await request('get', `${uri}/associate/action/${ac.id}/project/${pr.id}`);
+      // let employeeRoles = await request('get', `${uri}/employee/${employee.id}/roles`);
+      // let projectRoles = await request('get', `${uri}/project/${pr.id}/roles`);
+      //
+      // let roles = _.intersectionBy(employeeRoles, projectRoles, 'id');
 
-		if (update) return;
+      // if (!roles.length) {
+      //   let roleNames = projectRoles.map(p => p.name);
+      //   const user = bot.find(message.user);
+      //   let [index] = await bot.ask(user.name,
+      //              `What's your role in project *${pr.name}*?`, roleNames);
+      //   let { id } = projectRoles[index];
+      //
+      //   await request('get', `${uri}/associate/role/${id}/employee/${employee.id}`);
+      // }
 
-		message.on('update', updateListener.bind(null, submitted));
+      return ac;
+    });
 
-		const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
-		message.reply(reply);
-	}
+    if (update) return;
 
-	const updateListener = async (submitted, message) => {
-		await* submitted.map(action => {
-			if (!action) return Promise.resolve();
+    // message.on('update', updateListener.bind(null, submitted));
 
-			return request('delete', `${uri}/action/${action.id}`)
-		});
+    const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
+    message.reply(reply);
 
-		message.match = /(teamline todo(?:s?))/i.exec(message.text);
-		setTodos(message, true);
-	}
+    const d = new Date();
+    if (d.getHours() < 11) return;
 
-	bot.listen(/(teamline todo(?:s?))/i, setTodos);
+    const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
+    const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
+    const allActions = await request('get', url);
+    const list = printList(allActions);
 
+    bot.sendMessage('actions', `${name}\n${list}`);
+  };
+
+  // const updateListener = async (submitted, message) => {
+  //   await* submitted.map(action => {
+  //     if (!action) return Promise.resolve();
+  //
+  //     return request('delete', `${uri}/action/${action.id}`)
+  //   });
+  //
+  //   message.match = /(teamline todo(?:s?))/i.exec(message.text);
+  //   setTodos(message, true);
+  // }
+
+  bot.listen(/(?:teamline todo(?:s)?)$/i, listTodos);
+
+  bot.listen(/teamline todo(?:s)? clear/i, async message => {
+    const employee = await findEmployee(uri, bot, message);
+    await request('delete', `${uri}/employee/${employee.id}/actions/today`);
+
+    message.reply('Cleared your actions for today.');
+  });
+
+  bot.listen(/(teamline todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
+
+  bot.listen(/teamline todo remove (\d+)/i, async message => {
+    const [index] = message.match;
+
+    const employee = await findEmployee(uri, bot, message);
+    const actions = await request('get', `${uri}/employee/${employee.id}/actions/today`);
+
+    const action = await request('delete', `${uri}/action/${actions[index].id}`);
+
+    message.reply(`Removed action "${action.name}".`);
+  });
 
   // bot.listen(/teamline done (?:#)?(\d+)/i, async message => {
   //   let [id] = message.match;
@@ -172,4 +203,4 @@ export default async (bot, uri) => {
   //   const again = bot.random('There\'s still time!', 'Maybe later.', 'Wanna take a break?');
   //   message.reply(`Marked #${action.id} as undone.`);
   // });
-}
+};

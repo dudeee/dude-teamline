@@ -1,15 +1,16 @@
 {
   "name": "bolt-teamline",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Help employees to track their tasks and progress",
   "main": "build/index.js",
   "scripts": {
     "start": "node build/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src"
   },
   "config": {
     "ghooks": {
-      "pre-commit": "grunt"
+      "pre-commit": "npm run lint && grunt"
     }
   },
   "keywords": [
@@ -26,6 +27,9 @@
     "grunt-contrib-watch": "0.6.1"
   },
   "dependencies": {
+    "babel-eslint": "4.1.6",
+    "eslint": "1.10.3",
+    "eslint-config-airbnb": "4.0.0",
     "lodash": "4.0.0",
     "moment": "2.11.1",
     "teamline": "0.2.1",
