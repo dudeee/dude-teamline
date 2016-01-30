@@ -43,39 +43,37 @@ exports['default'] = function sync(bot, uri) {
                 exists = false;
 
                 if (role) {
-                  context$2$0.next = 15;
+                  context$2$0.next = 14;
                   break;
                 }
 
-                console.log('creating role');
-                context$2$0.next = 12;
+                context$2$0.next = 11;
                 return regeneratorRuntime.awrap((0, _utils.request)('post', uri + '/role', null, {
                   name: title
                 }));
 
-              case 12:
+              case 11:
                 role = context$2$0.sent;
-                context$2$0.next = 19;
+                context$2$0.next = 17;
                 break;
 
-              case 15:
-                console.log('finding employee');
-                context$2$0.next = 18;
+              case 14:
+                context$2$0.next = 16;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee/' + employee.id + '/role'));
 
-              case 18:
+              case 16:
                 exists = context$2$0.sent;
 
-              case 19:
+              case 17:
                 if (exists) {
-                  context$2$0.next = 22;
+                  context$2$0.next = 20;
                   break;
                 }
 
-                context$2$0.next = 22;
+                context$2$0.next = 20;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/associate/role/' + role.id + '/employee/' + employee.id));
 
-              case 22:
+              case 20:
               case 'end':
                 return context$2$0.stop();
             }
@@ -96,7 +94,7 @@ exports['default'] = function sync(bot, uri) {
 
       case 7:
         if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-          context$1$0.next = 42;
+          context$1$0.next = 41;
           break;
         }
 
@@ -107,7 +105,7 @@ exports['default'] = function sync(bot, uri) {
           break;
         }
 
-        return context$1$0.abrupt('continue', 39);
+        return context$1$0.abrupt('continue', 38);
 
       case 11:
         record = {
@@ -117,112 +115,110 @@ exports['default'] = function sync(bot, uri) {
           lastname: user.profile.last_name,
           phone: user.profile.phone || null
         };
-
-        console.log(uri + '/employee?username=' + user.name);
-        context$1$0.next = 15;
+        context$1$0.next = 14;
         return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee?username=' + user.name));
 
-      case 15:
+      case 14:
         employee = context$1$0.sent;
 
         if (!(employee && user.deleted)) {
-          context$1$0.next = 20;
+          context$1$0.next = 19;
           break;
         }
 
         stats.deleted++;
         (0, _utils.request)('delete', uri + '/employee/' + employee.id);
-        return context$1$0.abrupt('continue', 39);
+        return context$1$0.abrupt('continue', 38);
 
-      case 20:
+      case 19:
         if (!(employee && _lodash2['default'].eq(employee, user))) {
-          context$1$0.next = 25;
+          context$1$0.next = 24;
           break;
         }
 
         stats.untouched++;
-        context$1$0.next = 24;
+        context$1$0.next = 23;
         return regeneratorRuntime.awrap(updateRole(employee, user));
 
-      case 24:
-        return context$1$0.abrupt('continue', 39);
+      case 23:
+        return context$1$0.abrupt('continue', 38);
 
-      case 25:
+      case 24:
         if (!employee) {
-          context$1$0.next = 33;
+          context$1$0.next = 32;
           break;
         }
 
         stats.updated++;
-        context$1$0.next = 29;
+        context$1$0.next = 28;
         return regeneratorRuntime.awrap((0, _utils.request)('put', uri + '/employee/' + employee.id, null, record));
 
-      case 29:
+      case 28:
         employee = context$1$0.sent;
-        context$1$0.next = 32;
+        context$1$0.next = 31;
         return regeneratorRuntime.awrap(updateRole(employee, user));
+
+      case 31:
+        return context$1$0.abrupt('continue', 38);
 
       case 32:
-        return context$1$0.abrupt('continue', 39);
-
-      case 33:
 
         stats.created++;
-        context$1$0.next = 36;
+        context$1$0.next = 35;
         return regeneratorRuntime.awrap((0, _utils.request)('post', uri + '/employee', null, record));
 
-      case 36:
+      case 35:
         employee = context$1$0.sent;
-        context$1$0.next = 39;
+        context$1$0.next = 38;
         return regeneratorRuntime.awrap(updateRole(employee, user));
 
-      case 39:
+      case 38:
         _iteratorNormalCompletion = true;
         context$1$0.next = 7;
         break;
 
-      case 42:
-        context$1$0.next = 48;
+      case 41:
+        context$1$0.next = 47;
         break;
 
-      case 44:
-        context$1$0.prev = 44;
+      case 43:
+        context$1$0.prev = 43;
         context$1$0.t0 = context$1$0['catch'](5);
         _didIteratorError = true;
         _iteratorError = context$1$0.t0;
 
-      case 48:
+      case 47:
+        context$1$0.prev = 47;
         context$1$0.prev = 48;
-        context$1$0.prev = 49;
 
         if (!_iteratorNormalCompletion && _iterator['return']) {
           _iterator['return']();
         }
 
-      case 51:
-        context$1$0.prev = 51;
+      case 50:
+        context$1$0.prev = 50;
 
         if (!_didIteratorError) {
-          context$1$0.next = 54;
+          context$1$0.next = 53;
           break;
         }
 
         throw _iteratorError;
 
+      case 53:
+        return context$1$0.finish(50);
+
       case 54:
-        return context$1$0.finish(51);
+        return context$1$0.finish(47);
 
       case 55:
-        return context$1$0.finish(48);
-
-      case 56:
         return context$1$0.abrupt('return', stats);
 
-      case 57:
+      case 56:
       case 'end':
         return context$1$0.stop();
     }
-  }, null, this, [[5, 44, 48, 56], [49,, 51, 55]]);
+  }, null, this, [[5, 43, 47, 55], [48,, 50, 54]]);
 };
 
 module.exports = exports['default'];

@@ -315,7 +315,7 @@ exports['default'] = function callee$0$0(bot, uri) {
 
                 d = new Date();
 
-                if (!(d.getHours() < 11)) {
+                if (!(d.getHours() < 10)) {
                   context$2$0.next = 19;
                   break;
                 }

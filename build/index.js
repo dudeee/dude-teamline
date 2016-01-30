@@ -48,7 +48,7 @@ exports['default'] = function callee$0$0(bot) {
           (0, _commands2['default'])(bot, uri);
           (0, _management2['default'])(bot, uri);
         } catch (e) {
-          console.error(e);
+          bot.log.error(e);
         }
 
         bot.agenda.define('ask-for-actions', function callee$1$0(job, done) {
@@ -225,7 +225,7 @@ exports['default'] = function callee$0$0(bot) {
 
         job = bot.agenda.create('ask-for-actions');
 
-        job.repeatAt('9:00am');
+        job.repeatAt('9:30am');
         job.save();
 
         publishJob = bot.agenda.create('publish-actions');
@@ -259,7 +259,7 @@ exports['default'] = function callee$0$0(bot) {
         context$1$0.prev = 21;
         context$1$0.t0 = context$1$0['catch'](14);
 
-        console.error(context$1$0.t0);
+        bot.log.error(context$1$0.t0);
 
       case 24:
       case 'end':
