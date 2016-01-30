@@ -12,6 +12,7 @@ exports.factorial = factorial;
 exports.permutations = permutations;
 exports.fuzzy = fuzzy;
 exports.wait = wait;
+exports.getWeekday = getWeekday;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -58,7 +59,7 @@ var printList = function printList(list) {
     //                   item.done ? '✅' : '❎';
     var name = item.name || item.firstname + ' ' + item.lastname;
     if (item.Project) {
-      return index + '. *' + item.Project.name + '* > ' + name;
+      return index + 1 + '. *' + item.Project.name + '* > ' + name;
     }
 
     return '#' + item.id + ' – ' + name;
@@ -241,4 +242,15 @@ function wait(ms) {
   return new Promise(function (resolve) {
     setTimeout(resolve, ms);
   });
+}
+
+/**
+ * Get weekday name by it's id
+ * @param  {number} id weekday id (originally, 0 to 6)
+ * @return {string} weekday name
+ */
+
+function getWeekday(id) {
+  var weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  return weekdays[id % 7];
 }

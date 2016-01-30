@@ -18,17 +18,15 @@ var _syncUsers = require('./sync-users');
 
 var _syncUsers2 = _interopRequireDefault(_syncUsers);
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _commands = require('./commands');
 
 var _commands2 = _interopRequireDefault(_commands);
 
-var _management = require('./management');
-
-var _management2 = _interopRequireDefault(_management);
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
+var timezone = 'Asia/Tehran';
 
 exports['default'] = function callee$0$0(bot) {
   var server, uri, job, publishJob, stats;
@@ -46,7 +44,6 @@ exports['default'] = function callee$0$0(bot) {
 
         try {
           (0, _commands2['default'])(bot, uri);
-          (0, _management2['default'])(bot, uri);
         } catch (e) {
           bot.log.error(e);
         }
@@ -223,12 +220,16 @@ exports['default'] = function callee$0$0(bot) {
           }, null, _this);
         });
 
-        job = bot.agenda.create('ask-for-actions');
+        job = bot.agenda.create('ask-for-actions', {
+          repeatTimezone: timezone
+        });
 
         job.repeatAt('9:30am');
         job.save();
 
-        publishJob = bot.agenda.create('publish-actions');
+        publishJob = bot.agenda.create('publish-actions', {
+          repeatTimezone: timezone
+        });
 
         publishJob.repeatAt('10:00am');
         publishJob.save();

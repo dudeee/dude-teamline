@@ -1,9 +1,10 @@
 import teamline from 'teamline';
 import { request, findEmployee, printList, wait } from './utils';
 import sync from './sync-users';
-import commands from './commands';
-import management from './management';
 import _ from 'lodash';
+import commands from './commands';
+
+const timezone = 'Asia/Tehran';
 
 export default async bot => {
   const server = await teamline(bot.config.teamline);
@@ -11,7 +12,6 @@ export default async bot => {
 
   try {
     commands(bot, uri);
-    management(bot, uri);
   } catch (e) {
     bot.log.error(e);
   }
@@ -61,11 +61,15 @@ export default async bot => {
     done();
   });
 
-  const job = bot.agenda.create('ask-for-actions');
+  const job = bot.agenda.create('ask-for-actions', {
+    repeatTimezone: timezone
+  });
   job.repeatAt('9:30am');
   job.save();
 
-  const publishJob = bot.agenda.create('publish-actions');
+  const publishJob = bot.agenda.create('publish-actions', {
+    repeatTimezone: timezone
+  });
   publishJob.repeatAt('10:00am');
   publishJob.save();
 
