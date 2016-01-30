@@ -23,7 +23,7 @@ exports['default'] = function callee$0$0(bot, uri) {
 
     while (1) switch (context$1$0.prev = context$1$0.next) {
       case 0:
-        bot.listen(/teamline my (\w+)\s?(\w+)?/i, function callee$1$0(message) {
+        bot.listen(/my (\w+)\s?(\w+)?/i, function callee$1$0(message) {
           var _message$match, type, scope, employee, items, roles;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
@@ -109,7 +109,7 @@ exports['default'] = function callee$0$0(bot, uri) {
           }, null, _this);
         });
 
-        bot.listen(/teamline all (\w+)\s?(\w+)?/i, function callee$1$0(message) {
+        bot.listen(/all (\w+)\s?(\w+)?/i, function callee$1$0(message) {
           var _message$match2, type, scope, list;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
@@ -243,20 +243,20 @@ exports['default'] = function callee$0$0(bot, uri) {
               case 9:
                 employee = context$2$0.sent;
                 context$2$0.next = 12;
-                return regeneratorRuntime.awrap(Promise.all(actions.map(function callee$2$0(_ref5) {
+                return regeneratorRuntime.awrap(Promise.all(actions.map(function callee$2$0(_ref5, index) {
                   var _ref52 = _slicedToArray(_ref5, 3);
 
                   var project = _ref52[0];
                   var action = _ref52[1];
                   var create = _ref52[2];
-                  var pr, ac;
+                  var pr, i, ac;
                   return regeneratorRuntime.async(function callee$2$0$(context$3$0) {
                     while (1) switch (context$3$0.prev = context$3$0.next) {
                       case 0:
                         pr = undefined;
 
                         if (!create) {
-                          context$3$0.next = 5;
+                          context$3$0.next = 6;
                           break;
                         }
 
@@ -268,32 +268,38 @@ exports['default'] = function callee$0$0(bot, uri) {
                       case 4:
                         pr = context$3$0.sent;
 
-                      case 5:
-                        context$3$0.next = 7;
+                        for (i = index + 1; i < actions.length; i++) {
+                          if (actions[i][0] === project) {
+                            actions[i][2] = false;
+                          }
+                        }
+
+                      case 6:
+                        context$3$0.next = 8;
                         return regeneratorRuntime.awrap((0, _utils.request)('post', uri + '/employee/' + employee.id + '/action', null, { name: action }));
 
-                      case 7:
+                      case 8:
                         ac = context$3$0.sent;
 
                         if (pr) {
-                          context$3$0.next = 12;
+                          context$3$0.next = 13;
                           break;
                         }
 
-                        context$3$0.next = 11;
+                        context$3$0.next = 12;
                         return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/project?name=' + project));
 
-                      case 11:
+                      case 12:
                         pr = context$3$0.sent;
 
-                      case 12:
-                        context$3$0.next = 14;
+                      case 13:
+                        context$3$0.next = 15;
                         return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/associate/action/' + ac.id + '/project/' + pr.id));
 
-                      case 14:
+                      case 15:
                         return context$3$0.abrupt('return', ac);
 
-                      case 15:
+                      case 16:
                       case 'end':
                         return context$3$0.stop();
                     }
@@ -352,9 +358,9 @@ exports['default'] = function callee$0$0(bot, uri) {
         //   setTodos(message, true);
         // }
 
-        bot.listen(/(?:teamline todo(?:s)?)$/i, listTodos);
+        bot.listen(/(?:todo(?:s)?)$/i, listTodos);
 
-        bot.listen(/teamline todo(?:s)? clear/i, function callee$1$0(message) {
+        bot.listen(/todo(?:s)? clear/i, function callee$1$0(message) {
           var employee;
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
@@ -378,9 +384,9 @@ exports['default'] = function callee$0$0(bot, uri) {
           }, null, _this);
         });
 
-        bot.listen(/(teamline todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
+        bot.listen(/(todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
 
-        bot.listen(/teamline todo remove (\d+)/i, function callee$1$0(message) {
+        bot.listen(/todo remove (\d+)/i, function callee$1$0(message) {
           var _message$match4, index, employee, actions, action;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
