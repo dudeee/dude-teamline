@@ -135,7 +135,7 @@ export default async (bot, uri) => {
     message.reply(reply);
 
     const d = new Date();
-    if (d.getHours() < 11) return;
+    if (d.getHours() < 10) return;
 
     const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
     const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;

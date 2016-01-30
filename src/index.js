@@ -66,7 +66,7 @@ export default async bot => {
   job.save();
 
   const publishJob = bot.agenda.create('publish-actions');
-  publishJob.repeatAt('10:20am');
+  publishJob.repeatAt('10:00am');
   publishJob.save();
 
   /*
