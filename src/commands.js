@@ -48,7 +48,8 @@ export default async (bot, uri) => {
   });
 
   const listTodos = async (message) => {
-    const employee = await findEmployee(uri, bot, message);
+    const [user] = message.match;
+    const employee = await findEmployee(uri, bot, user ? { user } : message);
     const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
     const actions = await request('get', url);
 
@@ -68,7 +69,8 @@ export default async (bot, uri) => {
 
     // reply = reply.filter(a => a);
 
-    message.reply(printList(actions, 'Your todo list is empty! 😌'));
+    const placeholder = user ? 'His' : 'Your';
+    message.reply(printList(actions, `${placeholder} todo list is empty! 😌`));
   };
 
   const MIN_SIMILARITY = 0.8;
@@ -92,23 +94,18 @@ export default async (bot, uri) => {
       if (distance > MIN_SIMILARITY) return [projectNames[index], action];
 
       // last parameter indicates we have to create the project
+      projectNames.push(project);
       return [project, action, true];
     });
 
     const employee = await findEmployee(uri, bot, message);
-    await* actions.map(async ([project, action, create], index) => {
+    await* actions.map(async ([project, action, create]) => {
       let pr;
 
       if (create) {
         pr = await request('post', `${uri}/project`, null, {
           name: project
         });
-
-        for (let i = index + 1; i < actions.length; i++) {
-          if (actions[i][0] === project) {
-            actions[i][2] = false;
-          }
-        }
       }
 
       const ac = await request('post', `${uri}/employee/${employee.id}/action`,
@@ -137,16 +134,19 @@ export default async (bot, uri) => {
 
     // message.on('update', updateListener.bind(null, submitted));
 
-    const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
-    message.reply(reply);
+    // const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
+    // message.reply(reply);
+
+    const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
+    const allActions = await request('get', url);
+    const list = printList(allActions);
+
+    message.reply(list);
 
     const d = new Date();
     if (d.getHours() < 10) return;
 
     const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
-    const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
-    const allActions = await request('get', url);
-    const list = printList(allActions);
 
     bot.sendMessage('actions', `${name}\n${list}`);
   };
@@ -162,7 +162,7 @@ export default async (bot, uri) => {
   //   setTodos(message, true);
   // }
 
-  bot.listen(/(?:todo(?:s)?)$/i, listTodos);
+  bot.listen(/(?:todo(?:s)?\s?(?:<@)?([^>]*)?>?)$/i, listTodos);
 
   bot.listen(/todo(?:s)? clear/i, async message => {
     const employee = await findEmployee(uri, bot, message);
