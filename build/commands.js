@@ -139,41 +139,29 @@ exports['default'] = function callee$0$0(bot, uri) {
         });
 
         listTodos = function listTodos(message) {
-          var employee, url, actions;
+          var _message$match3, user, employee, url, actions, placeholder;
+
           return regeneratorRuntime.async(function listTodos$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
               case 0:
-                context$2$0.next = 2;
-                return regeneratorRuntime.awrap((0, _utils.findEmployee)(uri, bot, message));
+                _message$match3 = _slicedToArray(message.match, 1);
+                user = _message$match3[0];
+                context$2$0.next = 4;
+                return regeneratorRuntime.awrap((0, _utils.findEmployee)(uri, bot, user ? { user: user } : message));
 
-              case 2:
+              case 4:
                 employee = context$2$0.sent;
                 url = uri + '/employee/' + employee.id + '/actions/today?include=Project';
-                context$2$0.next = 6;
+                context$2$0.next = 8;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', url));
 
-              case 6:
-                actions = context$2$0.sent;
-
-                // const sentences = ['Your todo list is empty! ✌️',
-                //                    'Woohoo! Your todo list is empty! 🎈',
-                //                    'You know what? You\'re amazing! Your list is empty! 😎',
-                //                    'Surprise! Nothing to do! ⛱'];
-                // const congrats = bot.random(sentences)
-
-                // let reply = await* actions.map(async action => {
-                //   let project = await request('get', `${uri}/action/${action.id}/project`);
-                //
-                //   if (!project || !action) return Promise.resolve();
-                //
-                //   return `${project.name} > ${action.name}`;
-                // });
-
-                // reply = reply.filter(a => a);
-
-                message.reply((0, _utils.printList)(actions, 'Your todo list is empty! 😌'));
-
               case 8:
+                actions = context$2$0.sent;
+                placeholder = user ? 'His' : 'Your';
+
+                message.reply((0, _utils.printList)(actions, placeholder + ' todo list is empty! 😌'));
+
+              case 11:
               case 'end':
                 return context$2$0.stop();
             }
@@ -183,7 +171,7 @@ exports['default'] = function callee$0$0(bot, uri) {
         MIN_SIMILARITY = 0.8;
 
         setTodos = function setTodos(message, update) {
-          var projects, projectNames, _message$match3, cmd, actions, employee, reply, d, name, url, allActions, list;
+          var projects, projectNames, _message$match4, cmd, actions, employee, url, allActions, list, d, name;
 
           return regeneratorRuntime.async(function setTodos$(context$2$0) {
             var _this2 = this;
@@ -198,8 +186,8 @@ exports['default'] = function callee$0$0(bot, uri) {
                 projectNames = projects.map(function (project) {
                   return project.name;
                 });
-                _message$match3 = _slicedToArray(message.match, 1);
-                cmd = _message$match3[0];
+                _message$match4 = _slicedToArray(message.match, 1);
+                cmd = _message$match4[0];
                 actions = message.text.slice(cmd.length + message.text.indexOf(cmd)).split('\n').filter(function (a) {
                   return a;
                 }) // filter out empty lines
@@ -235,6 +223,7 @@ exports['default'] = function callee$0$0(bot, uri) {
                   if (distance > MIN_SIMILARITY) return [projectNames[index], action];
 
                   // last parameter indicates we have to create the project
+                  projectNames.push(project);
                   return [project, action, true];
                 });
                 context$2$0.next = 9;
@@ -243,20 +232,20 @@ exports['default'] = function callee$0$0(bot, uri) {
               case 9:
                 employee = context$2$0.sent;
                 context$2$0.next = 12;
-                return regeneratorRuntime.awrap(Promise.all(actions.map(function callee$2$0(_ref5, index) {
+                return regeneratorRuntime.awrap(Promise.all(actions.map(function callee$2$0(_ref5) {
                   var _ref52 = _slicedToArray(_ref5, 3);
 
                   var project = _ref52[0];
                   var action = _ref52[1];
                   var create = _ref52[2];
-                  var pr, i, ac;
+                  var pr, ac;
                   return regeneratorRuntime.async(function callee$2$0$(context$3$0) {
                     while (1) switch (context$3$0.prev = context$3$0.next) {
                       case 0:
                         pr = undefined;
 
                         if (!create) {
-                          context$3$0.next = 6;
+                          context$3$0.next = 5;
                           break;
                         }
 
@@ -268,38 +257,32 @@ exports['default'] = function callee$0$0(bot, uri) {
                       case 4:
                         pr = context$3$0.sent;
 
-                        for (i = index + 1; i < actions.length; i++) {
-                          if (actions[i][0] === project) {
-                            actions[i][2] = false;
-                          }
-                        }
-
-                      case 6:
-                        context$3$0.next = 8;
+                      case 5:
+                        context$3$0.next = 7;
                         return regeneratorRuntime.awrap((0, _utils.request)('post', uri + '/employee/' + employee.id + '/action', null, { name: action }));
 
-                      case 8:
+                      case 7:
                         ac = context$3$0.sent;
 
                         if (pr) {
-                          context$3$0.next = 13;
+                          context$3$0.next = 12;
                           break;
                         }
 
-                        context$3$0.next = 12;
+                        context$3$0.next = 11;
                         return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/project?name=' + project));
 
-                      case 12:
+                      case 11:
                         pr = context$3$0.sent;
 
-                      case 13:
-                        context$3$0.next = 15;
+                      case 12:
+                        context$3$0.next = 14;
                         return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/associate/action/' + ac.id + '/project/' + pr.id));
 
-                      case 15:
+                      case 14:
                         return context$3$0.abrupt('return', ac);
 
-                      case 16:
+                      case 15:
                       case 'end':
                         return context$3$0.stop();
                     }
@@ -315,32 +298,31 @@ exports['default'] = function callee$0$0(bot, uri) {
                 return context$2$0.abrupt('return');
 
               case 14:
-                reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
+                url = uri + '/employee/' + employee.id + '/actions/today?include=Project';
+                context$2$0.next = 17;
+                return regeneratorRuntime.awrap((0, _utils.request)('get', url));
 
-                message.reply(reply);
+              case 17:
+                allActions = context$2$0.sent;
+                list = (0, _utils.printList)(allActions);
+
+                message.reply(list);
 
                 d = new Date();
 
                 if (!(d.getHours() < 10)) {
-                  context$2$0.next = 19;
+                  context$2$0.next = 23;
                   break;
                 }
 
                 return context$2$0.abrupt('return');
 
-              case 19:
-                name = '@' + employee.username + ' – ' + employee.firstname + ' ' + employee.lastname;
-                url = uri + '/employee/' + employee.id + '/actions/today?include=Project';
-                context$2$0.next = 23;
-                return regeneratorRuntime.awrap((0, _utils.request)('get', url));
-
               case 23:
-                allActions = context$2$0.sent;
-                list = (0, _utils.printList)(allActions);
+                name = '@' + employee.username + ' – ' + employee.firstname + ' ' + employee.lastname;
 
                 bot.sendMessage('actions', name + '\n' + list);
 
-              case 26:
+              case 25:
               case 'end':
                 return context$2$0.stop();
             }
@@ -358,7 +340,7 @@ exports['default'] = function callee$0$0(bot, uri) {
         //   setTodos(message, true);
         // }
 
-        bot.listen(/(?:todo(?:s)?)$/i, listTodos);
+        bot.listen(/(?:todo(?:s)?\s?(?:<@)?([^>]*)?>?)$/i, listTodos);
 
         bot.listen(/todo(?:s)? clear/i, function callee$1$0(message) {
           var employee;
@@ -387,13 +369,13 @@ exports['default'] = function callee$0$0(bot, uri) {
         bot.listen(/(todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
 
         bot.listen(/todo remove (\d+)/i, function callee$1$0(message) {
-          var _message$match4, index, employee, actions, action;
+          var _message$match5, index, employee, actions, action;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
               case 0:
-                _message$match4 = _slicedToArray(message.match, 1);
-                index = _message$match4[0];
+                _message$match5 = _slicedToArray(message.match, 1);
+                index = _message$match5[0];
                 context$2$0.next = 4;
                 return regeneratorRuntime.awrap((0, _utils.findEmployee)(uri, bot, message));
 
@@ -454,6 +436,22 @@ exports['default'] = function callee$0$0(bot, uri) {
 
 module.exports = exports['default'];
 
+// const sentences = ['Your todo list is empty! ✌️',
+//                    'Woohoo! Your todo list is empty! 🎈',
+//                    'You know what? You\'re amazing! Your list is empty! 😎',
+//                    'Surprise! Nothing to do! ⛱'];
+// const congrats = bot.random(sentences)
+
+// let reply = await* actions.map(async action => {
+//   let project = await request('get', `${uri}/action/${action.id}/project`);
+//
+//   if (!project || !action) return Promise.resolve();
+//
+//   return `${project.name} > ${action.name}`;
+// });
+
+// reply = reply.filter(a => a);
+
 // let employeeRoles = await request('get', `${uri}/employee/${employee.id}/roles`);
 // let projectRoles = await request('get', `${uri}/project/${pr.id}/roles`);
 //
@@ -470,3 +468,6 @@ module.exports = exports['default'];
 // }
 
 // message.on('update', updateListener.bind(null, submitted));
+
+// const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
+// message.reply(reply);
