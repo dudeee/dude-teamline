@@ -1,4 +1,4 @@
-import { request } from './utils';
+import { request } from '../utils';
 
 export default async (bot, uri) => {
   bot.listen(/teamline manage add (\w+) (.*)/i, async message => {

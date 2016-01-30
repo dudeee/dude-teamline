@@ -20,7 +20,7 @@ export const printList = (list, empty = 'Nothing to show 😶') => {
     //                   item.done ? '✅' : '❎';
     const name = item.name || (`${item.firstname} ${item.lastname}`);
     if (item.Project) {
-      return `${index}. *${item.Project.name}* > ${name}`;
+      return `${index + 1}. *${item.Project.name}* > ${name}`;
     }
 
     return `#${item.id} – ${name}`;
@@ -147,4 +147,14 @@ export function wait(ms) {
   return new Promise(resolve => {
     setTimeout(resolve, ms);
   });
+}
+
+/**
+ * Get weekday name by it's id
+ * @param  {number} id weekday id (originally, 0 to 6)
+ * @return {string} weekday name
+ */
+export function getWeekday(id) {
+  const weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  return weekdays[id % 7];
 }
