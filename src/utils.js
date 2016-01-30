@@ -20,7 +20,7 @@ export const printList = (list, empty = 'Nothing to show 😶') => {
     //                   item.done ? '✅' : '❎';
     const name = item.name || (`${item.firstname} ${item.lastname}`);
     if (item.Project) {
-      return `${index}. *${item.Project.name}* > ${name}`;
+      return `${index + 1}. *${item.Project.name}* > ${name}`;
     }
 
     return `#${item.id} – ${name}`;

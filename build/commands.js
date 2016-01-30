@@ -329,17 +329,6 @@ exports['default'] = function callee$0$0(bot, uri) {
           }, null, _this);
         };
 
-        // const updateListener = async (submitted, message) => {
-        //   await* submitted.map(action => {
-        //     if (!action) return Promise.resolve();
-        //
-        //     return request('delete', `${uri}/action/${action.id}`)
-        //   });
-        //
-        //   message.match = /(teamline todo(?:s?))/i.exec(message.text);
-        //   setTodos(message, true);
-        // }
-
         bot.listen(/(?:todo(?:s)?\s?(?:<@)?([^>]*)?>?)$/i, listTodos);
 
         bot.listen(/todo(?:s)? clear/i, function callee$1$0(message) {
@@ -376,25 +365,28 @@ exports['default'] = function callee$0$0(bot, uri) {
               case 0:
                 _message$match5 = _slicedToArray(message.match, 1);
                 index = _message$match5[0];
-                context$2$0.next = 4;
+
+                index = parseInt(index, 10) - 1;
+
+                context$2$0.next = 5;
                 return regeneratorRuntime.awrap((0, _utils.findEmployee)(uri, bot, message));
 
-              case 4:
+              case 5:
                 employee = context$2$0.sent;
-                context$2$0.next = 7;
+                context$2$0.next = 8;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee/' + employee.id + '/actions/today'));
 
-              case 7:
+              case 8:
                 actions = context$2$0.sent;
-                context$2$0.next = 10;
+                context$2$0.next = 11;
                 return regeneratorRuntime.awrap((0, _utils.request)('delete', uri + '/action/' + actions[index].id));
 
-              case 10:
+              case 11:
                 action = context$2$0.sent;
 
                 message.reply('Removed action "' + action.name + '".');
 
-              case 12:
+              case 13:
               case 'end':
                 return context$2$0.stop();
             }
@@ -466,8 +458,6 @@ module.exports = exports['default'];
 //
 //   await request('get', `${uri}/associate/role/${id}/employee/${employee.id}`);
 // }
-
-// message.on('update', updateListener.bind(null, submitted));
 
 // const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
 // message.reply(reply);

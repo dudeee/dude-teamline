@@ -132,8 +132,6 @@ export default async (bot, uri) => {
 
     if (update) return;
 
-    // message.on('update', updateListener.bind(null, submitted));
-
     // const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
     // message.reply(reply);
 
@@ -151,17 +149,6 @@ export default async (bot, uri) => {
     bot.sendMessage('actions', `${name}\n${list}`);
   };
 
-  // const updateListener = async (submitted, message) => {
-  //   await* submitted.map(action => {
-  //     if (!action) return Promise.resolve();
-  //
-  //     return request('delete', `${uri}/action/${action.id}`)
-  //   });
-  //
-  //   message.match = /(teamline todo(?:s?))/i.exec(message.text);
-  //   setTodos(message, true);
-  // }
-
   bot.listen(/(?:todo(?:s)?\s?(?:<@)?([^>]*)?>?)$/i, listTodos);
 
   bot.listen(/todo(?:s)? clear/i, async message => {
@@ -174,7 +161,8 @@ export default async (bot, uri) => {
   bot.listen(/(todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
 
   bot.listen(/todo remove (\d+)/i, async message => {
-    const [index] = message.match;
+    let [index] = message.match;
+    index = parseInt(index, 10) - 1;
 
     const employee = await findEmployee(uri, bot, message);
     const actions = await request('get', `${uri}/employee/${employee.id}/actions/today`);
