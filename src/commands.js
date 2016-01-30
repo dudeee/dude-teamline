@@ -2,7 +2,7 @@ import { printList, findEmployee, request, fuzzy } from './utils';
 import _ from 'lodash';
 
 export default async (bot, uri) => {
-  bot.listen(/teamline my (\w+)\s?(\w+)?/i, async message => {
+  bot.listen(/my (\w+)\s?(\w+)?/i, async message => {
     let [type, scope] = message.match;
     type = type.toLowerCase();
     scope = scope || '';
@@ -36,7 +36,7 @@ export default async (bot, uri) => {
     message.reply(printList(items));
   });
 
-  bot.listen(/teamline all (\w+)\s?(\w+)?/i, async message => {
+  bot.listen(/all (\w+)\s?(\w+)?/i, async message => {
     let [type, scope] = message.match;
     type = type.toLowerCase();
     scope = scope || '';
@@ -162,18 +162,18 @@ export default async (bot, uri) => {
   //   setTodos(message, true);
   // }
 
-  bot.listen(/(?:teamline todo(?:s)?)$/i, listTodos);
+  bot.listen(/(?:todo(?:s)?)$/i, listTodos);
 
-  bot.listen(/teamline todo(?:s)? clear/i, async message => {
+  bot.listen(/todo(?:s)? clear/i, async message => {
     const employee = await findEmployee(uri, bot, message);
     await request('delete', `${uri}/employee/${employee.id}/actions/today`);
 
     message.reply('Cleared your actions for today.');
   });
 
-  bot.listen(/(teamline todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
+  bot.listen(/(todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
 
-  bot.listen(/teamline todo remove (\d+)/i, async message => {
+  bot.listen(/todo remove (\d+)/i, async message => {
     const [index] = message.match;
 
     const employee = await findEmployee(uri, bot, message);
