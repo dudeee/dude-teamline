@@ -19,12 +19,9 @@ exports['default'] = function (bot, uri) {
   var commandsPath = _path2['default'].join(__dirname, commandsDir);
 
   var commands = _fs2['default'].readdirSync(commandsPath);
-  console.log(commands);
-  console.log('---------------');
   commands.filter(function (name) {
     return name !== 'index.js';
   }).forEach(function (file) {
-    console.log('SHIT! => ' + file);
     require(commandsPath + '/' + file)(bot, uri);
   });
 };
