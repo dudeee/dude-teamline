@@ -96,13 +96,19 @@ export default async (bot, uri) => {
     });
 
     const employee = await findEmployee(uri, bot, message);
-    await* actions.map(async ([project, action, create]) => {
+    await* actions.map(async ([project, action, create], index) => {
       let pr;
 
       if (create) {
         pr = await request('post', `${uri}/project`, null, {
           name: project
         });
+
+        for (let i = index + 1; i < actions.length; i++) {
+          if (actions[i][0] === project) {
+            actions[i][2] = false;
+          }
+        }
       }
 
       const ac = await request('post', `${uri}/employee/${employee.id}/action`,
