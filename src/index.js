@@ -13,7 +13,7 @@ export default async bot => {
     commands(bot, uri);
     management(bot, uri);
   } catch (e) {
-    console.error(e);
+    bot.log.error(e);
   }
 
   bot.agenda.define('ask-for-actions', async (job, done) => {
@@ -29,7 +29,7 @@ export default async bot => {
       const a = await request('get', `${uri}/employee/${emp.id}/actions/today`);
       if (a.length) continue;
 
-      bot.sendMessage('mahdi', 'Hey! What are you going to do today? 😃');
+      bot.sendMessage(user.id, 'Hey! What are you going to do today? 😃');
       await wait(RATE_LIMIT);
     }
 
@@ -62,11 +62,11 @@ export default async bot => {
   });
 
   const job = bot.agenda.create('ask-for-actions');
-  job.repeatAt('9:00am');
+  job.repeatAt('9:30am');
   job.save();
 
   const publishJob = bot.agenda.create('publish-actions');
-  publishJob.repeatAt('10:00am');
+  publishJob.repeatAt('10:20am');
   publishJob.save();
 
   /*
@@ -105,6 +105,6 @@ Updated: ${stats.updated}
 Deleted: ${stats.deleted}
 Untouched: ${stats.untouched}`);
   } catch (e) {
-    console.error(e);
+    bot.log.error(e);
   }
 };

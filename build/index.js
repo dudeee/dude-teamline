@@ -102,7 +102,7 @@ exports['default'] = function callee$0$0(bot) {
 
               case 20:
 
-                bot.sendMessage('mahdi', 'Hey! What are you going to do today? 😃');
+                bot.sendMessage(user.id, 'Hey! What are you going to do today? 😃');
                 context$2$0.next = 23;
                 return regeneratorRuntime.awrap((0, _utils.wait)(RATE_LIMIT));
 

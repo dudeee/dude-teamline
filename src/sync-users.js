@@ -20,7 +20,6 @@ export default async function sync(bot, uri) {
       phone: user.profile.phone || null
     };
 
-    console.log(`${uri}/employee?username=${user.name}`);
     let employee = await request('get', `${uri}/employee?username=${user.name}`);
 
     if (employee && user.deleted) {
@@ -56,12 +55,10 @@ export default async function sync(bot, uri) {
     let exists = false;
 
     if (!role) {
-      console.log('creating role');
       role = await request('post', `${uri}/role`, null, {
         name: title
       });
     } else {
-      console.log('finding employee');
       exists = await request('get', `${uri}/employee/${employee.id}/role`);
     }
 
