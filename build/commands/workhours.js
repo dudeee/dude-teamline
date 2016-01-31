@@ -18,7 +18,7 @@ var printHours = function printHours(hours) {
   }
   var output = hours.length > 1 ? ':timer_clock: Your working hours plan is:\n' : ':timer_clock: Your working hours plan for *' + hours[0].weekday + '* is:\n';
   output += hours.map(function (hour, id) {
-    return '#' + (id + 1) + '- *' + (0, _lodash.capitalize)(hour.weekday) + '* from *' + hour.start + '* to *' + hour.end + '*';
+    return '#' + (id + 1) + '- *' + (0, _lodash.capitalize)(hour.weekday) + '* from ' + (0, _utils.getClockEmoji)(hour.start) + (' *' + hour.start + '* to ' + (0, _utils.getClockEmoji)(hour.end) + ' *' + hour.end + '*');
   }).join('\n');
   return output;
 };

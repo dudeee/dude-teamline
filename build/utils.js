@@ -6,6 +6,8 @@ Object.defineProperty(exports, '__esModule', {
 
 var _this = this;
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
 exports.request = request;
 exports.factoriadic = factoriadic;
 exports.factorial = factorial;
@@ -13,6 +15,7 @@ exports.permutations = permutations;
 exports.fuzzy = fuzzy;
 exports.wait = wait;
 exports.getWeekday = getWeekday;
+exports.getClockEmoji = getClockEmoji;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -253,4 +256,44 @@ function wait(ms) {
 function getWeekday(id) {
   var weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
   return weekdays[id % 7];
+}
+
+/**
+ * Get the nearest clock emoji for slack
+ * @param  {Date|String} date = new Date(]
+ * @return {string} emoji string
+ */
+
+function getClockEmoji() {
+  var date = arguments.length <= 0 || arguments[0] === undefined ? new Date() : arguments[0];
+
+  try {
+    var timeRegex = /\d{2}:\d{2}:\d{2}/;
+    var input = undefined;
+    if (typeof date === 'string' && timeRegex.test(date.trim())) {
+      var _date$split = date.split(':');
+
+      var _date$split2 = _slicedToArray(_date$split, 2);
+
+      var _hours = _date$split2[0];
+      var _minutes = _date$split2[1];
+
+      input = new Date();
+      input.setHours(_hours);
+      input.setMinutes(_minutes);
+    } else if (date instanceof Date) {
+      input = date;
+    } else {
+      input = new Date(date);
+    }
+    if (!(input instanceof Date)) {
+      throw new TypeError();
+    }
+    var diff = input.getMinutes() % 30;
+    var hours = input.getHours() % 12;
+    var minutes = diff < 15 ? '' : '30';
+    return ':clock' + hours + minutes + ':';
+  } catch (e) {
+    throw new TypeError('input date should be a date object or a valid date string');
+  }
 }
