@@ -1,6 +1,6 @@
 {
   "name": "bolt-teamline",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "description": "Help employees to track their tasks and progress",
   "main": "build/index.js",
   "scripts": {

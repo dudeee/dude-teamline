@@ -22,15 +22,16 @@ var _moment2 = _interopRequireDefault(_moment);
 
 var _lodash = require('lodash');
 
+var DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a';
 var printRecesses = function printRecesses(recesses) {
   if (!recesses.length) {
-    return 'Oops! I get nothing to show! 😶';
+    return 'Oops! I got nothing to show! 😶';
   }
-  var output = ':skier: Your recesses list:\n\n';
+  var output = ':umbrella_on_ground: Your recesses list:\n\n';
   output += recesses.map(function (recess, id) {
     var startMoment = (0, _moment2['default'])(new Date(recess.start));
     var endMoment = (0, _moment2['default'])(new Date(recess.end));
-    return '#' + (id + 1) + ' - ' + ('for *' + _moment2['default'].duration(startMoment.diff(endMoment)).humanize() + '* ') + ('from *' + startMoment.format('dddd, MMMM Do YYYY, h:mm:ss a') + '* ') + ('to *' + endMoment.format('dddd, MMMM Do YYYY, h:mm:ss a') + '*\n') + ('Status: *' + (0, _lodash.capitalize)(recess.status) + '*\n');
+    return '#' + (id + 1) + ' - ' + ('for *' + _moment2['default'].duration(startMoment.diff(endMoment)).humanize() + '* ') + ('from *' + startMoment.format(DATE_FORMAT) + '* ') + ('to *' + endMoment.format(DATE_FORMAT) + '*\n') + ('Status: *' + (0, _lodash.capitalize)(recess.status) + '*\n');
   }).join('\n');
   return output;
 };
@@ -69,7 +70,7 @@ exports['default'] = function callee$0$0(bot, uri) {
                 startMoment = (0, _moment2['default'])(startDate);
                 endMoment = (0, _moment2['default'])(endDate);
 
-                message.reply('Your recess request for ' + ('*' + _moment2['default'].duration(startMoment.diff(endMoment)).humanize() + '* ') + ('from *' + startMoment.format('dddd, MMMM Do YYYY, h:mm:ss a') + '* ') + ('to *' + endMoment.format('dddd, MMMM Do YYYY, h:mm:ss a') + '* ') + 'has been submitted.\nI\'ll inform you about the result as soon as I get it. :speaker::+1:');
+                message.reply('Your recess request for ' + ('*' + _moment2['default'].duration(startMoment.diff(endMoment)).humanize() + '* ') + ('from *' + startMoment.format(DATE_FORMAT) + '* ') + ('to *' + endMoment.format(DATE_FORMAT) + '* ') + 'has been submitted.\nI\'ll inform you about the result as soon as I get it. :speaker::+1:');
 
               case 14:
               case 'end':
