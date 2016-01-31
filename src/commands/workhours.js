@@ -1,4 +1,4 @@
-import { request, findEmployee, getWeekday } from '../utils';
+import { request, findEmployee, getWeekday, getClockEmoji } from '../utils';
 import { capitalize } from 'lodash';
 
 
@@ -10,8 +10,8 @@ const printHours = hours => {
   ? ':timer_clock: Your working hours plan is:\n'
   : `:timer_clock: Your working hours plan for *${hours[0].weekday}* is:\n`;
   output += hours.map((hour, id) =>
-    `#${id + 1}- *${capitalize(hour.weekday)}* from *${hour.start}* to *${hour.end}*`).join('\n'
-  );
+    `#${id + 1}- *${capitalize(hour.weekday)}* from ${getClockEmoji(hour.start)}` +
+    ` *${hour.start}* to ${getClockEmoji(hour.end)} *${hour.end}*`).join('\n');
   return output;
 };
 

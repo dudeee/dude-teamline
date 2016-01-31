@@ -158,3 +158,34 @@ export function getWeekday(id) {
   const weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
   return weekdays[id % 7];
 }
+
+/**
+ * Get the nearest clock emoji for slack
+ * @param  {Date|String} date = new Date(]
+ * @return {string} emoji string
+ */
+export function getClockEmoji(date = new Date()) {
+  try {
+    const timeRegex = /\d{2}:\d{2}:\d{2}/;
+    let input;
+    if (typeof date === 'string' && timeRegex.test(date.trim())) {
+      const [hours, minutes] = date.split(':');
+      input = new Date();
+      input.setHours(hours);
+      input.setMinutes(minutes);
+    } else if (date instanceof Date) {
+      input = date;
+    } else {
+      input = new Date(date);
+    }
+    if (!(input instanceof Date)) {
+      throw new TypeError();
+    }
+    const diff = input.getMinutes() % 30;
+    const hours = input.getHours() % 12;
+    const minutes = (diff < 15) ? '' : '30';
+    return `:clock${hours}${minutes}:`;
+  } catch (e) {
+    throw new TypeError('input date should be a date object or a valid date string');
+  }
+}
