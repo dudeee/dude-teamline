@@ -1,8 +1,9 @@
 import { printList, findEmployee, request, fuzzy } from '../utils';
 import _ from 'lodash';
+import humanDate from 'date.js';
 
 export default async (bot, uri) => {
-  bot.listen(/my (\w+)\s?(\w+)?/i, async message => {
+  bot.command('my <char> [char]', async message => {
     let [type, scope] = message.match;
     type = type.toLowerCase();
     scope = scope || '';
@@ -17,12 +18,12 @@ export default async (bot, uri) => {
     }
 
     if (type === 'projects' || type === 'teams') {
-      const roles = await request('get', `${uri}/employee/${employee.id}/roles`);
+      const roles = await request('get', `${uri}/employee/${employee.id}/roles`
+                                       + `?include=Project`);
 
       if (type === 'projects') {
-        items = await* roles.map(role =>
-          request('get', `${uri}/role/${role.id}/project/${scope}`)
-        );
+        const projects = _.filter(roles.map(role => role.Project));
+        items = _.uniqWith(projects, _.isEqual);
       }
       if (type === 'teams') {
         items = await* roles.map(role =>
@@ -36,7 +37,7 @@ export default async (bot, uri) => {
     message.reply(printList(items));
   });
 
-  bot.listen(/all (\w+)\s?(\w+)?/i, async message => {
+  bot.command('all <char> [char]', async message => {
     let [type, scope] = message.match;
     type = type.toLowerCase();
     scope = scope || '';
@@ -47,10 +48,31 @@ export default async (bot, uri) => {
     message.reply(printList(list));
   });
 
-  const listTodos = async (message) => {
-    const [user] = message.match;
+  bot.command('todo [char] [string]', async (message) => {
+    let [user, date] = message.match; // eslint-disable-line
+
+    if (user === 'myself' || user === 'me') {
+      user = null;
+    } else {
+      user = user.slice(1);
+    }
+
+    const from = humanDate(date);
+    from.setHours(0);
+    from.setMinutes(0);
+    from.setSeconds(0);
+    const to = new Date(from);
+    to.setDate(to.getDate() + 1);
+
     const employee = await findEmployee(uri, bot, user ? { user } : message);
-    const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
+
+    const dateQuery = JSON.stringify({
+      $gte: +from,
+      $lte: +to
+    });
+    const query = `date=${dateQuery}&include=Project`;
+    const url = `${uri}/employee/${employee.id}/actions?${query}`;
+
     const actions = await request('get', url);
 
     // const sentences = ['Your todo list is empty! ✌️',
@@ -59,22 +81,12 @@ export default async (bot, uri) => {
     //                    'Surprise! Nothing to do! ⛱'];
     // const congrats = bot.random(sentences)
 
-    // let reply = await* actions.map(async action => {
-    //   let project = await request('get', `${uri}/action/${action.id}/project`);
-    //
-    //   if (!project || !action) return Promise.resolve();
-    //
-    //   return `${project.name} > ${action.name}`;
-    // });
-
-    // reply = reply.filter(a => a);
-
     const placeholder = user ? 'His' : 'Your';
     message.reply(printList(actions, `${placeholder} todo list is empty! 😌`));
-  };
+  });
 
   const MIN_SIMILARITY = 0.8;
-  const setTodos = async (message, update) => {
+  bot.listen(/(todo?)\s*(?:.*)>(?:.*)/igm, async message => {
     const projects = await request('get', `${uri}/projects`);
     const projectNames = projects.map(project => project.name);
 
@@ -97,6 +109,7 @@ export default async (bot, uri) => {
       projectNames.push(project);
       return [project, action, true];
     });
+
 
     const employee = await findEmployee(uri, bot, message);
     await* actions.map(async ([project, action, create]) => {
@@ -130,8 +143,6 @@ export default async (bot, uri) => {
       return ac;
     });
 
-    if (update) return;
-
     // const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
     // message.reply(reply);
 
@@ -147,20 +158,16 @@ export default async (bot, uri) => {
     const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
 
     bot.sendMessage('actions', `${name}\n${list}`);
-  };
+  });
 
-  bot.listen(/(?:todo(?:s)?\s?(?:<@)?([^>]*)?>?)$/i, listTodos);
-
-  bot.listen(/todo(?:s)? clear/i, async message => {
+  bot.command('todo clear', async message => {
     const employee = await findEmployee(uri, bot, message);
     await request('delete', `${uri}/employee/${employee.id}/actions/today`);
 
     message.reply('Cleared your actions for today.');
   });
 
-  bot.listen(/(todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
-
-  bot.listen(/todo remove (\d+)/i, async message => {
+  bot.command('todo remove <number>', async message => {
     let [index] = message.match;
     index = parseInt(index, 10) - 1;
 

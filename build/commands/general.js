@@ -16,15 +16,19 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _dateJs = require('date.js');
+
+var _dateJs2 = _interopRequireDefault(_dateJs);
+
 exports['default'] = function callee$0$0(bot, uri) {
-  var listTodos, MIN_SIMILARITY, setTodos;
+  var MIN_SIMILARITY;
   return regeneratorRuntime.async(function callee$0$0$(context$1$0) {
     var _this = this;
 
     while (1) switch (context$1$0.prev = context$1$0.next) {
       case 0:
-        bot.listen(/my (\w+)\s?(\w+)?/i, function callee$1$0(message) {
-          var _message$match, type, scope, employee, items, roles;
+        bot.command('my <char> [char]', function callee$1$0(message) {
+          var _message$match, type, scope, employee, items, roles, projects;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
@@ -57,59 +61,53 @@ exports['default'] = function callee$0$0(bot, uri) {
 
               case 14:
                 if (!(type === 'projects' || type === 'teams')) {
-                  context$2$0.next = 27;
+                  context$2$0.next = 24;
                   break;
                 }
 
                 context$2$0.next = 17;
-                return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee/' + employee.id + '/roles'));
+                return regeneratorRuntime.awrap((0, _utils.request)('get', uri + '/employee/' + employee.id + '/roles' + '?include=Project'));
 
               case 17:
                 roles = context$2$0.sent;
 
-                if (!(type === 'projects')) {
-                  context$2$0.next = 22;
-                  break;
+                if (type === 'projects') {
+                  projects = _lodash2['default'].filter(roles.map(function (role) {
+                    return role.Project;
+                  }));
+
+                  items = _lodash2['default'].uniqWith(projects, _lodash2['default'].isEqual);
                 }
 
-                context$2$0.next = 21;
-                return regeneratorRuntime.awrap(Promise.all(roles.map(function (role) {
-                  return (0, _utils.request)('get', uri + '/role/' + role.id + '/project/' + scope);
-                })));
-
-              case 21:
-                items = context$2$0.sent;
-
-              case 22:
                 if (!(type === 'teams')) {
-                  context$2$0.next = 26;
+                  context$2$0.next = 23;
                   break;
                 }
 
-                context$2$0.next = 25;
+                context$2$0.next = 22;
                 return regeneratorRuntime.awrap(Promise.all(roles.map(function (role) {
                   return (0, _utils.request)('get', uri + '/role/' + role.id + '/team');
                 })));
 
-              case 25:
+              case 22:
                 items = context$2$0.sent;
 
-              case 26:
+              case 23:
 
                 items = _lodash2['default'].flatten(items);
 
-              case 27:
+              case 24:
 
                 message.reply((0, _utils.printList)(items));
 
-              case 28:
+              case 25:
               case 'end':
                 return context$2$0.stop();
             }
           }, null, _this);
         });
 
-        bot.listen(/all (\w+)\s?(\w+)?/i, function callee$1$0(message) {
+        bot.command('all <char> [char]', function callee$1$0(message) {
           var _message$match2, type, scope, list;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
@@ -138,42 +136,65 @@ exports['default'] = function callee$0$0(bot, uri) {
           }, null, _this);
         });
 
-        listTodos = function listTodos(message) {
-          var _message$match3, user, employee, url, actions, placeholder;
+        bot.command('todo [char] [string]', function callee$1$0(message) {
+          var _message$match3, user, date, from, to, employee, dateQuery, query, url, actions, placeholder;
 
-          return regeneratorRuntime.async(function listTodos$(context$2$0) {
+          return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
               case 0:
-                _message$match3 = _slicedToArray(message.match, 1);
+                _message$match3 = _slicedToArray(message.match, 2);
                 user = _message$match3[0];
-                context$2$0.next = 4;
+                date = _message$match3[1];
+                // eslint-disable-line
+
+                if (user === 'myself' || user === 'me') {
+                  user = null;
+                } else {
+                  user = user.slice(1);
+                }
+
+                from = (0, _dateJs2['default'])(date);
+
+                from.setHours(0);
+                from.setMinutes(0);
+                from.setSeconds(0);
+                to = new Date(from);
+
+                to.setDate(to.getDate() + 1);
+
+                context$2$0.next = 12;
                 return regeneratorRuntime.awrap((0, _utils.findEmployee)(uri, bot, user ? { user: user } : message));
 
-              case 4:
+              case 12:
                 employee = context$2$0.sent;
-                url = uri + '/employee/' + employee.id + '/actions/today?include=Project';
-                context$2$0.next = 8;
+                dateQuery = JSON.stringify({
+                  $gte: +from,
+                  $lte: +to
+                });
+                query = 'date=' + dateQuery + '&include=Project';
+                url = uri + '/employee/' + employee.id + '/actions?' + query;
+                context$2$0.next = 18;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', url));
 
-              case 8:
+              case 18:
                 actions = context$2$0.sent;
                 placeholder = user ? 'His' : 'Your';
 
                 message.reply((0, _utils.printList)(actions, placeholder + ' todo list is empty! 😌'));
 
-              case 11:
+              case 21:
               case 'end':
                 return context$2$0.stop();
             }
           }, null, _this);
-        };
+        });
 
         MIN_SIMILARITY = 0.8;
 
-        setTodos = function setTodos(message, update) {
+        bot.listen(/(todo?)\s*(?:.*)>(?:.*)/igm, function callee$1$0(message) {
           var projects, projectNames, _message$match4, cmd, actions, employee, url, allActions, list, d, name;
 
-          return regeneratorRuntime.async(function setTodos$(context$2$0) {
+          return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             var _this2 = this;
 
             while (1) switch (context$2$0.prev = context$2$0.next) {
@@ -290,19 +311,11 @@ exports['default'] = function callee$0$0(bot, uri) {
                 })));
 
               case 12:
-                if (!update) {
-                  context$2$0.next = 14;
-                  break;
-                }
-
-                return context$2$0.abrupt('return');
-
-              case 14:
                 url = uri + '/employee/' + employee.id + '/actions/today?include=Project';
-                context$2$0.next = 17;
+                context$2$0.next = 15;
                 return regeneratorRuntime.awrap((0, _utils.request)('get', url));
 
-              case 17:
+              case 15:
                 allActions = context$2$0.sent;
                 list = (0, _utils.printList)(allActions);
 
@@ -311,27 +324,25 @@ exports['default'] = function callee$0$0(bot, uri) {
                 d = new Date();
 
                 if (!(d.getHours() < 10)) {
-                  context$2$0.next = 23;
+                  context$2$0.next = 21;
                   break;
                 }
 
                 return context$2$0.abrupt('return');
 
-              case 23:
+              case 21:
                 name = '@' + employee.username + ' – ' + employee.firstname + ' ' + employee.lastname;
 
                 bot.sendMessage('actions', name + '\n' + list);
 
-              case 25:
+              case 23:
               case 'end':
                 return context$2$0.stop();
             }
           }, null, _this);
-        };
+        });
 
-        bot.listen(/(?:todo(?:s)?\s?(?:<@)?([^>]*)?>?)$/i, listTodos);
-
-        bot.listen(/todo(?:s)? clear/i, function callee$1$0(message) {
+        bot.command('todo clear', function callee$1$0(message) {
           var employee;
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
             while (1) switch (context$2$0.prev = context$2$0.next) {
@@ -355,9 +366,7 @@ exports['default'] = function callee$0$0(bot, uri) {
           }, null, _this);
         });
 
-        bot.listen(/(todo(?:s)?) (?:.*)>(?:.*)/i, setTodos);
-
-        bot.listen(/todo remove (\d+)/i, function callee$1$0(message) {
+        bot.command('todo remove <number>', function callee$1$0(message) {
           var _message$match5, index, employee, actions, action;
 
           return regeneratorRuntime.async(function callee$1$0$(context$2$0) {
@@ -419,7 +428,7 @@ exports['default'] = function callee$0$0(bot, uri) {
         //   message.reply(`Marked #${action.id} as undone.`);
         // });
 
-      case 9:
+      case 7:
       case 'end':
         return context$1$0.stop();
     }
@@ -433,16 +442,6 @@ module.exports = exports['default'];
 //                    'You know what? You\'re amazing! Your list is empty! 😎',
 //                    'Surprise! Nothing to do! ⛱'];
 // const congrats = bot.random(sentences)
-
-// let reply = await* actions.map(async action => {
-//   let project = await request('get', `${uri}/action/${action.id}/project`);
-//
-//   if (!project || !action) return Promise.resolve();
-//
-//   return `${project.name} > ${action.name}`;
-// });
-
-// reply = reply.filter(a => a);
 
 // let employeeRoles = await request('get', `${uri}/employee/${employee.id}/roles`);
 // let projectRoles = await request('get', `${uri}/project/${pr.id}/roles`);
