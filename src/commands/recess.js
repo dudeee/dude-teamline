@@ -46,7 +46,7 @@ export default async (bot, uri) => {
 I'll inform you about the result as soon as I get it. :speaker::+1:`);
   });
 
-  bot.listen(/^(?:recess|recesses)$/i, async message => {
+  bot.command('^recess$', async message => {
     const employee = await findEmployee(uri, bot, message);
     const recesses = await request('get', `${uri}/employee/${employee.id}/recesses`);
     message.reply(printRecesses(recesses));
