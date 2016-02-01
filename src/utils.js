@@ -150,13 +150,20 @@ export function wait(ms) {
 }
 
 /**
- * Get weekday name by it's id
- * @param  {number} id weekday id (originally, 0 to 6)
+ * Get weekday name by it's id or by date instance
+ * @param  {number|Date} day weekday id (originally, 0 to 6) or a Date instance
  * @return {string} weekday name
  */
-export function getWeekday(id) {
+export function getWeekday(day) {
+  let dayNumber = day;
+  if (dayNumber instanceof Date) {
+    dayNumber = dayNumber.getDay();
+  }
+  if (typeof dayNumber !== 'number') {
+    throw new TypeError('the day ');
+  }
   const weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-  return weekdays[id % 7];
+  return weekdays[dayNumber % 7];
 }
 
 /**
