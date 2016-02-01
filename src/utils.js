@@ -164,7 +164,7 @@ export function getWeekday(id) {
  * @param  {Date|String} date = new Date(]
  * @return {string} emoji string
  */
-export function getClockEmoji(date = new Date()) {
+export function clockEmoji(date = new Date()) {
   try {
     const timeRegex = /\d{2}:\d{2}:\d{2}/;
     let input;
