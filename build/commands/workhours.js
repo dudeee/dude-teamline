@@ -14,7 +14,7 @@ var _lodash = require('lodash');
 
 var printHours = function printHours(hours) {
   if (!hours.length) {
-    return 'Oops! I get nothing to show! 😶';
+    return 'Oops! I got nothing to show! 😶';
   }
   var output = hours.length > 1 ? ':timer_clock: Your working hours plan is:\n' : ':timer_clock: Your working hours plan for *' + hours[0].weekday + '* is:\n';
   output += hours.map(function (hour, id) {

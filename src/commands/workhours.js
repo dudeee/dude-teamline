@@ -4,7 +4,7 @@ import { capitalize } from 'lodash';
 
 const printHours = hours => {
   if (!hours.length) {
-    return 'Oops! I get nothing to show! 😶';
+    return 'Oops! I got nothing to show! 😶';
   }
   let output = (hours.length > 1)
   ? ':timer_clock: Your working hours plan is:\n'
