@@ -1,6 +1,6 @@
 {
   "name": "bolt-teamline",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Help employees to track their tasks and progress",
   "main": "build/index.js",
   "scripts": {
@@ -33,7 +33,7 @@
     "eslint-config-airbnb": "4.0.0",
     "lodash": "4.0.0",
     "moment": "2.11.1",
-    "teamline": "0.4.1",
+    "teamline": "0.4.4",
     "unirest": "0.4.2"
   }
 }
