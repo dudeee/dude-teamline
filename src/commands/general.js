@@ -92,11 +92,11 @@ export default async (bot, uri) => {
 
     const [cmd] = message.match;
 
-    const actions = message.text
-    .slice(cmd.length + message.text.indexOf(cmd))
+    const actions = message.preformatted
+    .slice(cmd.length + message.preformatted.indexOf(cmd))
     .split('\n')
     .filter(a => a) // filter out empty lines
-    .map(a => a.split('&gt;'))
+    .map(a => a.split('>'))
     .map(([project, action]) => [project.trim(), action.trim()])
     .filter(([project, action]) => project && action)
     // Find the most similar project name available, we don't want to bug the user
@@ -110,9 +110,8 @@ export default async (bot, uri) => {
       return [project, action, true];
     });
 
-
     const employee = await findEmployee(uri, bot, message);
-    await* actions.map(async ([project, action, create]) => {
+    for (const [project, action, create] of actions) {
       let pr;
 
       if (create) {
@@ -123,25 +122,12 @@ export default async (bot, uri) => {
 
       const ac = await request('post', `${uri}/employee/${employee.id}/action`,
                                null, { name: action });
-      if (!pr) pr = await request('get', `${uri}/project?name=${project}`);
+      const encodedProject = encodeURIComponent(project);
+      if (!pr) pr = await request('get', `${uri}/project?name=${encodedProject}`);
       await request('get', `${uri}/associate/action/${ac.id}/project/${pr.id}`);
-      // let employeeRoles = await request('get', `${uri}/employee/${employee.id}/roles`);
-      // let projectRoles = await request('get', `${uri}/project/${pr.id}/roles`);
-      //
-      // let roles = _.intersectionBy(employeeRoles, projectRoles, 'id');
 
-      // if (!roles.length) {
-      //   let roleNames = projectRoles.map(p => p.name);
-      //   const user = bot.find(message.user);
-      //   let [index] = await bot.ask(user.name,
-      //              `What's your role in project *${pr.name}*?`, roleNames);
-      //   let { id } = projectRoles[index];
-      //
-      //   await request('get', `${uri}/associate/role/${id}/employee/${employee.id}`);
-      // }
-
-      return ac;
-    });
+      // await request('get', `${uri}/associate/project/${pr.id}/employee/${employee.id}`);
+    }
 
     // const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
     // message.reply(reply);
