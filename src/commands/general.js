@@ -75,22 +75,18 @@ export default async (bot, uri) => {
 
     const actions = await request('get', url);
 
-    // const sentences = ['Your todo list is empty! ✌️',
-    //                    'Woohoo! Your todo list is empty! 🎈',
-    //                    'You know what? You\'re amazing! Your list is empty! 😎',
-    //                    'Surprise! Nothing to do! ⛱'];
-    // const congrats = bot.random(sentences)
-
     const placeholder = user ? 'His' : 'Your';
     message.reply(printList(actions, `${placeholder} todo list is empty! 😌`));
   });
 
   const MIN_SIMILARITY = 0.8;
-  bot.listen(/(todo?)\s*(?:.*)>(?:.*)/igm, async message => {
+  bot.command('<todo> [string] > [string]', async message => {
     const projects = await request('get', `${uri}/projects`);
     const projectNames = projects.map(project => project.name);
 
     const [cmd] = message.match;
+
+    if (!cmd) return;
 
     const actions = message.preformatted
     .slice(cmd.length + message.preformatted.indexOf(cmd))
