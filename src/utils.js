@@ -19,6 +19,7 @@ export const printList = (list, empty = 'Nothing to show 😶') => {
     // let mark = typeof item.done === 'undefined' ? '' :
     //                   item.done ? '✅' : '❎';
     const name = item.name || (`${item.firstname} ${item.lastname}`);
+
     if (item.Project) {
       return `${index + 1}. *${item.Project.name}* > ${name}`;
     }
