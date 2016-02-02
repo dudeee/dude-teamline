@@ -157,7 +157,10 @@ export default async (bot, uri) => {
 
     const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
 
-    bot.sendMessage('actions', `${name}\n${list}`);
+    bot.sendMessage('actions', `${name}\n${list}`, {
+      websocket: false,
+      parse: 'full'
+    });
   });
 
   bot.command('todo clear', async message => {
