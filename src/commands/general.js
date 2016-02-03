@@ -2,87 +2,95 @@ import { printList, findEmployee, request, fuzzy } from '../utils';
 import humanDate from 'date.js';
 
 export default async (bot, uri) => {
-  bot.command('my <char> [char]', async message => {
-    let [type, scope] = message.match;
-    type = type.toLowerCase();
-    scope = scope || '';
-
-    const employee = await findEmployee(uri, bot, message);
-
-    let items;
-
-    if (type === 'actions') {
-      scope += '?include=Project';
-    }
-
-    items = await request('get', `${uri}/employee/${employee.id}/${type}/${scope}`);
-
-    message.reply(printList(items));
-  });
-
   bot.command('list <char> <char>', async message => {
     let [user, type] = message.match; // eslint-disable-line
     let employee;
 
     if (user[0] === '@') {
       const username = user.slice(1);
-      employee = await request('get', `${uri}/employee?name=${username}`);
+      employee = await request('get', `${uri}/employee?username=${username}`);
     } else if (user === 'myself' || user === 'my' || user === 'me') {
       employee = await findEmployee(uri, bot, message);
+    } else {
+      user = null;
     }
 
-    let query = '';
+    let query = '?';
 
     switch (type) {
       case 'projects':
         type = 'teams';
-        query = 'include=Project';
+        query = '?include=Project';
         break;
       case 'actions':
         type = 'projects';
-        query = 'include=Action';
+        query = '?include=Action';
         break;
       case 'teams':
-        query = 'include=Employee';
+        query = '?include=Employee';
         break;
       default: break;
     }
 
-    const list = await request('get', `${uri}/employee/${employee.id}/${type}/${query}`);
+    const list = user ? await request('get', `${uri}/employee/${employee.id}/${type}${query}`)
+                      : await request('get', `${uri}/${type}${query}`);
 
     if (!list.length) {
-      return message.reply('Nothing to show 😶.');
+      return message.reply('Nothing to show 😶');
     }
 
     if (type === 'projects') {
       const reply = list.map(item => {
-        const project = `*${item.name}*`;
+        const project = `*${item.name}* (${item.Actions.length} actions)`;
 
-        const actions = item.Actions.map(action => `- ${action.name}`).join('\n');
+        const actions = item.Actions.filter(action =>
+          employee ? action.EmployeeId === employee.id : true
+        )
+        .map(action =>
+          `    · ${action.name}`
+        ).join('\n');
 
-        return `${project}\n${actions}`;
-      }).join('\n');
+        return `･ ${project}\n${actions}`;
+      }).join('\n\n');
 
-      message.reply(reply);
+      return message.reply(reply);
     }
 
     if (type === 'teams') {
       const reply = list.map(item => {
-        const team = `*${item.name}*`;
+        const relation = item.Employees || item.Projects;
+        const relationName = item.Employees ? 'employees' : 'projects';
 
-        const subs = (item.Employees || item.Projects)
-                      .map(emp => `- ${emp.name}`).join('\n');
+        const team = `*${item.name}* (${relation.length} ${relationName})`;
 
-        return `${team}\n${subs}`;
-      }).join('\n');
+        let subs = '';
+        if (item.Employees) {
+          subs = item.Employees.map(emp =>
+            `    · @${emp.username} – ${emp.firstname} ${emp.lastname}`
+          ).join('\n');
+        }
+        if (item.Projects) {
+          subs = item.Projects.map(emp =>
+            `    · ${emp.name}`
+          ).join('\n');
+        }
 
-      message.reply(reply);
+        return `･ ${team}\n${subs}`;
+      }).join('\n\n');
+
+      return message.reply(reply);
     }
 
-    message.reply(printList(list));
+    if (type === 'employees') {
+      const reply = list.map(item =>
+        `@${item.username} – ${item.firstname} ${item.lastname}`
+      ).join('\n');
+
+      return message.reply(reply);
+    }
   });
 
-  bot.listen(/actions\s*(\S*)\s*([^-,]*)?\s*(?:-|,)?\s*(.*)?/gi, async message => {
+  bot.listen(/^actions\s*(\S*)\s*([^-,]*)?\s*(?:-|,)?\s*(.*)?/gi, async message => {
     let [user, from, to] = message.match; // eslint-disable-line
     if (from) from = from.trim();
     if (to) to = to.trim();
@@ -122,9 +130,13 @@ export default async (bot, uri) => {
   });
 
   const publishActions = bot.config.teamline.schedules['publish-actions'];
-  const MIN_SIMILARITY = 0.8;
-  bot.command('<actions> [string] > [string][>][string]', async message => {
-    const projects = await request('get', `${uri}/projects?include=Team`);
+  const MIN_SIMILARITY = 0.9;
+
+  const DUPLICATE = 303;
+  const NOT_FOUND = 404;
+  const NEW = 200;
+  bot.command('^<actions> [string] > [string][>][string]', async message => {
+    const projects = await request('get', `${uri}/projects`);
     const projectNames = projects.map(project => project.name);
 
     const [cmd] = message.match;
@@ -147,24 +159,50 @@ export default async (bot, uri) => {
       // } else {
       //   projectNames = projects.map(item => item.name);
       // }
+      const plus = project.startsWith('+');
+      if (plus) {
+        project = project.slice(1);
+      }
 
       const [distance, index] = fuzzy(project, projectNames);
+      if (distance > MIN_SIMILARITY) {
+        if (plus) {
+          return [projectNames[index], action, DUPLICATE];
+        }
 
-      if (distance > MIN_SIMILARITY) return [projectNames[index], action];
+        return [projectNames[index], action];
+      }
 
-      // last parameter indicates we have to create the project
-      projectNames.push(project);
-      return [project, action, true];
+      if (plus) {
+        projectNames.push(project);
+        return [project, action, NEW];
+      }
+
+      return [project, action, NOT_FOUND];
     });
 
     const employee = await findEmployee(uri, bot, message);
-    for (const [project, action, create] of actions) {
+
+    let statusMessage = '✅ Submitted your actions successfuly!';
+
+    for (const [project, action, status] of actions) {
       let pr;
 
-      if (create) {
-        pr = await request('post', `${uri}/project`, null, {
-          name: project
-        });
+      switch (status) {
+        case DUPLICATE:
+          statusMessage = `⚠️ Project *${project}* already exists. I assumed you `
+                        + `meant to add to the already existing project.`;
+          break;
+        case NOT_FOUND:
+          statusMessage = `❓ Project *${project}* doesn't exist, did you mean to`
+                        + ` create the project using \`+${project} > ${action}\` ?`;
+          continue;
+        case NEW:
+          pr = await request('post', `${uri}/project`, null, {
+            name: project
+          });
+          break;
+        default: break;
       }
 
       const ac = await request('post', `${uri}/employee/${employee.id}/action`,
@@ -176,14 +214,11 @@ export default async (bot, uri) => {
       await request('get', `${uri}/associate/project/${pr.id}/employee/${employee.id}`);
     }
 
-    // const reply = bot.random('Thank you! 🙏', 'Good luck! ✌️', 'Thanks, have a nice day! 👍');
-    // message.reply(reply);
-
     const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
     const allActions = await request('get', url);
     const list = printList(allActions);
 
-    message.reply(list);
+    message.reply(`${statusMessage}\n\n${list}`);
 
     const d = new Date();
     const [h, m] = publishActions.split(':');
