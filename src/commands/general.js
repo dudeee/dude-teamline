@@ -91,6 +91,8 @@ export default async (bot, uri) => {
   });
 
   bot.listen(/^actions\s*(\S*)\s*([^-,]*)?\s*(?:-|,)?\s*(.*)?/gi, async message => {
+    if (message.preformatted.includes('>')) return;
+
     let [user, from, to] = message.match; // eslint-disable-line
     if (from) from = from.trim();
     if (to) to = to.trim();
@@ -135,7 +137,7 @@ export default async (bot, uri) => {
   const DUPLICATE = 303;
   const NOT_FOUND = 404;
   const NEW = 200;
-  bot.command('^<actions> [string] > [string][>][string]', async message => {
+  bot.command('^<actions> [string] > [string]', async message => {
     const projects = await request('get', `${uri}/projects`);
     const projectNames = projects.map(project => project.name);
 
@@ -150,7 +152,6 @@ export default async (bot, uri) => {
     .map(a => a.split('>'))
     .map(([project = '', action = '']) => [project.trim(), action.trim()])
     .filter(([project = '', action = '']) => project && action)
-    // Find the most similar project name available, we don't want to bug the user
     .map(([project, action]) => {
       // let projectNames;
       // if (team) {
@@ -164,6 +165,7 @@ export default async (bot, uri) => {
         project = project.slice(1);
       }
 
+    // Find the most similar project name available, we don't want to bug the user
       const [distance, index] = fuzzy(project, projectNames);
       if (distance > MIN_SIMILARITY) {
         if (plus) {
