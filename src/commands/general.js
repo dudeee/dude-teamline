@@ -121,6 +121,7 @@ export default async (bot, uri) => {
     message.reply(printList(actions, `${placeholder} action list is empty! 😌`));
   });
 
+  const publishActions = bot.config.teamline.schedules['publish-actions'];
   const MIN_SIMILARITY = 0.8;
   bot.command('<actions> [string] > [string][>][string]', async message => {
     const projects = await request('get', `${uri}/projects?include=Team`);
@@ -185,7 +186,8 @@ export default async (bot, uri) => {
     message.reply(list);
 
     const d = new Date();
-    if (d.getHours() < 10) return;
+    const [h, m] = publishActions.split(':');
+    if (d.getHours() < +h || d.getMinutes() < +m) return;
 
     const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
 
