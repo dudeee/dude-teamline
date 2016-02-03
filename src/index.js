@@ -119,6 +119,7 @@ export default async bot => {
 \`actions [project] > [action]\` – set your actions for today, separate actions by line breaks
 \`actions clear\` – clear your actions for today
 \`actions remove <id>\` – remove the specified action
+\`list [@username | my | all] [model]\` – list entities of one's or all employees/actions/projects/teams
 `);
   /*eslint-enable */
 
