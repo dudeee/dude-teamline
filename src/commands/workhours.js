@@ -47,7 +47,6 @@ const setEmployeeWorkhours = async (uri, userId, dayWorkhours) => {
 export default async (bot, uri) => {
   bot.listen(/(?:workhours?|wh)\s?(?!.*\b(set)\b)(.+)?/i, async message => {
     const [, time] = message.match;
-    console.log(message.match);
     const employee = await findEmployee(uri, bot, message);
 
     let workHours;
