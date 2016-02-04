@@ -41,7 +41,6 @@ export default async bot => {
       const a = await request('get', `${uri}/employee/${emp.id}/actions/today`);
       if (a.length) continue;
 
-      if (user.name !== 'mahdi' && user.name !== 'guy') continue;
       bot.sendMessage(user.name, 'Hey! What are you going to do today? 😃');
       await wait(RATE_LIMIT);
     }
