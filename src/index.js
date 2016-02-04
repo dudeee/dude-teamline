@@ -4,17 +4,17 @@ import sync from './sync-users';
 import _ from 'lodash';
 import commands from './commands';
 
-const timezone = 'Asia/Tehran';
-
 const DEFAULT = {
   schedules: {
-    'ask-for-actions': '9:30',
-    'publish-actions': '10:00'
+    'ask-for-actions': '9:30am',
+    'publish-actions': '10:00am'
   }
 };
 
 export default async bot => {
   _.defaults(bot.config.teamline, DEFAULT);
+  const config = bot.config.teamline;
+  const { schedules } = config;
 
   const server = await teamline(bot.config.teamline);
   const uri = server.info.uri + (_.get(bot, 'config.teamline.crud.prefix') || '');
@@ -25,11 +25,11 @@ export default async bot => {
     bot.log.error(e);
   }
 
-  const askForActions = bot.config.teamline.schedules['ask-for-actions'];
+  const askForActions = schedules['ask-for-actions'].split(':').map(Number.parseFloat);
   bot.agenda.define('ask-for-actions', async (job, done) => {
     const d = new Date();
-    const [h, m] = askForActions.split(':');
-    if (d.getHours() !== +h || d.getMinutes() !== +m) return;
+    const [h, m] = askForActions;
+    if (d.getHours() !== h || d.getMinutes() !== m) return done();
 
     const users = bot.users;
 
@@ -48,11 +48,11 @@ export default async bot => {
     done();
   });
 
-  const publishActions = bot.config.teamline.schedules['publish-actions'];
+  const publishActions = schedules['publish-actions'].split(':').map(Number.parseFloat);
   bot.agenda.define('publish-actions', async (job, done) => {
     const d = new Date();
-    const [h, m] = publishActions.split(':');
-    if (d.getHours() !== +h || d.getMinutes() !== +m) return;
+    const [h, m] = publishActions;
+    if (d.getHours() !== h || d.getMinutes() !== m) return;
 
     const users = bot.users;
 
@@ -80,17 +80,17 @@ export default async bot => {
     done();
   });
 
-  const job = bot.agenda.create('ask-for-actions', {
-    repeatTimezone: timezone
-  });
-  job.repeatAt(askForActions);
-  job.save();
+  try {
+    const job = bot.agenda.create('ask-for-actions');
+    job.repeatAt(schedules['ask-for-actions']);
+    job.save();
 
-  const publishJob = bot.agenda.create('publish-actions', {
-    repeatTimezone: timezone
-  });
-  publishJob.repeatAt(publishActions);
-  publishJob.save();
+    const publishJob = bot.agenda.create('publish-actions');
+    publishJob.repeatAt(schedules['publish-actions']);
+    publishJob.save();
+  } catch (e) {
+    bot.log.error('[teamline] error scheduling ask-for-actions and publish-actions', e);
+  }
 
   /*
   teamline add \`(project)\` \`task\` – add a new action for the corresponding project
