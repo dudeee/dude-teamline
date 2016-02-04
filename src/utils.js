@@ -189,8 +189,10 @@ export function clockEmoji(date = new Date()) {
     if (!(input instanceof Date)) {
       throw new TypeError();
     }
-    const diff = input.getMinutes() % 30;
-    const hours = input.getHours() % 12;
+    const diff = (input.getMinutes() > 15 && input.getMinutes() < 45)
+    ? 30
+    : input.getMinutes() % 30;
+    const hours = (input.getHours() !== 12) ? input.getHours() % 12 : 12;
     const minutes = (diff < 15) ? '' : '30';
     return `:clock${hours}${minutes}:`;
   } catch (e) {
