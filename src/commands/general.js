@@ -66,6 +66,7 @@ export default async (bot, uri) => {
     if (type === 'roles') {
       const teams = list.reduce((map, item) => {
         const team = item.Teams[0];
+        if (!team) return map;
 
         if (!map[team.name]) {
           map[team.name] = [item];
