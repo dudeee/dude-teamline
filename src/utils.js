@@ -1,8 +1,11 @@
 import unirest from 'unirest';
 
+
 export async function request(...args) {
   return new Promise((resolve, reject) => {
-    unirest(...args).end(response => {
+    unirest(...args).query({
+      [this.config.teamline.auth.key]: this.config.teamline.token
+    }).end(response => {
       if (response.error) reject(response.error);
 
       resolve(response.body);
