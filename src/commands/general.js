@@ -2,9 +2,11 @@ import { printList, findEmployee, request, fuzzy } from '../utils';
 import humanDate from 'date.js';
 
 export default async (bot, uri) => {
-  bot.command('list <char> <char>', async message => {
-    let [user, type] = message.match; // eslint-disable-line
+  bot.command('list <char> <char> [char]', async message => {
+    let [user, type, state] = message.match; // eslint-disable-line
     let employee;
+
+    state = state || '';
 
     if (user[0] === '@') {
       const username = user.slice(1);
@@ -20,14 +22,17 @@ export default async (bot, uri) => {
     switch (type) {
       case 'projects':
         type = 'teams';
-        query = '?include=Project';
+        query = `?include=Project`;
         break;
       case 'actions':
         type = 'projects';
-        query = '?include=Action';
+        query = `?include=Action`;
         break;
       case 'teams':
-        query = '?include=Employee';
+        query = `?include=Employee`;
+        break;
+      case 'roles':
+        query = `?include=Team`;
         break;
       default: break;
     }
@@ -43,6 +48,8 @@ export default async (bot, uri) => {
       const reply = list.map(item => {
         const project = `*${item.name}* (${item.Actions.length} actions)`;
 
+        if (!item.Actions.length) return '';
+
         const actions = item.Actions.filter(action =>
           employee ? action.EmployeeId === employee.id : true
         )
@@ -56,10 +63,40 @@ export default async (bot, uri) => {
       return message.reply(reply);
     }
 
+    if (type === 'roles') {
+      const teams = list.reduce((map, item) => {
+        const team = item.Teams[0];
+
+        if (!map[team.name]) {
+          map[team.name] = [item];
+        } else {
+          map[team.name].push(item);
+        }
+
+        return map;
+      }, {});
+
+      const reply = Object.keys(teams).map(key => {
+        const team = teams[key];
+
+        const head = `*${key}* (${team.length} roles)`;
+
+        const sub = team.map(role =>
+          `    · ${role.name}`
+        ).join('\n');
+
+        return `･ ${head}\n${sub}`;
+      }).join('\n\n');
+
+      return message.reply(reply);
+    }
+
     if (type === 'teams') {
       const reply = list.map(item => {
-        const relation = item.Employees || item.Projects;
+        const relation = item.Employees || item.Projects || item.Roles;
         const relationName = item.Employees ? 'employees' : 'projects';
+
+        if (!relation.length) return '';
 
         const team = `*${item.name}* (${relation.length} ${relationName})`;
 
@@ -70,7 +107,7 @@ export default async (bot, uri) => {
           ).join('\n');
         }
         if (item.Projects) {
-          subs = item.Projects.map(emp =>
+          subs = (item.Projects || item.Roles).map(emp =>
             `    · ${emp.name}`
           ).join('\n');
         }
@@ -124,8 +161,12 @@ export default async (bot, uri) => {
     });
     const query = `date=${dateQuery}&include=Project`;
     const url = `${uri}/employee/${employee.id}/actions?${query}`;
-
-    const actions = await request('get', url);
+    const actions = await* (await request('get', url)).map(action => {
+      if (!action.Project) {
+        return request('get', `${uri}/action/${action.id}?include=Role`);
+      }
+      return action;
+    });
 
     const placeholder = user ? 'His' : 'Your';
     message.reply(printList(actions, `${placeholder} action list is empty! 😌`));
@@ -137,9 +178,11 @@ export default async (bot, uri) => {
   const DUPLICATE = 303;
   const NOT_FOUND = 404;
   const NEW = 200;
-  bot.command('^<actions> [string] > [string]', async message => {
+  bot.command('^<actions> [string] > [string] [>] [string]', async message => {
     const projects = await request('get', `${uri}/projects`);
     const projectNames = projects.map(project => project.name);
+    const roles = await request('get', `${uri}/roles`);
+    const roleNames = roles.map(role => role.name);
 
     const [cmd] = message.match;
 
@@ -150,9 +193,14 @@ export default async (bot, uri) => {
     .split('\n')
     .filter(a => a) // filter out empty lines
     .map(a => a.split('>'))
-    .map(([project = '', action = '']) => [project.trim(), action.trim()])
-    .filter(([project = '', action = '']) => project && action)
-    .map(([project, action]) => {
+    .map(([team = '', project = '', action = '']) => [team.trim(), project.trim(), action.trim()])
+    .filter(([team = '', project = '']) => team && project)
+    .map(([team, project, action]) => {
+      if (!action) {
+        action = project;
+        project = team;
+        team = '';
+      }
       // let projectNames;
       // if (team) {
       //   const related = projects.filter(item => item.Team.name === team);
@@ -165,42 +213,62 @@ export default async (bot, uri) => {
         project = project.slice(1);
       }
 
-    // Find the most similar project name available, we don't want to bug the user
-      const [distance, index] = fuzzy(project, projectNames);
+      const role = project.startsWith('(') && project.endsWith(')');
+
+      const names = role ? roleNames : projectNames;
+      const name = role ? project.slice(1, -1) : project;
+
+      // Find the most similar project name available, we don't want to bug the user
+      const [distance, index] = fuzzy(name, names);
       if (distance > MIN_SIMILARITY) {
         if (plus) {
-          return [projectNames[index], action, DUPLICATE];
+          return [team, names[index], action, DUPLICATE, role];
         }
 
-        return [projectNames[index], action];
+        return [team, names[index], action, null, role];
       }
 
       if (plus) {
-        projectNames.push(project);
-        return [project, action, NEW];
+        names.push(name);
+        return [team, name, action, NEW, role];
       }
 
-      return [project, action, NOT_FOUND];
+      return [team, name, action, NOT_FOUND, role];
     });
 
     const employee = await findEmployee(uri, bot, message);
 
     let statusMessage = '✅ Submitted your actions successfuly!';
+    let error = null;
 
-    for (const [project, action, status] of actions) {
+    for (const [team, project, action, status, role] of actions) {
       let pr;
+      const name = role ? 'Role' : 'Project';
+      const model = name.toLowerCase();
 
       switch (status) {
         case DUPLICATE:
-          statusMessage = `⚠️ Project *${project}* already exists. I assumed you `
+          if (!error) {
+            statusMessage = '';
+            error = true;
+          }
+
+          statusMessage += `\n⚠️ ${name} *${project}* already exists. I assumed you `
                         + `meant to add to the already existing project.`;
           break;
         case NOT_FOUND:
-          statusMessage = `❓ Project *${project}* doesn't exist, did you mean to`
-                        + ` create the project using \`+${project} > ${action}\` ?`;
+          if (!error) {
+            statusMessage = '';
+            error = true;
+          }
+
+          const newSyntax = role ? `+(${project})` : `+${project}`;
+          statusMessage += `\n❓ ${name} *${project}* doesn't exist, did you mean to`
+                        + ` create the ${model} using`
+                        + `\`<Team> > ${newSyntax} > ${action}\` ?`;
           continue;
         case NEW:
-          pr = await request('post', `${uri}/project`, null, {
+          pr = await request('post', `${uri}/${name.toLowerCase()}`, null, {
             name: project
           });
           break;
@@ -209,15 +277,34 @@ export default async (bot, uri) => {
 
       const ac = await request('post', `${uri}/employee/${employee.id}/action`,
                                null, { name: action });
-      const encodedProject = encodeURIComponent(project);
-      if (!pr) pr = await request('get', `${uri}/project?name=${encodedProject}`);
-      await request('get', `${uri}/associate/action/${ac.id}/project/${pr.id}`);
+      const encodedName = encodeURIComponent(project);
 
-      await request('get', `${uri}/associate/project/${pr.id}/employee/${employee.id}`);
+      let t;
+      if (team) {
+        t = await request('get', `${uri}/team?name=${team}`);
+      }
+
+      if (!pr) {
+        if (t) {
+          pr = await request('get', `${uri}/team/${t.id}/${model}?name=${encodedName}`);
+          await request('get', `${uri}/associate/${model}/${pr.id}/team/${t.id}`);
+        } else {
+          pr = await request('get', `${uri}/${model}?name=${encodedName}`);
+        }
+      }
+
+      await request('get', `${uri}/associate/action/${ac.id}/${model}/${pr.id}`);
+      await request('get', `${uri}/associate/${model}/${pr.id}/employee/${employee.id}`);
     }
 
     const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
-    const allActions = await request('get', url);
+    const allActions = await* (await request('get', url)).map(action => {
+      if (!action.Project) {
+        return request('get', `${uri}/action/${action.id}?include=Role`);
+      }
+
+      return action;
+    });
     const list = printList(allActions);
 
     message.reply(`${statusMessage}\n\n${list}`);

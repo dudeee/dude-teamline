@@ -23,6 +23,9 @@ export const printList = (list, empty = 'Nothing to show 😶') => {
     if (item.Project) {
       return `${index + 1}. *${item.Project.name}* > ${name}`;
     }
+    if (item.Role) {
+      return `${index + 1}. *(${item.Role.name})* > ${name}`;
+    }
 
     return `#${item.id} – ${name}`;
   }).join('\n');
