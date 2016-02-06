@@ -56,7 +56,7 @@ ${printRecesses(item)}
 };
 
 export default async (bot, uri) => {
-  bot.listen(/(?:recess|break)\s(?:(.+)(?:-|_|,))?(.+)(?:to|for|-|_|\.)(.*)/i, async message => {
+  bot.listen(/^(?:recess|break)\s(?:(.+)(?:-|_|,))?(.+)(?:to|for|-|_|\.)(.*)$/i, async message => {
     const [reason, start, end] = message.match;
     const employee = await findEmployee(uri, bot, message);
     const startDate = humanDate(start);
@@ -91,7 +91,7 @@ export default async (bot, uri) => {
  * -------------------
  */
 
-  bot.listen(/recess\s(?:all|show)(\s(\w+)?\s(.+)|())$/i, async message => {
+  bot.listen(/^recess\s(?:all|show)(\s(\w+)?\s(.+)|())$/i, async message => {
     const [, key, value] = message.match;
     let recesses = await request('get', `${uri}/recesses?include=Employee`);
     if (key && value) {
@@ -113,14 +113,14 @@ export default async (bot, uri) => {
     message.reply(printAllRecesses(recesses));
   });
 
-  bot.listen(/recess\s(active|pending|accepted|rejected)$/i, async message => {
+  bot.listen(/^recess\s(active|pending|accepted|rejected)$/i, async message => {
     const [scope] = message.match;
     const employee = await findEmployee(uri, bot, message);
     const recesses = await request('get', `${uri}/employee/${employee.id}/recesses/${scope}`);
     message.reply(printEmployeeRecesses(recesses));
   });
 
-  bot.listen(/recess\s(?:all|show)\s(active|pending|accepted|rejected)$/i, async message => {
+  bot.listen(/^recess\s(?:all|show)\s(active|pending|accepted|rejected)$/i, async message => {
     const [scope] = message.match;
     const recesses = await request('get', `${uri}/recesses/${scope}?include=Employee`);
     message.reply(printAllRecesses(recesses));

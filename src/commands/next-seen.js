@@ -6,7 +6,7 @@ import moment from 'moment';
 const DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a';
 
 export default async (bot, uri) => {
-  bot.listen(/(?:nextseen|ns|)\s(.+)$/i, async message => {
+  bot.listen(/^(?:nextseen|ns|)\s(.+)$/i, async message => {
     let [username] = message.match;
     username = username.replace(/(?:@|\s)/gi, '');
     const employee = await request('get', `${uri}/employee?username=${username}`);
