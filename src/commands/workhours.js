@@ -21,7 +21,7 @@ const setEmployeeWorkhours = async (uri, userId, dayWorkhours) => {
   // delete previous hours
   await request('delete', `${uri}/employee/${userId}/workhours`);
   // set workhours
-  return await* dayWorkhours.map(async day => {
+  return await Promise.all(dayWorkhours.map(async day => {
     const [startHours, startMinutes] = day.start.split(':');
     const start = new Date();
     start.setHours(startHours);
@@ -41,7 +41,7 @@ const setEmployeeWorkhours = async (uri, userId, dayWorkhours) => {
       start: moment(start).format(timeFormat),
       end: moment(end).format(timeFormat)
     });
-  });
+  }));
 };
 
 export default async (bot, uri) => {
