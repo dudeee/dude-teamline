@@ -1,10 +1,9 @@
 import unirest from 'unirest';
 
-
 export async function request(...args) {
   return new Promise((resolve, reject) => {
     unirest(...args).query({
-      [this.config.teamline.auth.key]: this.config.teamline.token
+      [this.config.teamline.auth.key]: this.config.teamline.auth.token
     }).end(response => {
       if (response.error) reject(response.error);
 
@@ -35,8 +34,9 @@ export const printList = (list, empty = 'Nothing to show 😶') => {
 };
 
 export const findEmployee = async (uri, bot, message) => {
+  const req = request.bind(bot);
   const username = bot.find(message.user).name;
-  const employee = await request('get', `${uri}/employee?username=${username}`);
+  const employee = await req('get', `${uri}/employee?username=${username}`);
 
   if (!employee) {
     return message.reply('You are not a registered employee');

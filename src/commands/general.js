@@ -1,7 +1,9 @@
-import { printList, findEmployee, request, fuzzy } from '../utils';
+import { printList, findEmployee, request as unboundRequest, fuzzy } from '../utils';
 import humanDate from 'date.js';
 
 export default async (bot, uri) => {
+  const request = unboundRequest.bind(bot);
+
   bot.command('list <char> <char> [char]', async message => {
     let [user, type, state] = message.match; // eslint-disable-line
     let employee;

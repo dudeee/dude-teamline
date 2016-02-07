@@ -1,9 +1,9 @@
-import { request, findEmployee, getWeekday, clockEmoji } from '../utils';
+import { request as unboundRequest, findEmployee, getWeekday, clockEmoji } from '../utils';
 import { capitalize } from 'lodash';
 import humanDate from 'date.js';
 import moment from 'moment';
 
-
+let request;
 const printHours = hours => {
   if (!hours.length) {
     return 'Oops! I got nothing to show! 😶';
@@ -45,6 +45,8 @@ const setEmployeeWorkhours = async (uri, userId, dayWorkhours) => {
 };
 
 export default async (bot, uri) => {
+  request = unboundRequest.bind(bot);
+
   bot.listen(/^(?:workhours?|wh)\s?(?!.*\b(set)\b)(.+)?$/i, async message => {
     const [, time] = message.match;
     const employee = await findEmployee(uri, bot, message);

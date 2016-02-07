@@ -1,4 +1,4 @@
-import { request } from '../utils';
+import { request as unboundRequest } from '../utils';
 import moment from 'moment';
 // import { capitalize, groupBy } from 'lodash';
 
@@ -6,6 +6,8 @@ import moment from 'moment';
 const DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a';
 
 export default async (bot, uri) => {
+  const request = unboundRequest.bind(bot);
+
   bot.listen(/^(?:nextseen|ns|)\s(.+)$/i, async message => {
     let [username] = message.match;
     username = username.replace(/(?:@|\s)/gi, '');

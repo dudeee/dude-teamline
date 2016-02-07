@@ -1,4 +1,4 @@
-import { request, findEmployee } from '../utils';
+import { request as unboundRequest, findEmployee } from '../utils';
 import humanDate from 'date.js';
 import moment from 'moment';
 import { capitalize, groupBy } from 'lodash';
@@ -56,6 +56,8 @@ ${printRecesses(item)}
 };
 
 export default async (bot, uri) => {
+  const request = unboundRequest.bind(bot);
+
   bot.listen(/^(?:recess|break)\s(?:(.+)(?:-|_|,))?(.+)(?:to|for|-|_|\.)(.*)$/i, async message => {
     const [reason, start, end] = message.match;
     const employee = await findEmployee(uri, bot, message);

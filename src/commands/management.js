@@ -1,6 +1,8 @@
-import { request } from '../utils';
+import { request as unboundRequest } from '../utils';
 
 export default async (bot, uri) => {
+  const request = unboundRequest.bind(bot);
+
   bot.listen(/teamline manage add (\w+) (.*)/i, async message => {
     const [type, name] = message.match;
     const t = type.toLowerCase();

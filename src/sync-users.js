@@ -1,7 +1,8 @@
-import { request } from './utils';
+import { request as unboundRequest } from './utils';
 import _ from 'lodash';
 
 export default async function sync(bot, uri) {
+  const request = unboundRequest.bind(bot);
   const stats = {
     created: 0,
     updated: 0,
