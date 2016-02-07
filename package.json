@@ -36,7 +36,7 @@
     "eslint-config-airbnb": "4.0.0",
     "lodash": "4.2.0",
     "moment": "2.11.1",
-    "teamline": "0.4.7",
+    "teamline": ">=0.4.7",
     "unirest": "0.4.2"
   }
 }
