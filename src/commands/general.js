@@ -19,19 +19,19 @@ export default async (bot, uri) => {
       user = null;
     }
 
-    let query = '?';
+    let query = '';
 
     switch (type) {
       case 'projects':
-        type = 'teams';
-        query = `?include=Project`;
+        query = `?include=Team`;
         break;
       case 'actions':
-        type = 'projects';
-        query = `?include=Action`;
+        query = `?include=Project`;
         break;
       case 'teams':
-        query = `?include=Employee`;
+        if (!user) {
+          query = `?include=Employee`;
+        }
         break;
       case 'roles':
         query = `?include=Team`;
@@ -39,46 +39,73 @@ export default async (bot, uri) => {
       default: break;
     }
 
-    const list = user ? await request('get', `${uri}/employee/${employee.id}/${type}${query}`)
+    let list = user ? await request('get', `${uri}/employee/${employee.id}/${type}${query}`)
                       : await request('get', `${uri}/${type}${query}`);
 
     if (!list.length) {
       return message.reply('Nothing to show 😶');
     }
 
-    if (type === 'projects') {
-      const reply = list.map(item => {
-        const project = `*${item.name}* (${item.Actions.length} actions)`;
+    const groupBy = (property) =>
+      list.reduce((map, item) => {
+        let relation = item[property];
+        if (!relation) return map;
 
-        if (!item.Actions.length) return '';
+        if (!Array.isArray(relation)) {
+          relation = [relation];
+        }
 
-        const actions = item.Actions.filter(action =>
-          employee ? action.EmployeeId === employee.id : true
-        )
-        .map(action =>
-          `    · ${action.name}`
-        ).join('\n');
-
-        return `･ ${project}\n${actions}`;
-      }).join('\n\n');
-
-      return message.reply(reply);
-    }
-
-    if (type === 'roles') {
-      const teams = list.reduce((map, item) => {
-        const team = item.Teams[0];
-        if (!team) return map;
-
-        if (!map[team.name]) {
-          map[team.name] = [item];
-        } else {
-          map[team.name].push(item);
+        for (const record of relation) {
+          if (!map[record.name]) {
+            map[record.name] = [item];
+          } else {
+            map[record.name].push(item);
+          }
         }
 
         return map;
       }, {});
 
+    if (type === 'projects') {
+      const teams = groupBy('Team');
+      const reply = Object.keys(teams).map(key => {
+        const item = teams[key];
+
+        if (!item.length) return '';
+
+        const team = `*${key}* (${item.length} projects)`;
+        const projects = item.map(project =>
+                          `    · ${project.name}`
+                        ).join('\n');
+
+        return `･ ${team}\n${projects}`;
+      }).join('\n\n');
+
+      return message.reply(reply || 'Nothing to show 😶');
+    }
+
+    if (type === 'teams') {
+      if (user) {
+        list = await Promise.all(list.map(team =>
+          request('get', `${uri}/team/${team.id}?include=Employee`)
+        ));
+      }
+
+      const reply = list.map(item => {
+        const head = `*${item.name}* (${item.Employees.length} employees)`;
+
+        const employees = item.Employees.map(emp =>
+          `    · @${emp.username} – ${emp.firstname} ${emp.lastname}`
+        ).join('\n');
+
+        return `･ ${head}\n${employees}`;
+      }).join('\n\n');
+
+      return message.reply(reply || 'Nothing to show 😶');
+    }
+
+    if (type === 'roles') {
+      const teams = groupBy('Teams');
       const reply = Object.keys(teams).map(key => {
         const team = teams[key];
 
@@ -94,28 +121,18 @@ export default async (bot, uri) => {
       return message.reply(reply || 'Nothing to show 😶');
     }
 
-    if (type === 'teams') {
-      const reply = list.map(item => {
-        const relation = item.Employees || item.Projects || item.Roles;
-        const relationName = item.Employees ? 'employees' : 'projects';
+    if (type === 'actions') {
+      const projects = groupBy('Project');
+      const reply = Object.keys(projects).map(key => {
+        const item = projects[key];
 
-        if (!relation.length) return '';
+        const team = `*${key}* (${item.length} actions)`;
 
-        const team = `*${item.name}* (${relation.length} ${relationName})`;
+        const actions = item.map(action =>
+          `    · ${action.name}`
+        ).join('\n');
 
-        let subs = '';
-        if (item.Employees) {
-          subs = item.Employees.map(emp =>
-            `    · @${emp.username} – ${emp.firstname} ${emp.lastname}`
-          ).join('\n');
-        }
-        if (item.Projects) {
-          subs = item.Projects.map(emp =>
-            `    · ${emp.name}`
-          ).join('\n');
-        }
-
-        return `･ ${team}\n${subs}`;
+        return `･ ${team}\n${actions}`;
       }).join('\n\n');
 
       return message.reply(reply);
