@@ -31,42 +31,42 @@ export default async function sync(bot, uri) {
 
     if (employee && _.eq(employee, user)) {
       stats.untouched++;
-      await updateRole(employee, user);
+      // await updateRole(employee, user);
       continue;
     }
 
     if (employee) {
       stats.updated++;
       employee = await request('put', `${uri}/employee/${employee.id}`, null, record);
-      await updateRole(employee, user);
+      // await updateRole(employee, user);
       continue;
     }
 
     stats.created++;
     employee = await request('post', `${uri}/employee`, null, record);
-    await updateRole(employee, user);
+    // await updateRole(employee, user);
   }
 
-  async function updateRole(employee, user) {
-    if (!user.profile.title) return;
-
-    const roles = await request('get', `${uri}/roles`);
-    const { title } = user.profile;
-    let role = roles.find(a => a.name.toLowerCase() === title.toLowerCase());
-    let exists = false;
-
-    if (!role) {
-      role = await request('post', `${uri}/role`, null, {
-        name: title
-      });
-    } else {
-      exists = await request('get', `${uri}/employee/${employee.id}/role`);
-    }
-
-    if (!exists) {
-      await request('get', `${uri}/associate/role/${role.id}/employee/${employee.id}`);
-    }
-  }
-
+  // async function updateRole(employee, user) {
+  //   if (!user.profile.title) return;
+  //
+  //   const roles = await request('get', `${uri}/roles`);
+  //   const { title } = user.profile;
+  //   let role = roles.find(a => a.name.toLowerCase() === title.toLowerCase());
+  //   let exists = false;
+  //
+  //   if (!role) {
+  //     role = await request('post', `${uri}/role`, null, {
+  //       name: title
+  //     });
+  //   } else {
+  //     exists = await request('get', `${uri}/employee/${employee.id}/role`);
+  //   }
+  //
+  //   if (!exists) {
+  //     await request('get', `${uri}/associate/role/${role.id}/employee/${employee.id}`);
+  //   }
+  // }
+  //
   return stats;
 }

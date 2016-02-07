@@ -110,7 +110,7 @@ export default async (bot, uri) => {
           ).join('\n');
         }
         if (item.Projects) {
-          subs = (item.Projects || item.Roles).map(emp =>
+          subs = item.Projects.map(emp =>
             `    · ${emp.name}`
           ).join('\n');
         }
@@ -176,7 +176,7 @@ export default async (bot, uri) => {
   });
 
   const publishActions = bot.config.teamline.schedules['publish-actions'];
-  const MIN_SIMILARITY = 0.9;
+  const DISTANCE_REQUIRED = 0.9;
 
   const DUPLICATE = 303;
   const NOT_FOUND = 404;
@@ -222,8 +222,8 @@ export default async (bot, uri) => {
       const name = role ? project.slice(1, -1) : project;
 
       // Find the most similar project name available, we don't want to bug the user
-      const [distance, index] = fuzzy(name, names);
-      if (distance > MIN_SIMILARITY) {
+      const [distance, index] = fuzzy(name, names, DISTANCE_REQUIRED);
+      if (distance) {
         if (plus) {
           return [team, names[index], action, DUPLICATE, role];
         }
@@ -295,6 +295,7 @@ export default async (bot, uri) => {
         }
       }
       t = await request('get', `${uri}/${model}/${pr.id}/team`);
+      if (!t) continue;
       await request('get', `${uri}/associate/${model}/${pr.id}/team/${t.id}`);
 
       await request('get', `${uri}/associate/action/${ac.id}/${model}/${pr.id}`);

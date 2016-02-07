@@ -123,31 +123,40 @@ export function permutations(arr) {
 }
 
 const BEST_DISTANCE = 1;
-export function fuzzy(string, list) {
+export function fuzzy(string, list, DISTANCE_REQUIRED) {
   string = string.toLowerCase();
   list = list.map(a => a.toLowerCase());
 
   const words = string.split(' ');
   const ps = permutations(words);
 
+  const distance = [];
   for (let i = 0; i < list.length; i++) {
-    const item = list[i];
+    for (let j = 0; j < ps.length; j++) {
+      const item = list[i];
+      const str = ps[j].join(' ');
 
-    if (string === item) return [BEST_DISTANCE, i];
+      if (str === item) return [BEST_DISTANCE, i];
 
-    const index = ps.findIndex(p => p.join(' ') === item);
-    if (index > -1) return [BEST_DISTANCE, i];
+      const args = item.length < string.length ? [item, str] : [str, item];
+      distance.push({
+        distance: jaro(...args),
+        index: i
+      });
+    }
   }
 
-  const distance = list.map(item => {
-    const args = item.length < string.length ? [item, string] : [string, item];
-    return jaro(...args);
-  });
+  const max = distance.reduce((a, b) => {
+    if (b.distance > a.distance) {
+      return b;
+    }
 
-  const max = Math.max(...distance);
-  const closest = distance.indexOf(max);
+    return a;
+  }, { distance: 0, index: -1 });
 
-  return [max, closest];
+  if (DISTANCE_REQUIRED && max.distance < DISTANCE_REQUIRED) return [false, false];
+
+  return [max.distance, max.index];
 }
 
 export function wait(ms) {
