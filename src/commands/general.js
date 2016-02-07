@@ -176,7 +176,7 @@ export default async (bot, uri) => {
   });
 
   const publishActions = bot.config.teamline.schedules['publish-actions'];
-  const DISTANCE_REQUIRED = 0.9;
+  const DISTANCE_REQUIRED = 0.75;
 
   const DUPLICATE = 303;
   const NOT_FOUND = 404;
