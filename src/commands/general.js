@@ -66,6 +66,7 @@ export default async (bot, uri) => {
     if (type === 'roles') {
       const teams = list.reduce((map, item) => {
         const team = item.Teams[0];
+        if (!team) return map;
 
         if (!map[team.name]) {
           map[team.name] = [item];
@@ -88,7 +89,7 @@ export default async (bot, uri) => {
         return `･ ${head}\n${sub}`;
       }).join('\n\n');
 
-      return message.reply(reply);
+      return message.reply(reply || 'Nothing to show 😶');
     }
 
     if (type === 'teams') {
@@ -281,17 +282,18 @@ export default async (bot, uri) => {
 
       let t;
       if (team) {
-        t = await request('get', `${uri}/team?name=${team}`);
+        t = await request('get', `${uri}/team?name=${encodeURIComponent(team)}`);
       }
 
       if (!pr) {
         if (t) {
           pr = await request('get', `${uri}/team/${t.id}/${model}?name=${encodedName}`);
-          await request('get', `${uri}/associate/${model}/${pr.id}/team/${t.id}`);
         } else {
           pr = await request('get', `${uri}/${model}?name=${encodedName}`);
         }
       }
+      t = await request('get', `${uri}/${model}/${pr.id}/team`);
+      await request('get', `${uri}/associate/${model}/${pr.id}/team/${t.id}`);
 
       await request('get', `${uri}/associate/action/${ac.id}/${model}/${pr.id}`);
       await request('get', `${uri}/associate/${model}/${pr.id}/employee/${employee.id}`);
