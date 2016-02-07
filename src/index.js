@@ -1,5 +1,5 @@
 import teamline from 'teamline';
-import { request as unbindedRequest, findEmployee, printList, wait } from './utils';
+import { request as unboundRequest, findEmployee, printList, wait } from './utils';
 import sync from './sync-users';
 import _ from 'lodash';
 import commands from './commands';
@@ -17,7 +17,7 @@ export default async bot => {
   const { schedules } = config;
 
   // bind bot to request in order to use config
-  const request = unbindedRequest.bind(null, bot);
+  const request = unboundRequest.bind(bot);
 
   const server = await teamline(bot.config.teamline);
   const uri = server.info.uri + (_.get(bot, 'config.teamline.crud.prefix') || '');
