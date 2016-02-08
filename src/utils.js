@@ -124,10 +124,8 @@ export function permutations(arr) {
 
 const BEST_DISTANCE = 1;
 export function fuzzy(string, list, DISTANCE_REQUIRED) {
-  string = string.toLowerCase();
-  list = list.map(a => a.toLowerCase());
-
-  string = string.replace(/\[.*?]/g, '');
+  string = string.toLowerCase().trim();
+  list = list.map(a => a.toLowerCase().trim());
 
   const words = string.split(' ');
   const ps = permutations(words);
@@ -140,7 +138,7 @@ export function fuzzy(string, list, DISTANCE_REQUIRED) {
 
       if (str === item) return [BEST_DISTANCE, i];
 
-      const args = item.length < string.length ? [item, str] : [str, item];
+      const args = item.length < str.length ? [item, str] : [str, item];
       distance.push({
         distance: jaro(...args),
         index: i
