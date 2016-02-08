@@ -381,19 +381,24 @@ I think that's it for now, if you have any questions, message @mahdi.
         default: break;
       }
 
-      const q = `?name=${action}?include=Project`;
-      let ac = await request('get', `${uri}/employee/${employee.id}/action${q}`);
-      if (ac && ac.Project && ac.Project.name === project) {
-        if (!error) {
-          attachments.length = 0;
-          error = true;
+      let ac = await request('get', `${uri}/employee/${employee.id}/action?name=${action}`);
+      if (ac) {
+        ac.Role = await request('get', `${uri}/action/${ac.id}/role`);
+        ac.Project = await request('get', `${uri}/action/${ac.id}/project`);
+
+        if ((ac.Project && ac.Project.name === project) ||
+            (ac.Role && ac.Role.name === project)) {
+          if (!error) {
+            attachments.length = 0;
+            error = true;
+          }
+          attachments.push({
+            color: 'danger',
+            text: `Action *${action}* already exists. I assume you accidentaly tried`
+                + ` to add a duplicate action.`
+          });
+          continue;
         }
-        attachments.push({
-          color: 'danger',
-          text: `Action *${action}* already exists. I assume you accidentaly tried`
-              + ` to add a duplicate action.`
-        });
-        continue;
       }
 
       ac = await request('post', `${uri}/employee/${employee.id}/action`,
