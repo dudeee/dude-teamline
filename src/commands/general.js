@@ -383,7 +383,7 @@ I think that's it for now, if you have any questions, message @mahdi.
 
       const q = `?name=${action}?include=Project`;
       let ac = await request('get', `${uri}/employee/${employee.id}/action${q}`);
-      if (ac && ac.Project.name === project) {
+      if (ac && ac.Project && ac.Project.name === project) {
         if (!error) {
           attachments.length = 0;
           error = true;
