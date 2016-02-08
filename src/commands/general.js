@@ -4,6 +4,12 @@ import humanDate from 'date.js';
 export default async (bot, uri) => {
   const request = unboundRequest.bind(bot);
 
+  bot.command('actions refresh', async message => {
+    request('get', `${uri}?refresh`);
+
+    message.reply('Sent a request to refresh data. 🔄');
+  });
+
   bot.command('list <char> <char> [char]', async message => {
     let [user, type, state] = message.match; // eslint-disable-line
     let employee;
