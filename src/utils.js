@@ -127,6 +127,8 @@ export function fuzzy(string, list, DISTANCE_REQUIRED) {
   string = string.toLowerCase();
   list = list.map(a => a.toLowerCase());
 
+  string = string.replace(/\[.*?]/g, '');
+
   const words = string.split(' ');
   const ps = permutations(words);
 
