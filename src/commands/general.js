@@ -311,8 +311,12 @@ export default async (bot, uri) => {
           pr = await request('get', `${uri}/${model}?name=${encodedName}`);
         }
       }
-      t = await request('get', `${uri}/${model}/${pr.id}/team`);
-      if (!t) continue;
+      if (!t) {
+        t = await request('get', `${uri}/${model}/${pr.id}/team`);
+
+        if (!t) continue;
+      }
+
       await request('get', `${uri}/associate/${model}/${pr.id}/team/${t.id}`);
 
       await request('get', `${uri}/associate/action/${ac.id}/${model}/${pr.id}`);
@@ -332,13 +336,14 @@ export default async (bot, uri) => {
     message.reply(`${statusMessage}\n\n${list}`);
 
     const d = new Date();
-    const [h, m] = publishActions.split(':');
-    if (d.getHours() < +h || d.getMinutes() < +m) return;
+    const [h, m] = publishActions.split(':').map(Number.parseFloat);
+    if (d.getHours() < h || d.getMinutes() < m) return;
 
     const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
 
     bot.sendMessage('actions', `${name}\n${list}`, {
       websocket: false,
+      links: true,
       parse: 'full'
     });
   });
