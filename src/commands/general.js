@@ -295,7 +295,14 @@ export default async (bot, uri) => {
         default: break;
       }
 
-      const ac = await request('post', `${uri}/employee/${employee.id}/action`,
+      let ac = await request('get', `${uri}/employee/${employee.id}/action?name=${action}`);
+      if (ac) {
+        statusMessage += `\n ❗️ Action *${action}* already exists. I assume you accidentaly tried`
+                      + ` to add a duplicate action.`;
+        continue;
+      }
+
+      ac = await request('post', `${uri}/employee/${employee.id}/action`,
                                null, { name: action });
       const encodedName = encodeURIComponent(project);
 
