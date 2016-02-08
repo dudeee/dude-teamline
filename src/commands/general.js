@@ -4,10 +4,17 @@ import humanDate from 'date.js';
 export default async (bot, uri) => {
   const request = unboundRequest.bind(bot);
 
-  bot.command('actions refresh', async message => {
+  bot.command('^(actions | action) refresh', async message => {
     request('get', `${uri}?refresh`);
 
     message.reply('Sent a request to refresh data. 🔄');
+  });
+
+  bot.command('^(actions | action) help', async message => {
+    message.reply(`Hello friend!
+I'm Mashti, you might not know me, but you know my grandpa, Friedrich Nietzsche. *⏞*
+
+`);
   });
 
   bot.command('list <char> <char> [char]', async message => {
@@ -153,7 +160,7 @@ export default async (bot, uri) => {
     }
   });
 
-  bot.listen(/^actions\s*(\S*)\s*([^-,]*)?\s*(?:-|,)?\s*(.*)?/gi, async message => {
+  bot.listen(/^(?:action(?:s?))\s*(\S*)\s*([^-,]*)?\s*(?:-|,)?\s*(.*)?/gi, async message => {
     if (message.preformatted.includes('>')) return;
 
     let [user, from, to] = message.match; // eslint-disable-line
@@ -204,7 +211,7 @@ export default async (bot, uri) => {
   const DUPLICATE = 303;
   const NOT_FOUND = 404;
   const NEW = 200;
-  bot.command('^<actions> [string] > [string] [>] [string]', async message => {
+  bot.command('^<actions | action> [string] > [string] [>] [string]', async message => {
     const projects = await request('get', `${uri}/projects`);
     const projectNames = projects.map(project => project.name);
     const roles = await request('get', `${uri}/roles`);
@@ -264,7 +271,7 @@ export default async (bot, uri) => {
 
     const employee = await findEmployee(uri, bot, message);
 
-    let statusMessage = '✅ Submitted your actions successfuly!';
+    let attachments = [{ text: 'Submitted your actions successfuly!', color: 'good' }];
     let error = null;
 
     for (const [team, project, action, status, role] of actions) {
@@ -275,23 +282,28 @@ export default async (bot, uri) => {
       switch (status) {
         case DUPLICATE:
           if (!error) {
-            statusMessage = '';
+            attachments.length = 0;
             error = true;
           }
 
-          statusMessage += `\n⚠️ ${name} *${project}* already exists. I assumed you `
-                        + `meant to add to the already existing project.`;
+          attachments.push({
+            color: 'warning',
+            text: `${name} *${project}* already exists. I assumed you meant to add to the ` +
+                  `already existing project.`
+          });
           break;
         case NOT_FOUND:
           if (!error) {
-            statusMessage = '';
+            attachments.length = 0;
             error = true;
           }
 
           const newSyntax = role ? `+(${project})` : `+${project}`;
-          statusMessage += `\n❓ ${name} *${project}* doesn't exist, did you mean to`
-                        + ` create the ${model} using`
-                        + `\`<Team> > ${newSyntax} > ${action}\` ?`;
+          attachments.push({
+            color: 'danger',
+            text: `${name} *${project}* doesn't exist, did you mean to create the ${model} using`
+                + `\`<Team> > ${newSyntax} > ${action}\` ?`
+          });
           continue;
         case NEW:
           pr = await request('post', `${uri}/${name.toLowerCase()}`, null, {
@@ -303,8 +315,15 @@ export default async (bot, uri) => {
 
       let ac = await request('get', `${uri}/employee/${employee.id}/action?name=${action}`);
       if (ac) {
-        statusMessage += `\n ❗️ Action *${action}* already exists. I assume you accidentaly tried`
-                      + ` to add a duplicate action.`;
+        if (!error) {
+          attachments.length = 0;
+          error = true;
+        }
+        attachments.push({
+          color: 'danger',
+          text: `Action *${action}* already exists. I assume you accidentaly tried`
+              + ` to add a duplicate action.`
+        });
         continue;
       }
 
@@ -346,7 +365,17 @@ export default async (bot, uri) => {
     });
     const list = printList(allActions);
 
-    message.reply(`${statusMessage}\n\n${list}`);
+    attachments = attachments.map(attachment => {
+      attachment.fallback = attachment.text;
+      return attachment;
+    });
+    message.reply(`${list}`, {
+      websocket: false,
+      attachments,
+      parse: 'full'
+    });
+
+    if (!allActions.length) return;
 
     const d = new Date();
     const [h, m] = publishActions.split(':').map(Number.parseFloat);
@@ -361,14 +390,14 @@ export default async (bot, uri) => {
     });
   });
 
-  bot.command('actions clear', async message => {
+  bot.command('^(actions | action) clear', async message => {
     const employee = await findEmployee(uri, bot, message);
     await request('delete', `${uri}/employee/${employee.id}/actions/today`);
 
     message.reply('Cleared your actions for today.');
   });
 
-  bot.command('actions remove <number>', async message => {
+  bot.command('^(actions | action) remove <number>', async message => {
     let [index] = message.match;
     index = parseInt(index, 10) - 1;
 
