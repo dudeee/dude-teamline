@@ -278,12 +278,15 @@ I think that's it for now, if you have any questions, message @mahdi.
 
   const DUPLICATE = 303;
   const NOT_FOUND = 404;
+  const TEAM_NOT_FOUND = 405;
   const NEW = 200;
   bot.command('^<actions | action> [string] > [string] [>] [string]', async message => {
     const projects = await request('get', `${uri}/projects`);
     const projectNames = projects.map(project => project.name);
     const roles = await request('get', `${uri}/roles`);
     const roleNames = roles.map(role => role.name);
+    const teams = await request('get', `${uri}/teams`);
+    const teamNames = teams.map(team => team.name);
 
     const [cmd] = message.match;
 
@@ -314,6 +317,15 @@ I think that's it for now, if you have any questions, message @mahdi.
         project = project.slice(1);
       }
 
+      if (team) {
+        const [distance, index] = fuzzy(team, teamNames, DISTANCE_REQUIRED);
+        if (distance) {
+          team = teamNames[index];
+        } else {
+          return [team, name, action, TEAM_NOT_FOUND, role];
+        }
+      }
+
       const role = project.startsWith('(') && project.endsWith(')');
 
       const names = role ? roleNames : projectNames;
@@ -340,7 +352,6 @@ I think that's it for now, if you have any questions, message @mahdi.
     const employee = await findEmployee(uri, bot, message);
 
     let attachments = [{ text: 'Submitted your actions successfuly!', color: 'good' }];
-    let error = null;
 
     for (const [team, project, action, status, role] of actions) {
       let pr;
@@ -349,11 +360,6 @@ I think that's it for now, if you have any questions, message @mahdi.
 
       switch (status) {
         case DUPLICATE:
-          if (!error) {
-            attachments.length = 0;
-            error = true;
-          }
-
           attachments.push({
             color: 'warning',
             text: `${name} *${project}* already exists. I assumed you meant to add to the ` +
@@ -361,16 +367,17 @@ I think that's it for now, if you have any questions, message @mahdi.
           });
           break;
         case NOT_FOUND:
-          if (!error) {
-            attachments.length = 0;
-            error = true;
-          }
-
           const newSyntax = role ? `+(${project})` : `+${project}`;
           attachments.push({
             color: 'danger',
             text: `${name} *${project}* doesn't exist, did you mean to create the ${model} using`
                 + `\`<Team> > ${newSyntax} > ${action}\` ?`
+          });
+          continue;
+        case TEAM_NOT_FOUND:
+          attachments.push({
+            color: 'danger',
+            text: `Team *${team}* doesn't exist.`
           });
           continue;
         case NEW:
@@ -381,6 +388,7 @@ I think that's it for now, if you have any questions, message @mahdi.
         default: break;
       }
 
+
       let ac = await request('get', `${uri}/employee/${employee.id}/action?name=${action}`);
       if (ac) {
         ac.Role = await request('get', `${uri}/action/${ac.id}/role`);
@@ -388,10 +396,6 @@ I think that's it for now, if you have any questions, message @mahdi.
 
         if ((ac.Project && ac.Project.name === project) ||
             (ac.Role && ac.Role.name === project)) {
-          if (!error) {
-            attachments.length = 0;
-            error = true;
-          }
           attachments.push({
             color: 'danger',
             text: `Action *${action}* already exists. I assume you accidentaly tried`
@@ -438,6 +442,7 @@ I think that's it for now, if you have any questions, message @mahdi.
     });
     const list = printList(allActions);
 
+    if (attachments.length > 1) attachments.splice(0, 1);
     attachments = attachments.map(attachment => {
       attachment.fallback = attachment.text;
       return attachment;
