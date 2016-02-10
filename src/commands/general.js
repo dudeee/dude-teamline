@@ -463,6 +463,7 @@ I think that's it for now, if you have any questions, message @mahdi.
     if (attachments.length > 1) attachments.splice(0, 1);
     attachments = attachments.map(attachment => {
       attachment.fallback = attachment.text;
+      attachment.mrkdwn_in = ['text'];
       return attachment;
     });
     message.reply(`${list}`, {
