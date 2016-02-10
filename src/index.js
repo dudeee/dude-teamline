@@ -1,4 +1,3 @@
-import teamline from 'teamline';
 import { request as unboundRequest, findEmployee, printList, wait } from './utils';
 import sync from './sync-users';
 import _ from 'lodash';
@@ -14,18 +13,15 @@ const DEFAULT = {
 export default async bot => {
   _.defaults(bot.config.teamline, DEFAULT);
   const config = bot.config.teamline;
-  const { schedules } = config;
+  const { schedules, uri } = config;
 
   // bind bot to request in order to use config
   const request = unboundRequest.bind(bot);
 
-  const server = await teamline(bot.config.teamline);
-  const uri = server.info.uri + (_.get(bot, 'config.teamline.crud.prefix') || '');
-
   try {
     commands(bot, uri);
   } catch (e) {
-    bot.log.error(e);
+    bot.log.error('[teamline]', e);
   }
 
   const askForActions = schedules['ask-for-actions'].split(':').map(Number.parseFloat);
