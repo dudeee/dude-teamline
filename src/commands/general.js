@@ -67,7 +67,8 @@ You can also create projects on the fly, which will then be placed as a card in 
 
 \`actions team > +newproject > action\`
 
-You can also recurring actions for your role, wrap the role name in parantheses and you are done!
+You can also define recurring actions for your role,
+wrap the role name in parantheses and you are done!
 
 \`actions (role) > action\`
 \`actions team > (role) > action\`
@@ -127,20 +128,22 @@ I think that's it for now, if you have any questions, message @mahdi.
       return message.reply('Nothing to show 😶');
     }
 
-    const groupBy = (property) =>
+    const groupBy = (...properties) =>
       list.reduce((map, item) => {
-        let relation = item[property];
-        if (!relation) return map;
+        for (const property of properties) {
+          let relation = item[property];
+          if (!relation) continue;
 
-        if (!Array.isArray(relation)) {
-          relation = [relation];
-        }
+          if (!Array.isArray(relation)) {
+            relation = [relation];
+          }
 
-        for (const record of relation) {
-          if (!map[record.name]) {
-            map[record.name] = [item];
-          } else {
-            map[record.name].push(item);
+          for (const record of relation) {
+            if (!map[record.name]) {
+              map[record.name] = [item];
+            } else {
+              map[record.name].push(item);
+            }
           }
         }
 
@@ -203,11 +206,13 @@ I think that's it for now, if you have any questions, message @mahdi.
     }
 
     if (type === 'actions') {
-      const projects = groupBy('Project');
+      const projects = groupBy('Project', 'Role');
       const reply = Object.keys(projects).map(key => {
         const item = projects[key];
 
-        const team = `*${key}* (${item.length} actions)`;
+        const keyDisplay = item.Role ? `(${key})` : key;
+
+        const team = `*${keyDisplay}* (${item.length} actions)`;
 
         const actions = item.map(action =>
           `    · ${action.name}`
@@ -266,8 +271,11 @@ I think that's it for now, if you have any questions, message @mahdi.
       if (!action.Project) {
         return request('get', `${uri}/action/${action.id}?include=Role`);
       }
+
+      if (action.Project.state === 'closed') return null;
+
       return action;
-    });
+    }).filter(a => a);
 
     const placeholder = user ? 'His' : 'Your';
     message.reply(printList(actions, `${placeholder} action list is empty! 😌`));
@@ -394,8 +402,18 @@ I think that's it for now, if you have any questions, message @mahdi.
         ac.Role = await request('get', `${uri}/action/${ac.id}/role`);
         ac.Project = await request('get', `${uri}/action/${ac.id}/project`);
 
+        const now = Date.now();
+        now.setHours(0);
+        now.setMinutes(0);
+        now.setSeconds(0);
+        const d = ac.date;
+        d.setHours(0);
+        d.setMinutes(0);
+        d.setSeconds(0);
+
         if ((ac.Project && ac.Project.name === project) ||
-            (ac.Role && ac.Role.name === project)) {
+            (ac.Role && ac.Role.name === project) &&
+            (d === now)) {
           attachments.push({
             color: 'danger',
             text: `Action *${action}* already exists. I assume you accidentaly tried`
