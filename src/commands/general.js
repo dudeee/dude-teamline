@@ -105,7 +105,7 @@ I think that's it for now, if you have any questions, message @mahdi.
 
     switch (type) {
       case 'projects':
-        query = `?include=Team`;
+        query = `/open?include=Team`;
         break;
       case 'actions':
         query = `?include=Project`;
@@ -402,10 +402,10 @@ I think that's it for now, if you have any questions, message @mahdi.
         ac.Role = await request('get', `${uri}/action/${ac.id}/role`);
         ac.Project = await request('get', `${uri}/action/${ac.id}/project`);
 
-        const now = Date.now();
-        now.setHours(0);
-        now.setMinutes(0);
-        now.setSeconds(0);
+        const today = Date.now();
+        today.setHours(0);
+        today.setMinutes(0);
+        today.setSeconds(0);
         const d = ac.date;
         d.setHours(0);
         d.setMinutes(0);
@@ -413,7 +413,7 @@ I think that's it for now, if you have any questions, message @mahdi.
 
         if ((ac.Project && ac.Project.name === project) ||
             (ac.Role && ac.Role.name === project) &&
-            (d === now)) {
+            (d === today)) {
           attachments.push({
             color: 'danger',
             text: `Action *${action}* already exists. I assume you accidentaly tried`
