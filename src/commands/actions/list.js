@@ -1,0 +1,201 @@
+import { findEmployee, request as unboundRequest, printList } from '../../utils';
+import humanDate from 'date.js';
+
+export default (bot, uri) => {
+  const request = unboundRequest.bind(bot);
+
+  bot.command('list <char> <char> [char]', async message => {
+    let [user, type, state] = message.match; // eslint-disable-line
+    let employee;
+
+    state = state || '';
+
+    if (user[0] === '@') {
+      const username = user.slice(1);
+      employee = await request('get', `${uri}/employee?username=${username}`);
+    } else if (user === 'myself' || user === 'my' || user === 'me') {
+      employee = await findEmployee(uri, bot, message);
+    } else {
+      user = null;
+    }
+
+    let query = '';
+
+    switch (type) {
+      case 'projects':
+        query = `/open?include=Team`;
+        break;
+      case 'actions':
+        query = `?include=Project`;
+        break;
+      case 'teams':
+        if (!user) {
+          query = `?include=Employee`;
+        }
+        break;
+      case 'roles':
+        query = `?include=Team`;
+        break;
+      default: break;
+    }
+
+    let list = user ? await request('get', `${uri}/employee/${employee.id}/${type}${query}`)
+                      : await request('get', `${uri}/${type}${query}`);
+
+    if (!list.length) {
+      return message.reply('Nothing to show 😶');
+    }
+
+    const groupBy = (...properties) =>
+      list.reduce((map, item) => {
+        for (const property of properties) {
+          let relation = item[property];
+          if (!relation) continue;
+
+          if (!Array.isArray(relation)) {
+            relation = [relation];
+          }
+
+          for (const record of relation) {
+            if (!map[record.name]) {
+              map[record.name] = [item];
+            } else {
+              map[record.name].push(item);
+            }
+          }
+        }
+
+        return map;
+      }, {});
+
+    if (type === 'projects') {
+      const teams = groupBy('Team');
+      const reply = Object.keys(teams).map(key => {
+        const item = teams[key];
+
+        if (!item.length) return '';
+
+        const team = `*${key}* (${item.length} projects)`;
+        const projects = item.map(project =>
+                          `    · ${project.name}`
+                        ).join('\n');
+
+        return `･ ${team}\n${projects}`;
+      }).join('\n\n');
+
+      return message.reply(reply || 'Nothing to show 😶');
+    }
+
+    if (type === 'teams') {
+      if (user) {
+        list = await Promise.all(list.map(team =>
+          request('get', `${uri}/team/${team.id}?include=Employee`)
+        ));
+      }
+
+      const reply = list.map(item => {
+        const head = `*${item.name}* (${item.Employees.length} employees)`;
+
+        const employees = item.Employees.map(emp =>
+          `    · @${emp.username} – ${emp.firstname} ${emp.lastname}`
+        ).join('\n');
+
+        return `･ ${head}\n${employees}`;
+      }).join('\n\n');
+
+      return message.reply(reply || 'Nothing to show 😶');
+    }
+
+    if (type === 'roles') {
+      const teams = groupBy('Teams');
+      const reply = Object.keys(teams).map(key => {
+        const team = teams[key];
+
+        const head = `*${key}* (${team.length} roles)`;
+
+        const sub = team.map(role =>
+          `    · ${role.name}`
+        ).join('\n');
+
+        return `･ ${head}\n${sub}`;
+      }).join('\n\n');
+
+      return message.reply(reply || 'Nothing to show 😶');
+    }
+
+    if (type === 'actions') {
+      const projects = groupBy('Project', 'Role');
+      const reply = Object.keys(projects).map(key => {
+        const item = projects[key];
+
+        const keyDisplay = item.Role ? `(${key})` : key;
+
+        const team = `*${keyDisplay}* (${item.length} actions)`;
+
+        const actions = item.map(action =>
+          `    · ${action.name}`
+        ).join('\n');
+
+        return `･ ${team}\n${actions}`;
+      }).join('\n\n');
+
+      return message.reply(reply);
+    }
+
+    if (type === 'employees') {
+      const reply = list.map(item =>
+        `@${item.username} – ${item.firstname} ${item.lastname}`
+      ).join('\n');
+
+      return message.reply(reply);
+    }
+  });
+
+  bot.listen(/^(?:action(?:s?))\s*(\S*)\s*([^-,]*)?\s*(?:-|,)?\s*(.*)?/gi, async message => {
+    if (message.preformatted.includes('>')) return;
+
+    let [user, from, to] = message.match; // eslint-disable-line
+    if (from) from = from.trim();
+    if (to) to = to.trim();
+
+    from = from || 'today';
+    to = to || from;
+
+    if (user === 'myself' || user === 'me') {
+      user = null;
+    } else {
+      user = user.slice(1);
+    }
+
+    const fromDate = humanDate(from);
+    fromDate.setHours(0);
+    fromDate.setMinutes(0);
+    fromDate.setSeconds(0);
+    const toDate = humanDate(to);
+    toDate.setDate(toDate.getDate() + 1);
+    toDate.setHours(0);
+    toDate.setMinutes(0);
+    toDate.setSeconds(0);
+
+    const employee = await findEmployee(uri, bot, user ? { user } : message);
+
+    const dateQuery = JSON.stringify({
+      $gte: +fromDate,
+      $lte: +toDate
+    });
+    const query = `date=${dateQuery}&include=Project`;
+    const url = `${uri}/employee/${employee.id}/actions?${query}`;
+    const actions = await* (await request('get', url)).map(action => {
+      if (!action.Project) {
+        return request('get', `${uri}/action/${action.id}?include=Role`);
+      }
+
+      if (action.Project.state === 'closed') return null;
+
+      return action;
+    }).filter(a => a);
+
+    const placeholder = user ? 'His' : 'Your';
+    message.reply(printList(actions, `${placeholder} action list is empty! 😌`));
+  });
+};
