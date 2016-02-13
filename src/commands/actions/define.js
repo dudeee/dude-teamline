@@ -14,7 +14,7 @@ export default (bot, uri) => {
     const [cmd] = message.match;
 
     const actionList = message.preformatted.slice(cmd.length + message.preformatted.indexOf(cmd));
-    const actions = parseActionList(actionList);
+    const actions = await parseActionList(actionList);
 
     const employee = await findEmployee(uri, bot, message);
 
@@ -23,8 +23,8 @@ export default (bot, uri) => {
 
     for (const { team, action, status, role, name } of actions) {
       let pr;
-      const model = name.toLowerCase();
       const modelName = role ? 'Role' : 'Project';
+      const model = modelName.toLowerCase();
 
       switch (status) {
         case DUPLICATE:
@@ -182,7 +182,7 @@ export default (bot, uri) => {
           if (distance) {
             team = teamNames[index];
           } else {
-            return [team, name, action, TEAM_NOT_FOUND, role];
+            return { team, name, action, status: TEAM_NOT_FOUND, role };
           }
         }
 
