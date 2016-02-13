@@ -1,8 +1,8 @@
-import { request as unboundRequest } from './utils';
+import request from './request';
 import _ from 'lodash';
 
 export default async function sync(bot, uri) {
-  const request = unboundRequest.bind(bot);
+  const { get, post, put, del } = request(bot, uri);
   const stats = {
     created: 0,
     updated: 0,
@@ -21,11 +21,11 @@ export default async function sync(bot, uri) {
       phone: user.profile.phone || null
     };
 
-    let employee = await request('get', `${uri}/employee?username=${user.name}`);
+    let employee = await get(`employee?username=${user.name}`);
 
     if (employee && user.deleted) {
       stats.deleted++;
-      request('delete', `${uri}/employee/${employee.id}`);
+      del(`employee/${employee.id}`);
       continue;
     }
 
@@ -37,34 +37,34 @@ export default async function sync(bot, uri) {
 
     if (employee) {
       stats.updated++;
-      employee = await request('put', `${uri}/employee/${employee.id}`, null, record);
+      employee = await put(`employee/${employee.id}`, null, record);
       // await updateRole(employee, user);
       continue;
     }
 
     stats.created++;
-    employee = await request('post', `${uri}/employee`, null, record);
+    employee = await post(`employee`, null, record);
     // await updateRole(employee, user);
   }
 
   // async function updateRole(employee, user) {
   //   if (!user.profile.title) return;
   //
-  //   const roles = await request('get', `${uri}/roles`);
+  //   const roles = await get(`roles`);
   //   const { title } = user.profile;
   //   let role = roles.find(a => a.name.toLowerCase() === title.toLowerCase());
   //   let exists = false;
   //
   //   if (!role) {
-  //     role = await request('post', `${uri}/role`, null, {
+  //     role = await post(`role`, {
   //       name: title
   //     });
   //   } else {
-  //     exists = await request('get', `${uri}/employee/${employee.id}/role`);
+  //     exists = await get(`employee/${employee.id}/role`);
   //   }
   //
   //   if (!exists) {
-  //     await request('get', `${uri}/associate/role/${role.id}/employee/${employee.id}`);
+  //     await get(`associate/role/${role.id}/employee/${employee.id}`);
   //   }
   // }
   //

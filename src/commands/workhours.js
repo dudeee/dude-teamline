@@ -1,51 +1,12 @@
-import { request as unboundRequest, findEmployee, getWeekday, clockEmoji } from '../utils';
+import { getWeekday, clockEmoji } from '../utils';
+import findEmployee from './functions/find-employee';
+import request from '../request';
 import { capitalize } from 'lodash';
 import humanDate from 'date.js';
 import moment from 'moment';
 
-let request;
-const printHours = hours => {
-  if (!hours.length) {
-    return 'Oops! I got nothing to show! 😶';
-  }
-  let output = (hours.length > 1)
-  ? ':timer_clock: Your working hours plan is:\n'
-  : `:timer_clock: Your working hours plan for *${hours[0].weekday}* is:\n`;
-  output += hours.map((hour, id) =>
-    `#${id + 1}- *${capitalize(hour.weekday)}* from ${clockEmoji(hour.start)}` +
-    ` *${hour.start}* to ${clockEmoji(hour.end)} *${hour.end}*`).join('\n');
-  return output;
-};
-
-const setEmployeeWorkhours = async (uri, userId, dayWorkhours) => {
-  // delete previous hours
-  await request('delete', `${uri}/employee/${userId}/workhours`);
-  // set workhours
-  return await Promise.all(dayWorkhours.map(async day => {
-    const [startHours, startMinutes] = day.start.split(':');
-    const start = new Date();
-    start.setHours(startHours);
-    start.setMinutes(startMinutes || 0);
-    start.setSeconds(0);
-
-    const [endHours, endMinutes] = day.end.split(':');
-    const end = new Date();
-    end.setHours(endHours);
-    end.setMinutes(endMinutes || 0);
-    end.setSeconds(0);
-
-    const timeFormat = 'HH:mm:ss';
-
-    return await request('post', `${uri}/employee/${userId}/workhour`, null, {
-      weekday: day.day,
-      start: moment(start).format(timeFormat),
-      end: moment(end).format(timeFormat)
-    });
-  }));
-};
-
 export default async (bot, uri) => {
-  request = unboundRequest.bind(bot);
+  const { get, post, del } = request(bot, uri);
 
   bot.listen(/^(?:workhours?|wh)\s?(?!.*\b(set)\b)(.+)?$/i, async message => {
     const [, time] = message.match;
@@ -54,13 +15,13 @@ export default async (bot, uri) => {
     let workHours;
     const weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     if (weekdays.includes(time)) {
-      workHours = await request('get', `${uri}/employee/${employee.id}` +
+      workHours = await get(`employee/${employee.id}` +
       `/workhours?weekday=${time}`);
       return message.reply(printHours(workHours));
     }
 
     if (!time) {
-      workHours = await request('get', `${uri}/employee/${employee.id}/workhours`);
+      workHours = await get(`employee/${employee.id}/workhours`);
       return message.reply(printHours(workHours));
     }
 
@@ -68,7 +29,7 @@ export default async (bot, uri) => {
       const date = humanDate(time);
       if (date instanceof Date) {
         const weekday = getWeekday(date);
-        workHours = await request('get', `${uri}/employee/${employee.id}` +
+        workHours = await get(`employee/${employee.id}` +
         `/workhours?weekday=${weekday}`);
         return message.reply(printHours(workHours));
       }
@@ -113,7 +74,7 @@ export default async (bot, uri) => {
     let daysMsg = '';
     let invalidDaysMsg = '';
     for (const username of usernames) {
-      const user = await request('get', `${uri}/employee?username=${username}`);
+      const user = await get(`employee?username=${username}`);
       if (user) {
         users.push(user);
         await setEmployeeWorkhours(uri, user.id, days);
@@ -204,4 +165,44 @@ ${invalidUsersMsg}${invalidDaysMsg}`);
   }, {
     permissions: ['admin', 'human-resource']
   });
+
+  const printHours = hours => {
+    if (!hours.length) {
+      return 'Oops! I got nothing to show! 😶';
+    }
+    let output = (hours.length > 1)
+    ? ':timer_clock: Your working hours plan is:\n'
+    : `:timer_clock: Your working hours plan for *${hours[0].weekday}* is:\n`;
+    output += hours.map((hour, id) =>
+      `#${id + 1}- *${capitalize(hour.weekday)}* from ${clockEmoji(hour.start)}` +
+      ` *${hour.start}* to ${clockEmoji(hour.end)} *${hour.end}*`).join('\n');
+    return output;
+  };
+
+  const setEmployeeWorkhours = async (userId, dayWorkhours) => {
+    // delete previous hours
+    await del(`employee/${userId}/workhours`);
+    // set workhours
+    return await Promise.all(dayWorkhours.map(async day => {
+      const [startHours, startMinutes] = day.start.split(':');
+      const start = new Date();
+      start.setHours(startHours);
+      start.setMinutes(startMinutes || 0);
+      start.setSeconds(0);
+
+      const [endHours, endMinutes] = day.end.split(':');
+      const end = new Date();
+      end.setHours(endHours);
+      end.setMinutes(endMinutes || 0);
+      end.setSeconds(0);
+
+      const timeFormat = 'HH:mm:ss';
+
+      return await post(`employee/${userId}/workhour`, {
+        weekday: day.day,
+        start: moment(start).format(timeFormat),
+        end: moment(end).format(timeFormat)
+      });
+    }));
+  };
 };

@@ -1,13 +1,13 @@
-import { request as unboundRequest } from '../utils';
+import request from '../request';
 
 export default async (bot, uri) => {
-  const request = unboundRequest.bind(bot);
+  const { get, post, put, del } = request(bot, uri);
 
   bot.listen(/teamline manage add (\w+) (.*)/i, async message => {
     const [type, name] = message.match;
     const t = type.toLowerCase();
 
-    const item = await request('post', `${uri}/${t}`, null, { name });
+    const item = await post(`${t}`, { name });
 
     message.reply(`Created ${t} #${item.id} - ${item.name}`);
   }, {
@@ -18,7 +18,7 @@ export default async (bot, uri) => {
     const [type, id] = message.match;
     const t = type.toLowerCase();
 
-    const item = await request('put', `${uri}/${t}/${id}`, null, {
+    const item = await put(`${t}/${id}`, {
       done: true
     });
 
@@ -31,7 +31,7 @@ export default async (bot, uri) => {
     const [type, id] = message.match;
     const t = type.toLowerCase();
 
-    const item = await request('put', `${uri}/${t}/${id}`, null, {
+    const item = await put(`${t}/${id}`, {
       done: false
     });
 
@@ -44,7 +44,7 @@ export default async (bot, uri) => {
     const [type, id] = message.match;
     const t = type.toLowerCase();
 
-    const item = await request('delete', `${uri}/${t}/${id}`);
+    const item = await del(`${t}/${id}`);
 
     message.reply(`Deleted ${type} #${item.id}.`);
   }, {
@@ -56,7 +56,7 @@ export default async (bot, uri) => {
     const sourceType = st.toLowerCase();
     const targetType = tt.toLowerCase();
 
-    await request('get', `${uri}/associate/${sourceType}/${sourceId}/${targetType}/${targetId}`);
+    await get(`associate/${sourceType}/${sourceId}/${targetType}/${targetId}`);
 
     message.reply(`Connected ${sourceType} #${sourceId} with ${targetType} #${targetId}`);
   }, {

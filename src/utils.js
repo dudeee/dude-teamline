@@ -1,17 +1,3 @@
-import unirest from 'unirest';
-
-export async function request(...args) {
-  return new Promise((resolve, reject) => {
-    unirest(...args).query({
-      [this.config.teamline.auth.key]: this.config.teamline.auth.token
-    }).end(response => {
-      if (response.error) reject(response.error);
-
-      resolve(response.body);
-    });
-  });
-}
-
 export const printList = (list, empty = 'Nothing to show 😶') => {
   if (!list.length) return empty;
 
@@ -31,18 +17,6 @@ export const printList = (list, empty = 'Nothing to show 😶') => {
 
     return `#${item.id} – ${name}`;
   }).join('\n');
-};
-
-export const findEmployee = async (uri, bot, message) => {
-  const req = request.bind(bot);
-  const username = bot.find(message.user).name;
-  const employee = await req('get', `${uri}/employee?username=${username}`);
-
-  if (!employee) {
-    return message.reply('You are not a registered employee');
-  }
-
-  return employee;
 };
 
 function jaro(a, b) {

@@ -1,14 +1,4 @@
-import define from './actions/define';
-import list from './actions/list';
-import refresh from './actions/refresh';
-import remove from './actions/remove';
-
-export default async (bot, uri) => {
-  list(bot, uri);
-  refresh(bot, uri);
-  remove(bot, uri);
-  define(bot, uri);
-
+export default async (bot) => {
   const wait = 500;
   bot.command('^(actions | action) help', async message => {
     message.reply(`Hello friend!
@@ -90,7 +80,7 @@ I think that's it for now, if you have any questions, message @mahdi.
   //
   //   let employee = await findEmployee(uri, bot, message);
   //
-  //   let action = await request('put', `${uri}/employee/${employee.id}/action/${id}`, null, {
+  //   let action = await put(`employee/${employee.id}/action/${id}`, {
   //     done: true
   //   });
   //
@@ -103,7 +93,7 @@ I think that's it for now, if you have any questions, message @mahdi.
   //
   //   let employee = await findEmployee(uri, bot, message);
   //
-  //   let action = await request('put', `${uri}/employee/${employee.id}/action/${id}`, null, {
+  //   let action = await put(`employee/${employee.id}/action/${id}`, {
   //     done: false
   //   });
   //

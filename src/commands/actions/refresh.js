@@ -1,10 +1,10 @@
-import { request as unboundRequest } from '../../utils';
+import request from '../../request';
 
 export default (bot, uri) => {
-  const request = unboundRequest.bind(bot);
+  const { get } = request(bot, uri);
 
   bot.command('^(actions | action) refresh', async message => {
-    request('get', `${uri}?refresh`);
+    get(`${uri}?refresh`);
 
     message.reply('Sent a request to refresh data. 🔄');
   });

@@ -1,11 +1,12 @@
-import { findEmployee, request as unboundRequest } from '../../utils';
+import findEmployee from '../functions/find-employee';
+import request from '../../request';
 
 export default (bot, uri) => {
-  const request = unboundRequest.bind(bot);
+  const { get, del } = request(bot, uri);
 
   bot.command('^(actions | action) clear', async message => {
     const employee = await findEmployee(uri, bot, message);
-    await request('delete', `${uri}/employee/${employee.id}/actions/today`);
+    await del(`employee/${employee.id}/actions/today`);
 
     message.reply('Cleared your actions for today.');
   });
@@ -15,10 +16,10 @@ export default (bot, uri) => {
     index = parseInt(index, 10) - 1;
 
     const employee = await findEmployee(uri, bot, message);
-    const actions = await request('get', `${uri}/employee/${employee.id}/actions/today`);
+    const actions = await get(`employee/${employee.id}/actions/today`);
 
-    const action = await request('delete', `${uri}/action/${actions[index].id}`);
+    const action = await del(`action/${actions[index].id}`);
 
-    message.reply(`Removed action "${action.name}".`);
+    message.reply(`Removed action *${action.name}*.`);
   });
 };

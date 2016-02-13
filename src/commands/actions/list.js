@@ -1,46 +1,49 @@
-import { findEmployee, request as unboundRequest, printList } from '../../utils';
+import { printList } from '../../utils';
+import findEmployee from '../functions/find-employee';
+import request from '../../request';
 import humanDate from 'date.js';
 
 export default (bot, uri) => {
-  const request = unboundRequest.bind(bot);
+  const { get } = request(bot, uri);
 
   bot.command('list <char> <char> [char]', async message => {
-    let [user, type, state] = message.match; // eslint-disable-line
+    let [user, type, scope] = message.match; // eslint-disable-line
+    scope = scope || '';
+
     let employee;
-
-    state = state || '';
-
     if (user[0] === '@') {
       const username = user.slice(1);
-      employee = await request('get', `${uri}/employee?username=${username}`);
+      employee = await get('employee', { username });
     } else if (user === 'myself' || user === 'my' || user === 'me') {
       employee = await findEmployee(uri, bot, message);
     } else {
       user = null;
     }
 
-    let query = '';
+    const query = {};
 
     switch (type) {
       case 'projects':
-        query = `/open?include=Team`;
+        scope = scope || 'open';
+        query.include = 'Team';
         break;
       case 'actions':
-        query = `?include=Project`;
+        query.include = 'Project';
         break;
       case 'teams':
         if (!user) {
-          query = `?include=Employee`;
+          query.include = 'Employee';
         }
         break;
       case 'roles':
-        query = `?include=Team`;
+        query.include = 'Team';
         break;
       default: break;
     }
 
-    let list = user ? await request('get', `${uri}/employee/${employee.id}/${type}${query}`)
-                      : await request('get', `${uri}/${type}${query}`);
+    if (scope) scope = `/${scope}`;
+    let list = user ? await get(`employee/${employee.id}/${type}${scope}`, query)
+                      : await get(`${type}${scope}`, query);
 
     if (!list.length) {
       return message.reply('Nothing to show 😶');
@@ -89,7 +92,7 @@ export default (bot, uri) => {
     if (type === 'teams') {
       if (user) {
         list = await Promise.all(list.map(team =>
-          request('get', `${uri}/team/${team.id}?include=Employee`)
+          get(`team/${team.id}?include=Employee`)
         ));
       }
 
@@ -179,15 +182,17 @@ export default (bot, uri) => {
 
     const employee = await findEmployee(uri, bot, user ? { user } : message);
 
-    const dateQuery = JSON.stringify({
-      $gte: +fromDate,
-      $lte: +toDate
-    });
-    const query = `date=${dateQuery}&include=Project`;
-    const url = `${uri}/employee/${employee.id}/actions?${query}`;
-    const actions = await* (await request('get', url)).map(action => {
+    const query = {
+      date: JSON.stringify({
+        $gte: +fromDate,
+        $lte: +toDate
+      }),
+      include: 'Project'
+    };
+    const url = `employee/${employee.id}/actions`;
+    const actions = await* (await get(url, query)).map(action => {
       if (!action.Project) {
-        return request('get', `${uri}/action/${action.id}?include=Role`);
+        return get(`action/${action.id}?include=Role`);
       }
 
       if (action.Project.state === 'closed') return null;

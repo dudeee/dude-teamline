@@ -1,4 +1,5 @@
-import { request as unboundRequest, findEmployee } from '../utils';
+import findEmployee from './functions/find-employee';
+import request from '../request';
 import humanDate from 'date.js';
 import moment from 'moment';
 import { capitalize, groupBy } from 'lodash';
@@ -56,7 +57,7 @@ ${printRecesses(item)}
 };
 
 export default async (bot, uri) => {
-  const request = unboundRequest.bind(bot);
+  const { get, post } = request(bot, uri);
 
   bot.listen(/^(?:recess|break)\s(?:(.+)(?:-|_|,))?(.+)(?:to|for|-|_|\.)(.*)$/i, async message => {
     const [reason, start, end] = message.match;
@@ -65,7 +66,7 @@ export default async (bot, uri) => {
     const defaultStatus = 'accepted';
     // set offset (second param) to start date
     const endDate = humanDate(end, startDate);
-    await request('post', `${uri}/employee/${employee.id}/recess`, null, {
+    await post(`employee/${employee.id}/recess`, {
       name: reason ? reason.trim() : 'no reason',
       start: startDate.toString(),
       end: endDate.toString(),
@@ -82,7 +83,7 @@ export default async (bot, uri) => {
 
   bot.command('^recess$', async message => {
     const employee = await findEmployee(uri, bot, message);
-    const recesses = await request('get', `${uri}/employee/${employee.id}/recesses`);
+    const recesses = await get(`employee/${employee.id}/recesses`);
     message.reply(printEmployeeRecesses(recesses));
   });
 
@@ -95,7 +96,7 @@ export default async (bot, uri) => {
 
   bot.listen(/^recess\s(?:all|show)(\s(\w+)?\s(.+)|())$/i, async message => {
     const [, key, value] = message.match;
-    let recesses = await request('get', `${uri}/recesses?include=Employee`);
+    let recesses = await get(`recesses?include=Employee`);
     if (key && value) {
       const employeeKeys = ['u', 'e', 'user', 'employee'];
       if (employeeKeys.includes(key)) {
@@ -118,13 +119,13 @@ export default async (bot, uri) => {
   bot.listen(/^recess\s(active|pending|accepted|rejected)$/i, async message => {
     const [scope] = message.match;
     const employee = await findEmployee(uri, bot, message);
-    const recesses = await request('get', `${uri}/employee/${employee.id}/recesses/${scope}`);
+    const recesses = await get(`employee/${employee.id}/recesses/${scope}`);
     message.reply(printEmployeeRecesses(recesses));
   });
 
   bot.listen(/^recess\s(?:all|show)\s(active|pending|accepted|rejected)$/i, async message => {
     const [scope] = message.match;
-    const recesses = await request('get', `${uri}/recesses/${scope}?include=Employee`);
+    const recesses = await get(`recesses/${scope}?include=Employee`);
     message.reply(printAllRecesses(recesses));
   });
 };

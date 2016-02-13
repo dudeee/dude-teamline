@@ -1,4 +1,5 @@
-import { request as unboundRequest, findEmployee, printList, wait } from './utils';
+import { findEmployee, printList, wait } from './utils';
+import request from './request';
 import sync from './sync-users';
 import _ from 'lodash';
 import commands from './commands';
@@ -15,8 +16,7 @@ export default async bot => {
   const config = bot.config.teamline;
   const { schedules, uri } = config;
 
-  // bind bot to request in order to use config
-  const request = unboundRequest.bind(bot);
+  const { get } = request(bot, uri);
 
   try {
     commands(bot, uri);
@@ -35,9 +35,9 @@ export default async bot => {
     const RATE_LIMIT = 1000;
 
     for (const user of users) {
-      const emp = await request('get', `${uri}/employee?username=${user.name}`);
+      const emp = await get(`employee?username=${user.name}`);
       if (!emp) continue;
-      const a = await request('get', `${uri}/employee/${emp.id}/actions/today`);
+      const a = await get(`employee/${emp.id}/actions/today`);
       if (a.length) continue;
 
       bot.sendMessage(user.name, 'Hey! What are you going to do today? 😃');
@@ -61,8 +61,8 @@ export default async bot => {
       if (!employee) return;
 
       const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
-      const url = `${uri}/employee/${employee.id}/actions/today?include=Project`;
-      const actions = await request('get', url);
+      const url = `employee/${employee.id}/actions/today?include=Project`;
+      const actions = await get(url);
 
       if (!actions.length) {
         return;
