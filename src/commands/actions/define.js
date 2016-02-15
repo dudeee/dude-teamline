@@ -78,9 +78,9 @@ export default (bot, uri) => {
           });
           continue;
         }
-      } else {
-        ac = await post(`employee/${employee.id}/action`, { name: action });
       }
+
+      ac = await post(`employee/${employee.id}/action`, { name: action });
 
       let t;
       if (team) {
