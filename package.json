@@ -1,7 +1,7 @@
 {
   "name": "bolt-teamline",
-  "version": "1.11.6",
-  "description": "Help employees to track their tasks and progress",
+  "version": "1.11.7",
+  "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
     "start": "node build/index.js",

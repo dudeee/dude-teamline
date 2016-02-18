@@ -1,6 +1,6 @@
-import { getWeekday, clockEmoji } from '../utils';
-import findEmployee from './functions/find-employee';
-import request from '../request';
+import { getWeekday, clockEmoji } from '../../utils';
+import findEmployee from '../functions/find-employee';
+import request from '../../request';
 import { capitalize } from 'lodash';
 import humanDate from 'date.js';
 import moment from 'moment';
@@ -8,15 +8,14 @@ import moment from 'moment';
 export default async (bot, uri) => {
   const { get, post, del } = request(bot, uri);
 
-  bot.listen(/^(?:workhours?|wh)\s?(?!.*\b(set)\b)(.+)?$/i, async message => {
-    const [, time] = message.match;
+  bot.command('^workhours [word]', async message => {
+    const [time] = message.match;
     const employee = await findEmployee(uri, bot, message);
 
     let workHours;
     const weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     if (weekdays.includes(time)) {
-      workHours = await get(`employee/${employee.id}` +
-      `/workhours?weekday=${time}`);
+      workHours = await get(`employee/${employee.id}/workhours`, { weekday: time });
       return message.reply(printHours(workHours));
     }
 
@@ -29,8 +28,7 @@ export default async (bot, uri) => {
       const date = humanDate(time);
       if (date instanceof Date) {
         const weekday = getWeekday(date);
-        workHours = await get(`employee/${employee.id}` +
-        `/workhours?weekday=${weekday}`);
+        workHours = await get(`employee/${employee.id}/workhours`, { weekday });
         return message.reply(printHours(workHours));
       }
     } catch (e) {
@@ -39,8 +37,9 @@ export default async (bot, uri) => {
     }
   });
 
-  bot.listen(/(?:workhours?|wh)\s(?:set)\s(.+)((?:\n.+)*)/i, async message => { // eslint-disable-line
-    let [usernames, data] = message.match;
+  bot.command('^workhours set <string>', async message => {
+    let [usernames] = message.match;
+    let data = message.preformatted.split('\n').slice(1).join('\n');
     const weeekdayHoursRegex = /((sun|sat|mon|tue|wed|thu|fri)\s(.*)\n*)/gi;
     if (!weeekdayHoursRegex.test(data)) {
       return message.reply('Invalid weekdays or hours format.');
@@ -74,10 +73,10 @@ export default async (bot, uri) => {
     let daysMsg = '';
     let invalidDaysMsg = '';
     for (const username of usernames) {
-      const user = await get(`employee?username=${username}`);
+      const user = await get(`employee`, { username });
       if (user) {
         users.push(user);
-        await setEmployeeWorkhours(uri, user.id, days);
+        await setEmployeeWorkhours(user.id, days);
       } else {
         invalidUsers.push(username);
       }

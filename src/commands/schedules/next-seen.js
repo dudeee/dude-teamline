@@ -1,4 +1,4 @@
-import request from '../request';
+import request from '../../request';
 import moment from 'moment';
 // import { capitalize, groupBy } from 'lodash';
 
@@ -8,7 +8,7 @@ const DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a';
 export default async (bot, uri) => {
   const { get } = request(bot, uri);
 
-  bot.listen(/^(?:nextseen|ns|)\s(.+)$/i, async message => {
+  bot.command('^nextseen <string>', async message => {
     let [username] = message.match;
     username = username.replace(/(?:@|\s)/gi, '');
     const employee = await get(`employee?username=${username}`);

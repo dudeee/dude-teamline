@@ -1,5 +1,5 @@
-import findEmployee from './functions/find-employee';
-import request from '../request';
+import findEmployee from '../functions/find-employee';
+import request from '../../request';
 import humanDate from 'date.js';
 import moment from 'moment';
 import { capitalize, groupBy } from 'lodash';

@@ -7,6 +7,7 @@ export default (bot, uri) => {
     get(url = '', query = {}) {
       url = `${uri}/${url}`;
 
+      bot.log.silly('[teamline] request GET', url, query);
       return new Promise((resolve, reject) => {
         unirest.get(url)
           .query(query)
@@ -23,6 +24,7 @@ export default (bot, uri) => {
     post(url = '', body = {}) {
       url = `${uri}/${url}`;
 
+      bot.log.silly('[teamline] request POST', url, body);
       return new Promise((resolve, reject) => {
         unirest.post(url)
           .send(body)
@@ -39,6 +41,7 @@ export default (bot, uri) => {
     put(url = '', body = {}) {
       url = `${uri}/${url}`;
 
+      bot.log.silly('[teamline] request PUT', url, body);
       return new Promise((resolve, reject) => {
         unirest.put(url)
           .send(body)
@@ -55,6 +58,7 @@ export default (bot, uri) => {
     del(url = '', query = {}) {
       url = `${uri}/${url}`;
 
+      bot.log.silly('[teamline] request DELETE', url, query);
       return new Promise((resolve, reject) => {
         unirest.delete(url)
           .query(query)
