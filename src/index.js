@@ -60,7 +60,7 @@ export default async bot => {
 
       if (!employee) return;
 
-      const name = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
+      const name = `${employee.firstname} ${employee.lastname}`;
       const url = `employee/${employee.id}/actions/today?include=Project`;
       const actions = await get(url);
 

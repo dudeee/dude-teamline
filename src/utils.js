@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const printList = (list, empty = 'Nothing to show 😶') => {
   if (!list.length) return empty;
 
@@ -96,30 +98,30 @@ export function permutations(arr) {
   return ps;
 }
 
-const BEST_DISTANCE = 1;
-const LENGTH_DIFFERENCE = 2;
+const NEIGHBOUR_RANGE = 2;
 export function fuzzy(string, list, DISTANCE_REQUIRED) {
   string = string.toLowerCase().trim();
   list = list.map(a => a.toLowerCase().trim());
 
-  const words = string.split(' ');
-  const ps = permutations(words);
-
   const distance = [];
+  const sourceWords = _.words(string);
+
   for (let i = 0; i < list.length; i++) {
-    for (let j = 0; j < ps.length; j++) {
-      const item = list[i];
-      const str = ps[j].join(' ');
+    const sentence = list[i];
+    const words = _.words(sentence);
 
-      if (str === item) return [BEST_DISTANCE, i];
+    const d = sourceWords.reduce((a, b, j) => {
+      const start = Math.max(0, j - NEIGHBOUR_RANGE);
+      const neighbours = words.slice(start, j + NEIGHBOUR_RANGE);
+      const ds = neighbours.map((x) => jaro(b, x));
 
-      if (Math.abs(item.split(' ').length - ps[j].length) > LENGTH_DIFFERENCE) continue;
-      const args = item.length < str.length ? [item, str] : [str, item];
-      distance.push({
-        distance: jaro(...args),
-        index: i
-      });
-    }
+      return a + Math.max(...ds);
+    }, 0) / sourceWords.length;
+
+    distance.push({
+      distance: d,
+      index: i
+    });
   }
 
   const max = distance.reduce((a, b) => {

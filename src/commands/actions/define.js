@@ -134,7 +134,7 @@ export default (bot, uri) => {
     const [h, m] = publishActions.split(':').map(Number.parseFloat);
     if (d.getHours() < h || d.getMinutes() < m) return;
 
-    const userinfo = `@${employee.username} – ${employee.firstname} ${employee.lastname}`;
+    const userinfo = `${employee.firstname} ${employee.lastname}`;
 
     bot.sendMessage('actions', `${userinfo}\n${list}`, {
       websocket: false,

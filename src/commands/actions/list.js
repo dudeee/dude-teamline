@@ -8,7 +8,11 @@ export default (bot, uri) => {
 
   bot.command('list <char> <char> [char]', async message => {
     let [user, type, scope] = message.match; // eslint-disable-line
-    scope = scope || '';
+    if (scope) {
+      [scope, type] = [type, scope];
+    } else {
+      scope = '';
+    }
 
     let employee;
     if (user[0] === '@') {
