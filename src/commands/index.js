@@ -18,7 +18,6 @@ export default function load(bot, uri, dir = '.') {
 
         if (!fullPath.endsWith('.js')) return;
 
-        console.log(fullPath);
         require(fullPath)(bot, uri);
       });
   } catch (e) {
