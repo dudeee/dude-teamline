@@ -91,7 +91,13 @@ export default (bot, uri) => {
       });
 
   const printHours = workhours => {
-    const list = workhours.map(({ weekday, start, end }) => {
+    const sorted = workhours.sort((a, b) =>
+      a.weekday - b.weekday
+    );
+
+    sorted.unshift(sorted.pop());
+
+    const list = sorted.map(({ weekday, start, end }) => {
       const day = moment().day(weekday).format('dddd');
       const startClock = clockEmoji(start);
       const endClock = clockEmoji(end);
