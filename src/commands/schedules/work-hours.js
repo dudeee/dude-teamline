@@ -8,20 +8,34 @@ export default (bot, uri) => {
 
   bot.command('^workhours set [char] [string] > [string]', async message => {
     const [username] = message.match;
-    const employee = await findEmployee(uri, bot, message, username);
+
+    let employees = [];
+    let employee;
+    if (username === 'all' || username === 'default') {
+      employees = await get('employees');
+    } else {
+      employee = await findEmployee(uri, bot, message, username);
+      employees = [employee];
+    }
 
     const { preformatted } = message;
     const listString = preformatted.slice(preformatted.indexOf(username) + username.length);
     const list = parseWorkhoursList(listString);
 
     for (const item of list) {
-      await del(`employee/${employee.id}/workhours`, { weekday: item.day.day() });
+      for (const emp of employees) {
+        await del(`employee/${emp.id}/workhours`, { weekday: item.day.day() });
 
-      await post(`employee/${employee.id}/workhour`, {
-        weekday: item.day.day(),
-        start: item.range[0].format('HH:mm'),
-        end: item.range[1].format('HH:mm')
-      });
+        await post(`employee/${emp.id}/workhour`, {
+          weekday: item.day.day(),
+          start: item.range[0].format('HH:mm'),
+          end: item.range[1].format('HH:mm')
+        });
+      }
+    }
+
+    if (!employee) {
+      return message.reply('Set working hours successfuly.');
     }
 
     const result = await get(`employee/${employee.id}/workhours`);
