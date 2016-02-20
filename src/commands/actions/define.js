@@ -49,7 +49,7 @@ export default (bot, uri) => {
           });
           continue;
         case NEW:
-          pr = await post(`${name.toLowerCase()}`, { name });
+          pr = await post(model, { name });
           break;
         default: break;
       }
@@ -122,9 +122,9 @@ export default (bot, uri) => {
       attachment.mrkdwn_in = ['text'];
       return attachment;
     });
-    message.reply(`${list}`, {
-      websocket: false,
+    message.reply(list, {
       attachments,
+      websocket: false,
       parse: 'full'
     });
 

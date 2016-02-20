@@ -14,15 +14,7 @@ export default (bot, uri) => {
       scope = '';
     }
 
-    let employee;
-    if (user[0] === '@') {
-      const username = user.slice(1);
-      employee = await get('employee', { username });
-    } else if (user === 'myself' || user === 'my' || user === 'me') {
-      employee = await findEmployee(uri, bot, message);
-    } else {
-      user = null;
-    }
+    const employee = await findEmployee(uri, bot, message, user);
 
     const query = {};
 
@@ -168,11 +160,7 @@ export default (bot, uri) => {
     from = from || 'today';
     to = to || from;
 
-    if (user === 'myself' || user === 'me') {
-      user = null;
-    } else {
-      user = user.slice(1);
-    }
+    const employee = await findEmployee(uri, bot, message, user);
 
     const fromDate = humanDate(from);
     fromDate.setHours(0);
@@ -183,8 +171,6 @@ export default (bot, uri) => {
     toDate.setHours(0);
     toDate.setMinutes(0);
     toDate.setSeconds(0);
-
-    const employee = await findEmployee(uri, bot, user ? { user } : message);
 
     const query = {
       date: JSON.stringify({
