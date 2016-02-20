@@ -203,7 +203,7 @@ export default (bot, uri) => {
 
         if (plus) {
           names.push(name);
-          return { team, name, status: NEW, role };
+          return { team, name, action, status: NEW, role };
         }
 
         return { team, name, action, status: NOT_FOUND, role };
