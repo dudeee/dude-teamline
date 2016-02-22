@@ -68,9 +68,9 @@ export default (bot, uri) => {
         d.setMinutes(0);
         d.setSeconds(0);
 
-        if ((ac.Project && ac.Project.name === name) ||
-            (ac.Role && ac.Role.name === name) &&
-            (d === today)) {
+        const sameRelation = (ac.Project && ac.Project.name === name) ||
+                             (ac.Role && ac.Role.name === name);
+        if (sameRelation && d === today) {
           attachments.push({
             color: 'danger',
             text: `Action *${action}* already exists. I assume you accidentaly tried`
@@ -90,7 +90,7 @@ export default (bot, uri) => {
         if (t) {
           pr = await get(`team/${t.id}/${model}`, { name });
         } else {
-          pr = await get(`${model}`, { name });
+          pr = await get(model, { name });
         }
       }
       if (!t) {

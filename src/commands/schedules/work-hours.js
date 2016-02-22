@@ -6,7 +6,7 @@ import moment from 'moment';
 export default (bot, uri) => {
   const { get, post, del } = request(bot, uri);
 
-  bot.command('^workhours set [char] [string] > [string]', async message => {
+  bot.command('^schedules set [char] [string] > [string]', async message => {
     const [username] = message.match;
 
     let employees = [];
@@ -48,7 +48,7 @@ export default (bot, uri) => {
     message.reply(`${name} working hours are as follows:\n${printHours(result)}`);
   });
 
-  bot.command('^workhours [char]$', async message => {
+  bot.command('^schedules [char]$', async message => {
     const [username] = message.match;
     const employee = await findEmployee(uri, bot, message, username);
 
@@ -60,10 +60,10 @@ export default (bot, uri) => {
     }
 
     const name = username ? `${employee.firstname}'s` : 'Your';
-    message.reply(`${name} working hours are as follows:\n${printHours(result)}`);
+    message.reply(`${name} weekly schedule is as follows:\n${printHours(result)}`);
   });
 
-  bot.command('^workhours remove [char] [word]', async message => {
+  bot.command('^schedules remove [char] [word]', async message => {
     let [username, day] = message.match;
     if (!day) {
       day = username;
@@ -75,7 +75,7 @@ export default (bot, uri) => {
 
     await del(`employee/${employee.id}/workhours`, { weekday: date.day() });
 
-    message.reply(`Removed your Working Hour for *${date.format('dddd')}*.`);
+    message.reply(`Cleared your schedule for *${date.format('dddd')}*.`);
   });
 
   const parseWorkhoursList = string =>
