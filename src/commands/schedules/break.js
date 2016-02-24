@@ -32,7 +32,7 @@ export default (bot, uri) => {
     const data = { start: start + 0, end: end + 0, reason };
     const b = await post(`employee/${employee.id}/break`, data);
 
-    const userinfo = `${employee.username} ${employee.firstname} ${employee.lastname}`;
+    const userinfo = `${employee.firstname} ${employee.lastname}`;
     const formattedFrom = moment(start).format('DD MMMM HH:mm');
     const formattedTo = moment(end).format('DD MMMM HH:mm');
     const manager = bot.config.teamline.breaks.manager;
