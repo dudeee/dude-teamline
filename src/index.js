@@ -101,6 +101,10 @@ export default async bot => {
 \`actions remove <id>\` – remove the specified action
 \`list [@username | my | all] [model]\` – list entities of one's or all employees/actions/projects/teams
 `);
+bot.help('schedules', 'Manage schedules and vacations', `
+\`vacation <start> (to | for) <end>\` – request a vacation
+\`schedules <@username | myself>\` view someone's weekly schedule (working hours)
+`)
   /*eslint-enable */
 
   try {
