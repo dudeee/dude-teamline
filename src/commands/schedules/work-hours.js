@@ -46,7 +46,7 @@ export default (bot, uri) => {
 
     const name = username === 'myself' ? 'Your' : `${employee.firstname}'s`;
     message.reply(`${name} working hours are as follows:\n${printHours(result)}`);
-  });
+  }, { permissions: ['human-resource', 'admin'] });
 
   bot.command('^schedules [char]$', async message => {
     const [username] = message.match;
