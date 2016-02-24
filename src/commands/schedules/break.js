@@ -2,7 +2,6 @@ import findEmployee from '../functions/find-employee';
 import request from '../../request';
 import humanDate from 'date.js';
 import moment from 'moment';
-import { capitalize } from 'lodash';
 
 const INVALID_DATE = /invalid date/i;
 export default (bot, uri) => {
@@ -33,7 +32,8 @@ export default (bot, uri) => {
     const userinfo = `${employee.username} ${employee.firstname} ${employee.lastname}`;
     const formattedFrom = moment(start).format('DD MMMM HH:mm');
     const formattedTo = moment(end).format('DD MMMM HH:mm');
-    const [index] = await bot.ask('mahdi', `Hey, ${userinfo} wants to take a break ` + //eslint-disable-line
+    const manager = bot.config.teamline.break.manager;
+    const [index] = await bot.ask(manager, `Hey, ${userinfo} wants to take a break ` + //eslint-disable-line
                                            `from ${formattedFrom} to ${formattedTo}.\n` +
                                            (reason ? `Reason: ${reason}` : ``) +
                                            `Do you grant the permission?`, ['Yes', 'No']);
@@ -52,8 +52,45 @@ export default (bot, uri) => {
     const employee = await findEmployee(uri, bot, message, username);
     const breaks = await get(`employee/${employee.id}/breaks`);
 
-    message.reply(printBreaks(breaks));
+    const name = username ? `${employee.firstname} ${employee.lastname}'s` : 'Your';
+
+    const attachments = Array.from(printBreaks(breaks));
+    await message.reply(`${name} breaks:`, { attachments, websocket: false });
   });
+
+  const printBreaks = (list) =>
+    list.map(entry => {
+      const format = 'DD MMMM YYYY, HH:mm';
+
+      const fields = [{
+        title: 'From',
+        value: moment(entry.start).format(format),
+        short: true
+      }, {
+        title: 'To',
+        value: moment(entry.end).format(format),
+        short: true
+      }];
+
+      if (entry.reason) {
+        fields.push({
+          title: 'Reason',
+          value: entry.reason,
+          short: false
+        });
+      }
+
+      const colors = {
+        accepted: 'good',
+        pending: 'warning',
+        rejected: 'danger'
+      };
+
+      const fallback = `${fields[0].title}: *${fields[0].value}*\n` +
+                       `${fields[1].title}: *${fields[1].value}*\n`;
+
+      return { color: colors[entry.status], fields, fallback };
+    });
 };
 
 const almostEqual = (a, b) =>
@@ -62,14 +99,3 @@ const almostEqual = (a, b) =>
   a.getDay() === b.getDay() &&
   a.getHours() === b.getHours() &&
   a.getMinutes() === b.getMinutes();
-
-const printBreaks = list =>
-  list.map(entry => {
-    const format = 'DD MMMM YYYY, HH:mm';
-    const from = moment(entry.start).format(format);
-    const to = moment(entry.end).format(format);
-    return `From: *${from}*\n` + //eslint-disable-line
-           `To: *${to}*\n` +
-           (entry.reason ? `Reason: *${entry.reason}*\n` : '') +
-           `Status: *${capitalize(entry.status)}*`;
-  }).join('\n\n');

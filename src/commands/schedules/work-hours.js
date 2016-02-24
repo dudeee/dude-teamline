@@ -1,8 +1,8 @@
-import { clockEmoji } from '../../utils';
 import findEmployee from '../functions/find-employee';
 import request from '../../request';
 import moment from 'moment';
 
+const DAY_COLORS = ['#687fe0', '#86e453', '#eb5d7a', '#34bae4', '#757f8c', '#ecf76e', '#ac58e0'];
 export default (bot, uri) => {
   const { get, post, del } = request(bot, uri);
 
@@ -60,7 +60,8 @@ export default (bot, uri) => {
     }
 
     const name = username ? `${employee.firstname}'s` : 'Your';
-    message.reply(`${name} weekly schedule is as follows:\n${printHours(result)}`);
+    const attachments = printHours(result);
+    message.reply(`${name} weekly schedule:`, { attachments, websocket: false });
   });
 
   bot.command('^schedules remove [char] [word]', async message => {
@@ -99,11 +100,21 @@ export default (bot, uri) => {
 
     const list = sorted.map(({ weekday, start, end }) => {
       const day = moment().day(weekday).format('dddd');
-      const startClock = clockEmoji(start);
-      const endClock = clockEmoji(end);
 
-      return `*${day}* > *${start}* ${startClock} – *${end}* ${endClock}`;
-    }).join('\n');
+      return {
+        title: day,
+        color: DAY_COLORS[weekday],
+        fields: [{
+          title: 'From',
+          value: start,
+          short: true
+        }, {
+          title: 'To',
+          value: end,
+          short: true
+        }]
+      };
+    });
 
     return list;
   };
