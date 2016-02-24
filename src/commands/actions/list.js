@@ -42,7 +42,7 @@ export default (bot, uri) => {
                       : await get(`${type}${scope}`, query);
 
     if (!list.length) {
-      return message.reply('Nothing to show 😶');
+      return message.reply(bot.t('dialogs.empty'));
     }
 
     const groupBy = (...properties) =>
@@ -82,7 +82,7 @@ export default (bot, uri) => {
         return `･ ${team}\n${projects}`;
       }).join('\n\n');
 
-      return message.reply(reply || 'Nothing to show 😶');
+      return message.reply(reply || bot.t('dialogs.empty'));
     }
 
     if (type === 'teams') {
@@ -102,7 +102,7 @@ export default (bot, uri) => {
         return `･ ${head}\n${employees}`;
       }).join('\n\n');
 
-      return message.reply(reply || 'Nothing to show 😶');
+      return message.reply(reply || bot.t('dialogs.empty'));
     }
 
     if (type === 'roles') {
@@ -119,7 +119,7 @@ export default (bot, uri) => {
         return `･ ${head}\n${sub}`;
       }).join('\n\n');
 
-      return message.reply(reply || 'Nothing to show 😶');
+      return message.reply(reply || bot.t('dialogs.empty'));
     }
 
     if (type === 'actions') {
@@ -191,6 +191,6 @@ export default (bot, uri) => {
     }).filter(a => a);
 
     const placeholder = user ? 'His' : 'Your';
-    message.reply(printList(actions, `${placeholder} action list is empty! 😌`));
+    message.reply(printList(actions, bot.t('teamline.actions.list.empty', { user: placeholder })));
   });
 };

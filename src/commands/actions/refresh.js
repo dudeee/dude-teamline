@@ -6,6 +6,6 @@ export default (bot, uri) => {
   bot.command('^(actions | action) refresh', async message => {
     get(`${uri}?refresh`);
 
-    message.reply('Sent a request to refresh data. 🔄');
+    message.reply(bot.t('teamline.actions.refresh'));
   });
 };

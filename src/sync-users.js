@@ -43,7 +43,7 @@ export default async function sync(bot, uri) {
     }
 
     stats.created++;
-    employee = await post(`employee`, null, record);
+    employee = await post(`employee`, record);
     // await updateRole(employee, user);
   }
 

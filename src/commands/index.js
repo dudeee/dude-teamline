@@ -21,7 +21,6 @@ export default function load(bot, uri, dir = '.') {
         require(fullPath)(bot, uri);
       });
   } catch (e) {
-    console.error(e);
     bot.log.error('[teamline] error', e);
   }
 }

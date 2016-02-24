@@ -11,6 +11,8 @@ export default (bot, uri) => {
   const TEAM_NOT_FOUND = 405;
   const NEW = 200;
   bot.command('^<actions | action> [string] > [string] [>] [string]', async message => {
+    const t = (key, ...args) => bot.t(`teamline.actions.${key}`, ...args);
+
     const [cmd] = message.match;
 
     const actionList = message.preformatted.slice(cmd.length + message.preformatted.indexOf(cmd));
@@ -19,7 +21,8 @@ export default (bot, uri) => {
     const employee = await findEmployee(uri, bot, message);
 
     // Used to indicate errors / warnings / success
-    let attachments = [{ text: 'Submitted your actions successfuly!', color: 'good' }];
+    const attachments = new bot.Attachments();
+    attachments.goodOr(t('define.success'));
 
     for (const { team, action, status, role, name } of actions) {
       let pr;
@@ -28,25 +31,16 @@ export default (bot, uri) => {
 
       switch (status) {
         case DUPLICATE:
-          attachments.push({
-            color: 'warning',
-            text: `${modelName} *${name}* already exists. I assumed you meant to add to the ` +
-                  `already existing project.`
-          });
+          attachments.warning(t('define.errors.duplicate-project', { model: modelName, name }));
           break;
         case NOT_FOUND:
           const newSyntax = role ? `+(${name})` : `+${name}`;
-          attachments.push({
-            color: 'danger',
-            text: `${modelName} *${name}* doesn't exist, did you mean to create the ${model} using `
-                + `\`Team > ${newSyntax} > ${action}\` ?`
-          });
+          attachments.danger(t('define.errors.notfound', {
+            model: modelName, name, action, newSyntax
+          }));
           continue;
         case TEAM_NOT_FOUND:
-          attachments.push({
-            color: 'danger',
-            text: `Team *${team}* doesn't exist.`
-          });
+          attachments.danger(t('define.errors.team-notfound', { team }));
           continue;
         case NEW:
           pr = await post(model, { name });
@@ -71,35 +65,31 @@ export default (bot, uri) => {
         const sameRelation = (ac.Project && ac.Project.name === name) ||
                              (ac.Role && ac.Role.name === name);
         if (sameRelation && d === today) {
-          attachments.push({
-            color: 'danger',
-            text: `Action *${action}* already exists. I assume you accidentaly tried`
-                + ` to add a duplicate action.`
-          });
+          attachments.danger(bot.t('define.duplicate-action', { action }));
           continue;
         }
       }
 
       ac = await post(`employee/${employee.id}/action`, { name: action });
 
-      let t;
+      let tm;
       if (team) {
-        t = await get('team', { name: team });
+        tm = await get('team', { name: team });
       }
       if (!pr) {
-        if (t) {
+        if (tm) {
           pr = await get(`team/${t.id}/${model}`, { name });
         } else {
           pr = await get(model, { name });
         }
       }
-      if (!t) {
-        t = await get(`${model}/${pr.id}/team`);
+      if (!tm) {
+        tm = await get(`${model}/${pr.id}/team`);
 
-        if (!t) continue;
+        if (!tm) continue;
       }
 
-      await get(`associate/${model}/${pr.id}/team/${t.id}`);
+      await get(`associate/${model}/${pr.id}/team/${tm.id}`);
 
       await get(`associate/action/${ac.id}/${model}/${pr.id}`);
       await get(`associate/${model}/${pr.id}/employee/${employee.id}`);
@@ -117,11 +107,6 @@ export default (bot, uri) => {
     const list = printList(allActionsWithRoles);
 
     if (attachments.length > 1) attachments.splice(0, 1);
-    attachments = attachments.map(attachment => {
-      attachment.fallback = attachment.text;
-      attachment.mrkdwn_in = ['text'];
-      return attachment;
-    });
     message.reply(list, {
       attachments,
       websocket: false,

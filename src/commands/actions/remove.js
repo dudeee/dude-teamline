@@ -8,7 +8,7 @@ export default (bot, uri) => {
     const employee = await findEmployee(uri, bot, message);
     await del(`employee/${employee.id}/actions/today`);
 
-    message.reply('Cleared your actions for today.');
+    message.reply(bot.t('teamline.actions.remove.clear'));
   });
 
   bot.command('^(actions | action) remove <number>', async message => {
@@ -20,6 +20,6 @@ export default (bot, uri) => {
 
     const action = await del(`action/${actions[index].id}`);
 
-    message.reply(`Removed action *${action.name}*.`);
+    message.reply(bot.t('teamline.actions.remove.remove', { action: action.name }));
   });
 };

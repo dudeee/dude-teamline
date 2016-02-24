@@ -3,6 +3,7 @@ import request from './request';
 import sync from './sync-users';
 import _ from 'lodash';
 import commands from './commands';
+import path from 'path';
 
 const DEFAULT = {
   schedules: {
@@ -15,8 +16,9 @@ export default async bot => {
   _.defaults(bot.config.teamline, DEFAULT);
   const config = bot.config.teamline;
   const { schedules, uri } = config;
-
   const { get } = request(bot, uri);
+
+  await bot.i18n.load(path.join(__dirname, '../locales/'));
 
   try {
     commands(bot, uri);
@@ -91,26 +93,6 @@ export default async bot => {
     bot.log.error('[teamline] error scheduling ask-for-actions and publish-actions', e);
   }
 
-  /*
-  teamline add \`(project)\` \`task\` – add a new action for the corresponding project
-  teamline done \`id\` – mark task #id as done
-  teamline undone \`id\` – mark task #id as undone
-  teamline manage done \`type\` \`id\` – mark the object of \`type\` with \`id\` as done
-  teamline manage undone \`type\` \`id\` – mark the object of \`type\` with \`id\` as undone
-
-  Managers have access to these commands
-  teamline manage add \`type\` \`name\` – add a new object of \`type\` with the specified \`name\`
-  teamline manage delete \`type\` \`id\` – delete the object of \`type\` with \`id\`
-  teamline manage connect \`type\` \`id\` with \`type\` \`id\` – connect two models with each other
-  Example: teamline manage connect role 1 with employee 2
-
-  \`type\` is one of the following: okr, goal, project, team, role, company, employee
-
-  *Scopes* are filters which help you find the items you want, some examples include:
-  done, undone, past (action), future (action), today (action)
-  */
-
-  // add a help record for your plugin's commands
   /*eslint-disable */
   bot.help('actions', 'Manage your actions', `
 \`actions [@username | myself] [date | daterange]\` – view someone's actions (by default yourself) in the specified range / date (by default today)

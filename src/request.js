@@ -14,7 +14,10 @@ export default (bot, uri) => {
           .query({
             [auth.key]: auth.token
           }).end(response => {
-            if (response.error) return reject(response.error);
+            if (response.error) {
+              bot.log.error('[teamline] request GET', url, query, 'Error', response.error);
+              return reject(response.error);
+            }
 
             resolve(response.body);
           });
@@ -31,7 +34,10 @@ export default (bot, uri) => {
           .query({
             [auth.key]: auth.token
           }).end(response => {
-            if (response.error) return reject(response.error);
+            if (response.error) {
+              bot.log.error('[teamline] request GET', url, body, 'Error', response.error);
+              return reject(response.error);
+            }
 
             resolve(response.body);
           });
@@ -48,7 +54,10 @@ export default (bot, uri) => {
           .query({
             [auth.key]: auth.token
           }).end(response => {
-            if (response.error) return reject(response.error);
+            if (response.error) {
+              bot.log.error('[teamline] request GET', url, body, 'Error', response.error);
+              return reject(response.error);
+            }
 
             resolve(response.body);
           });
@@ -65,7 +74,10 @@ export default (bot, uri) => {
           .query({
             [auth.key]: auth.token
           }).end(response => {
-            if (response.error) return reject(response.error);
+            if (response.error) {
+              bot.log.error('[teamline] request GET', url, query, 'Error', response.error);
+              return reject(response.error);
+            }
 
             resolve(response.body);
           });

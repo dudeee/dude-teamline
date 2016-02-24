@@ -1,0 +1,23 @@
+{
+  "teamline": {
+    "actions": {
+      "define": {
+        "success": "Submitted your actions successfuly!",
+        "errors": {
+          "duplicate-project": "%model% *%name%* already exists. I assumed you meant to add to the already existing %model%.",
+          "notfound": "%modelName% *%name%* doesn't exist, did you mean to create the %model% using `Team > %newSyntax% > %action%`?",
+          "team-notfound": "Team *%team%* doesn't exist.",
+          "duplicate-action": "Action *%action%* already exists. I assume you accidentaly tried to add a duplicate action."
+        }
+      },
+      "list": {
+        "empty": "%user%'s action list is empty 😌"
+      },
+      "remove": {
+        "clear": "Cleared your actions for today.",
+        "remove": "Removed action *%action%*"
+      },
+      "refresh": "Sent a request to refresh data 🔄"
+    }
+  }
+}
