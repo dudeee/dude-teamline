@@ -8,12 +8,15 @@ export default (bot, uri) => {
   const { get, post, put } = request(bot, uri);
 
   bot.command('^schedules break (from)? <string> (to|for) <string>', async message => {
-    const [from, to] = message.match;
+    let [from, to] = message.match;
+    from = from.trim();
+    to = to.trim();
+
     const lines = message.preformatted.split('\n');
     const reason = lines[1] || null;
 
     let start = humanDate(from);
-    let end = humanDate(to);
+    let end = humanDate(to, message.preformatted.includes('for') ? start : new Date());
 
     if (from !== 'now' && almostEqual(start, new Date())) start = moment(from, 'DD MMMM HH:mm');
     if (from !== 'now' && almostEqual(end, new Date())) end = moment(to, 'DD MMMM HH:mm');
@@ -32,7 +35,7 @@ export default (bot, uri) => {
     const userinfo = `${employee.username} ${employee.firstname} ${employee.lastname}`;
     const formattedFrom = moment(start).format('DD MMMM HH:mm');
     const formattedTo = moment(end).format('DD MMMM HH:mm');
-    const manager = bot.config.teamline.break.manager;
+    const manager = bot.config.teamline.breaks.manager;
     const [index] = await bot.ask(manager, `Hey, ${userinfo} wants to take a break ` + //eslint-disable-line
                                            `from ${formattedFrom} to ${formattedTo}.\n` +
                                            (reason ? `Reason: ${reason}` : ``) +
