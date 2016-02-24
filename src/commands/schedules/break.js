@@ -16,8 +16,8 @@ export default (bot, uri) => {
     let start = humanDate(from);
     let end = humanDate(to);
 
-    if (almostEqual(start, new Date())) start = moment(from, 'DD MMMM HH:mm');
-    if (almostEqual(end, new Date())) end = moment(to, 'DD MMMM HH:mm');
+    if (from !== 'now' && almostEqual(start, new Date())) start = moment(from, 'DD MMMM HH:mm');
+    if (from !== 'now' && almostEqual(end, new Date())) end = moment(to, 'DD MMMM HH:mm');
     if (INVALID_DATE.test(start.toString())) {
       return message.reply(`Invalid start date *${from}*.`);
     }
