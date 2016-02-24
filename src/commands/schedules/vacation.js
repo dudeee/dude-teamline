@@ -7,7 +7,7 @@ const INVALID_DATE = /invalid date/i;
 export default (bot, uri) => {
   const { get, post, put } = request(bot, uri);
 
-  bot.command('^schedules break (from)? <string> (to|for) <string>', async message => {
+  bot.command('^vacation (from|starting|starting in)? <string> (to|for) <string>', async message => { //eslint-disable-line
     let [from, to] = message.match;
     from = from.trim();
     to = to.trim();
@@ -36,21 +36,21 @@ export default (bot, uri) => {
     const formattedFrom = moment(start).format('DD MMMM HH:mm');
     const formattedTo = moment(end).format('DD MMMM HH:mm');
     const manager = bot.config.teamline.breaks.manager;
-    const [index] = await bot.ask(manager, `Hey, ${userinfo} wants to take a break ` + //eslint-disable-line
+    const [index] = await bot.ask(manager, `Hey, ${userinfo} wants to go on a vacation ` + //eslint-disable-line
                                            `from ${formattedFrom} to ${formattedTo}.\n` +
                                            (reason ? `Reason: ${reason}` : ``) +
                                            `Do you grant the permission?`, ['Yes', 'No']);
 
     if (index === 0) {
-      message.reply('Alright, your break request was accepted. Have fun! ⛱');
+      message.reply('Alright, your vacation request was accepted. Have fun! ⛱');
       await put(`break/${b.id}`, { status: 'accepted' });
     } else {
-      message.reply('Your break request was rejected. 😟');
+      message.reply('Your vacation request was rejected. 😟');
       await put(`break/${b.id}`, { status: 'rejected' });
     }
   });
 
-  bot.command('schedules breaks [char]', async message => {
+  bot.command('vacations [char]', async message => {
     const [username] = message.match;
     const employee = await findEmployee(uri, bot, message, username);
     const breaks = await get(`employee/${employee.id}/breaks`);
@@ -58,7 +58,7 @@ export default (bot, uri) => {
     const name = username ? `${employee.firstname} ${employee.lastname}'s` : 'Your';
 
     const attachments = Array.from(printBreaks(breaks));
-    await message.reply(`${name} breaks:`, { attachments, websocket: false });
+    await message.reply(`${name} vacations:`, { attachments, websocket: false });
   });
 
   const printBreaks = (list) =>

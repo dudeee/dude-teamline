@@ -78,7 +78,7 @@ export default (bot, uri) => {
       }
       if (!pr) {
         if (tm) {
-          pr = await get(`team/${t.id}/${model}`, { name });
+          pr = await get(`team/${tm.id}/${model}`, { name });
         } else {
           pr = await get(model, { name });
         }
