@@ -37,14 +37,16 @@ export default async function sync(bot, uri) {
 
     if (employee) {
       stats.updated++;
-      employee = await put(`employee/${employee.id}`, null, record);
+      employee = await put(`employee/${employee.id}`, record);
       // await updateRole(employee, user);
       continue;
     }
 
-    stats.created++;
-    employee = await post(`employee`, record);
-    // await updateRole(employee, user);
+    if (!user.deleted) {
+      stats.created++;
+      employee = await post(`employee`, record);
+      // await updateRole(employee, user);
+    }
   }
 
   // async function updateRole(employee, user) {
