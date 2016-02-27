@@ -46,7 +46,8 @@ export default (bot, uri) => {
 
     const name = username === 'myself' ? 'Your' : `${employee.firstname}'s`;
     message.reply(`${name} working hours are as follows:`, {
-      attachments: printHours(result)
+      attachments: printHours(result),
+      websocket: false
     });
   }, { permissions: ['human-resource', 'admin'] });
 
@@ -85,7 +86,7 @@ export default (bot, uri) => {
     await del(`employee/${employee.id}/workhours`, { weekday: date.day() });
 
     message.reply(`Cleared your schedule for *${date.format('dddd')}*.`);
-  });
+  }, { permissions: ['human-resource', 'admin'] });
 
   const parseWorkhoursList = string =>
     string
@@ -109,6 +110,10 @@ export default (bot, uri) => {
       sorted.unshift(sorted.pop());
     }
 
+    const sum = sorted.reduce((a, b) =>
+      a + Math.abs(moment(b.end, 'HH:mm').diff(moment(b.start, 'HH:mm'), 'hours'))
+    , 0);
+
     const list = sorted.map(({ weekday, start, end }) => {
       const day = moment().day(weekday).format('dddd');
 
@@ -125,6 +130,11 @@ export default (bot, uri) => {
           short: true
         }]
       };
+    });
+
+    list.push({
+      pretext: `Sum of working hours: ${sum} hours`,
+      fallback: `Sum of working hours: ${sum} hours`
     });
 
     return list;
