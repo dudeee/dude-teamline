@@ -1,21 +1,17 @@
-import { findEmployee, printList, wait } from './utils';
+import { wait } from './utils';
 import request from './request';
 import sync from './sync-users';
 import _ from 'lodash';
 import commands from './commands';
 import path from 'path';
+import moment from 'moment';
 
-const DEFAULT = {
-  schedules: {
-    'ask-for-actions': '9:30am',
-    'publish-actions': '10:00am'
-  }
-};
+const DEFAULT = {};
 
 export default async bot => {
   _.defaults(bot.config.teamline, DEFAULT);
   const config = bot.config.teamline;
-  const { schedules, uri } = config;
+  const { uri } = config;
   const { get } = request(bot, uri);
 
   await bot.i18n.load(path.join(__dirname, '../locales/'));
@@ -26,69 +22,43 @@ export default async bot => {
     bot.log.error('[teamline]', e);
   }
 
-  const askForActions = schedules['ask-for-actions'].split(':').map(Number.parseFloat);
+  const employees = await get('employees');
   bot.agenda.define('ask-for-actions', async (job, done) => {
-    const d = new Date();
-    const [h, m] = askForActions;
-    if (d.getHours() !== h || d.getMinutes() !== m) return done();
+    const d = moment();
+    for (const user of bot.users) {
+      const emp = employees.find(a => a.username === user.name);
+      if (emp._notified) continue;
 
-    const users = bot.users;
+      const actions = await get(`employee/${emp.id}/actions/today`);
+      if (actions.length) continue;
 
-    const RATE_LIMIT = 1000;
+      const workhours = await get(`employees/${emp.id}/workhour`, {
+        weekday: d.day(),
+        include: 'Timerange'
+      });
 
-    for (const user of users) {
-      const emp = await get(`employee?username=${user.name}`);
-      if (!emp) continue;
-      const a = await get(`employee/${emp.id}/actions/today`);
-      if (a.length) continue;
+      const firstTimerange = workhours.Timeranges[0];
+      const schedule = {
+        start: moment(firstTimerange.start, 'HH:mm'),
+        end: moment(firstTimerange.end, 'HH:mm')
+      };
 
-      bot.sendMessage(user.name, 'Hey! What are you going to do today? 😃');
-      await wait(RATE_LIMIT);
-    }
-
-    done();
-  });
-
-  const publishActions = schedules['publish-actions'].split(':').map(Number.parseFloat);
-  bot.agenda.define('publish-actions', async (job, done) => {
-    const d = new Date();
-    const [h, m] = publishActions;
-    if (d.getHours() !== h || d.getMinutes() !== m) return;
-
-    const users = bot.users;
-
-    await* users.map(async user => {
-      const employee = await findEmployee(uri, bot, { user: user.id });
-
-      if (!employee) return;
-
-      const name = `${employee.firstname} ${employee.lastname}`;
-      const url = `employee/${employee.id}/actions/today?include=Project`;
-      const actions = await get(url);
-
-      if (!actions.length) {
-        return;
+      if (d.hours() > schedule.start.hours() && d.minutes() > schedule.start.minutes()) {
+        bot.sendMessage(user.name, 'Hey! What are you going to do today? 😁');
+        const RATE_LIMIT = 1000;
+        await wait(RATE_LIMIT);
       }
 
-      const list = printList(actions);
-
-      bot.sendMessage('actions', `${name}\n${list}`, {
-        websocket: false,
-        parse: 'full'
-      });
-    });
+      emp._notified = true;
+    }
 
     done();
   });
 
   try {
     const job = bot.agenda.create('ask-for-actions');
-    job.repeatAt(schedules['ask-for-actions']);
+    job.repeatEvery('15 minutes');
     job.save();
-
-    const publishJob = bot.agenda.create('publish-actions');
-    publishJob.repeatAt(schedules['publish-actions']);
-    publishJob.save();
   } catch (e) {
     bot.log.error('[teamline] error scheduling ask-for-actions and publish-actions', e);
   }

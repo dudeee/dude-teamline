@@ -35,7 +35,7 @@ export default (bot, uri) => {
     const userinfo = `${employee.firstname} ${employee.lastname}`;
     const formattedFrom = moment(start).format('DD MMMM HH:mm');
     const formattedTo = moment(end).format('DD MMMM HH:mm');
-    const manager = bot.config.teamline.breaks.manager;
+    const manager = bot.config.teamline.vacations.manager;
     const [index] = await bot.ask(manager, `Hey, ${userinfo} wants to go on a vacation ` + //eslint-disable-line
                                            `from ${formattedFrom} to ${formattedTo}.\n` +
                                            (reason ? `Reason: ${reason}` : ``) +

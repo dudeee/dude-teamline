@@ -5,6 +5,9 @@ import moment from 'moment';
 const DAY_COLORS = ['#687fe0', '#86e453', '#eb5d7a', '#34bae4', '#757f8c', '#ecf76e', '#ac58e0'];
 export default (bot, uri) => {
   const { get, post, del } = request(bot, uri);
+  const breakTimes = (bot.config.teamline.breaks || []).map(time =>
+    ({ start: moment(time.start, 'HH:mm'), end: moment(time.end, 'HH:mm') })
+  );
 
   bot.command('^schedules set [char] [string] > [string]', async message => {
     const [username] = message.match;
@@ -26,11 +29,18 @@ export default (bot, uri) => {
       for (const emp of employees) {
         await del(`employee/${emp.id}/workhours`, { weekday: item.day.day() });
 
-        await post(`employee/${emp.id}/workhour`, {
-          weekday: item.day.day(),
-          start: item.range[0].format('HH:mm'),
-          end: item.range[1].format('HH:mm')
+        const wh = await post(`employee/${emp.id}/workhour`, {
+          weekday: item.day.day()
         });
+
+        await Promise.all(item.ranges.map(async range => {
+          const tr = await post('timerange', {
+            start: range[0].format('HH:mm'),
+            end: range[1].format('HH:mm')
+          });
+
+          await get(`associate/workhour/${wh.id}/timerange/${tr.id}`);
+        }));
       }
     }
 
@@ -38,7 +48,7 @@ export default (bot, uri) => {
       return message.reply('Set working hours successfuly.');
     }
 
-    const result = await get(`employee/${employee.id}/workhours`);
+    const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
 
     if (!result.length) {
       return message.reply('You have not set your working hours yet.');
@@ -55,7 +65,7 @@ export default (bot, uri) => {
     const [username] = message.match;
     const employee = await findEmployee(uri, bot, message, username);
 
-    const result = await get(`employee/${employee.id}/workhours`);
+    const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
 
 
     if (!result.length) {
@@ -94,10 +104,12 @@ export default (bot, uri) => {
       .map(a => a.trim())
       .filter(a => a)
       .map(entry => entry.split('>'))
-      .map(([day, range]) => {
+      .map(([day, ranges]) => {
         const dd = moment(day, 'ddd');
-        const r = range.split(/-|to/i).map(date => moment(date, 'H:m'));
-        return { day: dd, range: r };
+        const r = ranges.split(',').map(range =>
+          range.split(/-|to/i).map(date => moment(date, 'H:m'))
+        );
+        return { day: dd, ranges: r };
       });
 
   const printHours = workhours => {
@@ -110,31 +122,53 @@ export default (bot, uri) => {
       sorted.unshift(sorted.pop());
     }
 
-    const sum = sorted.reduce((a, b) =>
-      a + Math.abs(moment(b.end, 'HH:mm').diff(moment(b.start, 'HH:mm'), 'hours'))
-    , 0);
+    const sum = sorted.reduce((a, b) => {
+      const innersum = b.Timeranges.reduce((x, y) => {
+        const start = moment(y.start, 'HH:mm');
+        const end = moment(y.end, 'HH:mm');
 
-    const list = sorted.map(({ weekday, start, end }) => {
+        const breaks = breakTimes.reduce((g, h) => {
+          if (start.isSameOrBefore(h.start) && end.isSameOrAfter(h.start) &&
+              start.isSameOrBefore(h.end) && end.isSameOrAfter(h.end)) {
+            return g + Math.abs(h.end.diff(h.start, 'minutes'));
+          }
+
+          return g;
+        }, 0);
+
+        const diff = end.diff(start, 'minutes');
+        return x + Math.abs(diff) - breaks;
+      }, 0);
+      return a + innersum;
+    }, 0);
+
+    const list = sorted.map(({ weekday, Timeranges }) => {
       const day = moment().day(weekday).format('dddd');
 
       return {
         title: day,
         color: DAY_COLORS[weekday],
-        fields: [{
-          title: 'From',
-          value: start,
-          short: true
-        }, {
-          title: 'To',
-          value: end,
-          short: true
-        }]
+        fields: Timeranges.reduce((a, t) =>
+          a.concat([{
+            title: 'From',
+            value: t.start,
+            short: true
+          }, {
+            title: 'To',
+            value: t.end,
+            short: true
+          }])
+        , [])
       };
     });
 
+    const duration = moment.duration(sum, 'minutes');
+    const hours = duration.days() * 24 + duration.hours();
+    const sumtext = `Sum of working hours: ${hours} hours` + // eslint-disable-line
+                    (duration.minutes() ? ` and ${duration.minutes()} minutes` : ``);
     list.push({
-      pretext: `Sum of working hours: ${sum} hours`,
-      fallback: `Sum of working hours: ${sum} hours`
+      pretext: sumtext,
+      fallback: sumtext,
     });
 
     return list;
