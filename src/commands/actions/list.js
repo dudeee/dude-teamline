@@ -14,7 +14,9 @@ export default (bot, uri) => {
       scope = '';
     }
 
-    const employee = await findEmployee(uri, bot, message, user);
+    if (user === 'all') user = null;
+
+    const employee = user ? await findEmployee(uri, bot, message, user) : null;
 
     const query = {};
 

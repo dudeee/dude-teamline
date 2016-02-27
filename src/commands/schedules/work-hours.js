@@ -96,7 +96,10 @@ export default (bot, uri) => {
       a.weekday - b.weekday
     );
 
-    sorted.unshift(sorted.pop());
+    // Weekday starts with Saturday here
+    if (sorted[sorted.length - 1].weekday === 6) {
+      sorted.unshift(sorted.pop());
+    }
 
     const list = sorted.map(({ weekday, start, end }) => {
       const day = moment().day(weekday).format('dddd');
