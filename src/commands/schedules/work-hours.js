@@ -45,7 +45,9 @@ export default (bot, uri) => {
     }
 
     const name = username === 'myself' ? 'Your' : `${employee.firstname}'s`;
-    message.reply(`${name} working hours are as follows:\n${printHours(result)}`);
+    message.reply(`${name} working hours are as follows:`, {
+      attachments: printHours(result)
+    });
   }, { permissions: ['human-resource', 'admin'] });
 
   bot.command('^schedules [char]$', async message => {
@@ -70,9 +72,15 @@ export default (bot, uri) => {
       day = username;
       username = null;
     }
-    const employee = await findEmployee(uri, bot, message, username);
 
     const date = moment(day, 'dddd');
+
+    if (!username) {
+      await del('workhours', { weekday: date.day() });
+      return message.reply(`Cleared everyone's schedule for *${date.format('dddd')}*.`);
+    }
+
+    const employee = await findEmployee(uri, bot, message, username);
 
     await del(`employee/${employee.id}/workhours`, { weekday: date.day() });
 
