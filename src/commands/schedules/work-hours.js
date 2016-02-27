@@ -76,7 +76,7 @@ export default (bot, uri) => {
     const date = moment(day, 'dddd');
 
     if (username === 'all') {
-      await del('workhours', { weekday: date.day() });
+      await del('workhour', { weekday: date.day() });
       return message.reply(`Cleared everyone's schedule for *${date.format('dddd')}*.`);
     }
 
