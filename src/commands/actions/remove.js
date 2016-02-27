@@ -1,5 +1,6 @@
 import findEmployee from '../functions/find-employee';
 import request from '../../request';
+import updateActionsMessage from '../functions/update-actions-message';
 
 export default (bot, uri) => {
   const { get, del } = request(bot, uri);
@@ -9,6 +10,8 @@ export default (bot, uri) => {
     await del(`employee/${employee.id}/actions/today`);
 
     message.reply(bot.t('teamline.actions.remove.clear'));
+
+    await updateActionsMessage(bot, uri, employee);
   });
 
   bot.command('^(actions | action) remove <number>', async message => {
@@ -21,5 +24,7 @@ export default (bot, uri) => {
     const action = await del(`action/${actions[index].id}`);
 
     message.reply(bot.t('teamline.actions.remove.remove', { action: action.name }));
+
+    await updateActionsMessage(bot, uri, employee);
   });
 };

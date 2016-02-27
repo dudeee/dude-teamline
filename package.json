@@ -1,6 +1,6 @@
 {
   "name": "bolt-teamline",
-  "version": "1.12.14",
+  "version": "1.12.15",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
