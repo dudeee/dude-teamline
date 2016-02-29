@@ -7,8 +7,9 @@ const INVALID_DATE = /invalid date/i;
 export default (bot, uri) => {
   const { get, post, put } = request(bot, uri);
 
-  bot.command('^vacation (from|starting|starting in)? <string> (to|for) <string>', async message => { //eslint-disable-line
-    let [from, to] = message.match;
+  bot.command('^vacation [char] (from|starting|starting in) <string> (to|for) <string>', async message => { //eslint-disable-line
+    let [username, from, to] = message.match;
+    username = username.trim();
     from = from.trim();
     to = to.trim();
 
@@ -17,6 +18,8 @@ export default (bot, uri) => {
 
     let start = humanDate(from);
     let end = humanDate(to, message.preformatted.includes('for') ? start : new Date());
+
+    if (end < start) end = humanDate(to, start);
 
     if (from !== 'now' && almostEqual(start, new Date())) start = moment(from, 'DD MMMM HH:mm');
     if (from !== 'now' && almostEqual(end, new Date())) end = moment(to, 'DD MMMM HH:mm');
@@ -27,7 +30,7 @@ export default (bot, uri) => {
       return message.reply(`Invalid end date *${to}*.`);
     }
 
-    const employee = await findEmployee(uri, bot, message);
+    const employee = await findEmployee(uri, bot, message, username);
 
     const data = { start: start + 0, end: end + 0, reason };
     const b = await post(`employee/${employee.id}/break`, data);
@@ -36,6 +39,8 @@ export default (bot, uri) => {
     const formattedFrom = moment(start).format('DD MMMM HH:mm');
     const formattedTo = moment(end).format('DD MMMM HH:mm');
     const manager = bot.config.teamline.vacations.manager;
+    message.reply('Your request for a vacation is submitted!');
+
     const [index] = await bot.ask(manager, `Hey, ${userinfo} wants to go on a vacation ` + //eslint-disable-line
                                            `from ${formattedFrom} to ${formattedTo}.\n` +
                                            (reason ? `Reason: ${reason}` : ``) +

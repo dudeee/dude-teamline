@@ -16,9 +16,9 @@ export default (bot, uri) => {
     const [cmd] = message.match;
 
     const actionList = message.preformatted.slice(cmd.length + message.preformatted.indexOf(cmd));
-    const actions = await parseActionList(actionList);
 
     const employee = await findEmployee(uri, bot, message);
+    const actions = await parseActionList(actionList, employee);
 
     // Used to indicate errors / warnings / success
     const attachments = new bot.Attachments();
@@ -72,27 +72,31 @@ export default (bot, uri) => {
 
       ac = await post(`employee/${employee.id}/action`, { name: action });
 
-      let tm;
-      if (team) {
-        tm = await get('team', { name: team });
-      }
-      if (!pr) {
-        if (tm) {
-          pr = await get(`team/${tm.id}/${model}`, { name });
-        } else {
-          pr = await get(model, { name });
+      try {
+        let tm;
+        if (team) {
+          tm = await get('team', { name: team });
         }
+        if (!pr) {
+          if (tm) {
+            pr = await get(`team/${tm.id}/${model}`, { name });
+          } else {
+            pr = await get(model, { name });
+          }
+        }
+        if (!tm) {
+          tm = await get(`${model}/${pr.id}/team`);
+
+          if (!tm) return;
+        }
+
+        await get(`associate/${model}/${pr.id}/team/${tm.id}`);
+
+        await get(`associate/action/${ac.id}/${model}/${pr.id}`);
+        await get(`associate/${model}/${pr.id}/employee/${employee.id}`);
+      } catch (e) {
+        bot.log.error('[teamline, define] ERROR', e, e.stack);
       }
-      if (!tm) {
-        tm = await get(`${model}/${pr.id}/team`);
-
-        if (!tm) continue;
-      }
-
-      await get(`associate/${model}/${pr.id}/team/${tm.id}`);
-
-      await get(`associate/action/${ac.id}/${model}/${pr.id}`);
-      await get(`associate/${model}/${pr.id}/employee/${employee.id}`);
     }
 
     const url = `employee/${employee.id}/actions/today`;
@@ -128,13 +132,17 @@ export default (bot, uri) => {
     });
   });
 
+  async function parseActionList(string, employee) {
+    const filter = a => a.Employees.findIndex(e => e.username === employee.username) > -1;
 
-  async function parseActionList(string) {
-    const projects = await get('projects');
+    const projects = await get('projects', { include: 'Employee' });
+    const relatedProjectNames = projects.filter(filter).map(project => project.name);
     const projectNames = projects.map(project => project.name);
-    const roles = await get('roles');
+    const roles = await get('roles', { include: 'Employee' });
+    const relatedRoleNames = roles.filter(filter).map(project => project.name);
     const roleNames = roles.map(role => role.name);
-    const teams = await get('teams');
+    const teams = await get('teams', { include: 'Employee' });
+    const relatedTeamNames = teams.filter(filter).map(project => project.name);
     const teamNames = teams.map(team => team.name);
 
     const DISTANCE_REQUIRED = 0.8;
@@ -163,8 +171,11 @@ export default (bot, uri) => {
         }
 
         if (team) {
+          const [relatedDistance, relatedIndex] = fuzzy(team, relatedTeamNames, DISTANCE_REQUIRED);
           const [distance, index] = fuzzy(team, teamNames, DISTANCE_REQUIRED);
-          if (distance) {
+          if (relatedDistance) {
+            team = relatedTeamNames[relatedIndex];
+          } else if (distance) {
             team = teamNames[index];
           } else {
             return { team, name, action, status: TEAM_NOT_FOUND, role };
@@ -174,10 +185,19 @@ export default (bot, uri) => {
         const role = project.startsWith('(') && project.endsWith(')');
 
         const names = role ? roleNames : projectNames;
+        const relatedNames = role ? relatedRoleNames : relatedProjectNames;
         const name = role ? project.slice(1, -1) : project;
 
         // Find the most similar project name available, we don't want to bug the user
+        const [relatedDistance, relatedIndex] = fuzzy(name, relatedNames, DISTANCE_REQUIRED);
         const [distance, index] = fuzzy(name, names, DISTANCE_REQUIRED);
+        if (relatedDistance) {
+          if (plus) {
+            return { team, action, status: DUPLICATE, role, name: names[index] };
+          }
+
+          return { team, action, role, name: relatedNames[relatedIndex] };
+        }
         if (distance) {
           if (plus) {
             return { team, action, status: DUPLICATE, role, name: names[index] };

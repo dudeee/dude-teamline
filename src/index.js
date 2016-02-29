@@ -66,14 +66,19 @@ export default async bot => {
   /*eslint-disable */
   bot.help('actions', 'Manage your actions', `
 \`actions [@username | myself] [date | daterange]\` – view someone's actions (by default yourself) in the specified range / date (by default today)
-\`actions [project] > [action]\` – set your actions for today, separate actions by line breaks
+\`actions [team] > <project> > <action>\` – set your actions for today, separate actions by line breaks
 \`actions clear\` – clear your actions for today
 \`actions remove <id>\` – remove the specified action
-\`list [@username | my | all] [model]\` – list entities of one's or all employees/actions/projects/teams
+\`list [@username | my | all] [filter] [model]\` – list entities of one's or all employees/actions/projects/teams, filters: done, undone, closed
 `);
+
 bot.help('schedules', 'Manage schedules and vacations', `
-\`vacation <start> (to | for) <end>\` – request a vacation
-\`schedules <@username | myself>\` view someone's weekly schedule (working hours)
+\`schedules [@username | myself]\` view someone's weekly schedule (working hours)
+`)
+
+bot.help('vacations', 'View and request vacations', `
+\`vacation [@username] from <start> (to | for) <end>\` – request a vacation
+\`vacations [@username | myself]\` – view someone's vacations; red: rejected, green: approved, yellow: pending
 `)
   /*eslint-enable */
 
