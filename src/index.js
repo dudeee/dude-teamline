@@ -86,8 +86,10 @@ bot.help('schedules', 'Manage schedules and vacations', `
 `)
 
 bot.help('vacations', 'View and request vacations', `
-\`vacation [@username] from <start> (to | for) <end>\` – request a vacation
+\`vacation [@username] from <start> (to | for) <end> ⏎
+Reason here\` – request a vacation, you can optionally write a reason on the second line
 \`vacations [@username | myself]\` – view someone's vacations; red: rejected, green: approved, yellow: pending
+\`vacations remove <id>\` – remove vacation
 `)
   /*eslint-enable */
 
