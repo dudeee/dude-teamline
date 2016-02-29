@@ -16,19 +16,17 @@ export default (bot, uri) => {
     const lines = message.preformatted.split('\n');
     const reason = lines[1] || null;
 
-    let start = humanDate(from);
-    let end = humanDate(to, message.preformatted.includes('for') ? start : new Date());
 
-    if (end < start) end = humanDate(to, start);
-
-    if (from !== 'now' && almostEqual(start, new Date())) start = moment(from, 'DD MMMM HH:mm');
-    if (from !== 'now' && almostEqual(end, new Date())) end = moment(to, 'DD MMMM HH:mm');
+    let start = moment(from, 'DD MMMM HH:mm');
+    let end = moment(to, 'DD MMMM HH:mm');
     if (INVALID_DATE.test(start.toString())) {
-      return message.reply(`Invalid start date *${from}*.`);
+      start = humanDate(from);
     }
     if (INVALID_DATE.test(end.toString())) {
-      return message.reply(`Invalid end date *${to}*.`);
+      end = humanDate(to, message.preformatted.includes('for') ? start : new Date());
     }
+
+    if (end < start) end = humanDate(to, start);
 
     const employee = await findEmployee(uri, bot, message, username);
 
@@ -100,10 +98,3 @@ export default (bot, uri) => {
       return { color: colors[entry.status], fields, fallback };
     });
 };
-
-const almostEqual = (a, b) =>
-  a.getYear() === b.getYear() &&
-  a.getMonth() === b.getMonth() &&
-  a.getDay() === b.getDay() &&
-  a.getHours() === b.getHours() &&
-  a.getMinutes() === b.getMinutes();
