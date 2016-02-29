@@ -36,21 +36,27 @@ export default (bot, uri) => {
     const formattedFrom = moment(start).format('DD MMMM HH:mm');
     const formattedTo = moment(end).format('DD MMMM HH:mm');
     const manager = bot.config.teamline.vacations.manager;
-    message.reply('Your request for a vacation is submitted!');
 
-    const approved = await bot.ask(manager, `Hey, ${userinfo} wants to go on a vacation ` + //eslint-disable-line
-                                           `from ${formattedFrom} to ${formattedTo}.\n` +
-                                           (reason ? `Reason: ${reason}` : ``) +
-                                           `Do you grant the permission?`, Boolean);
+    const details = `(#${b.id}) from *${formattedFrom}* to *${formattedTo}*`;
+    message.reply(`Your request for a vacation ${details} is submitted!`);
 
-    const details = `from *${formattedFrom}* to *${formattedTo}*`;
-    if (approved) {
-      message.reply(`Alright, your vacation request ${details} was accepted. Have fun! ⛱`);
-      await put(`break/${b.id}`, { status: 'accepted' });
-    } else {
-      message.reply(`Your vacation request ${details} was rejected. 😟`);
-      await put(`break/${b.id}`, { status: 'rejected' });
-    }
+    setTimeout(async () => {
+      const stillThere = await get(`break/${b.id}`);
+      if (!stillThere) return;
+
+      const approved = await bot.ask(manager, `Hey, ${userinfo} wants to go on a vacation ` + //eslint-disable-line
+                                             `from ${formattedFrom} to ${formattedTo}.\n` +
+                                             (reason ? `Reason: ${reason}` : ``) +
+                                             `Do you grant the permission?`, Boolean);
+
+      if (approved) {
+        message.reply(`Alright, your vacation request ${details} was accepted. Have fun! ⛱`);
+        await put(`break/${b.id}`, { status: 'accepted' });
+      } else {
+        message.reply(`Your vacation request ${details} was rejected. 😟`);
+        await put(`break/${b.id}`, { status: 'rejected' });
+      }
+    }, 1000 * 60);
   });
 
   bot.command('vacations [char]', async message => {
