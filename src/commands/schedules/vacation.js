@@ -7,7 +7,7 @@ const INVALID_DATE = /invalid date/i;
 export default (bot, uri) => {
   const { get, post, put, del } = request(bot, uri);
 
-  bot.command('^vacation [char] (from|starting|starting in) <string> (to|for) <string>', async message => { //eslint-disable-line
+  bot.command('^vacation(s)? [char] (from|starting|starting in) <string> (to|for) <string>', async message => { //eslint-disable-line
     let [username, from, to] = message.match;
     username = username.trim();
     from = from.trim();
@@ -56,7 +56,7 @@ export default (bot, uri) => {
         message.reply(`Your vacation request ${details} was rejected. 😟`);
         await put(`break/${b.id}`, { status: 'rejected' });
       }
-    }, 1000 * 60);
+    }, 1000 * 30);
   });
 
   bot.command('vacations [char]', async message => {
@@ -70,8 +70,23 @@ export default (bot, uri) => {
     await message.reply(`${name} vacations:`, { attachments, websocket: false });
   });
 
-  bot.command('vacations remove [number]', async message => {
+  bot.command('vacation(s)? remove [number]', async message => {
     const [id] = message.match;
+    const b = await get(`break/${id}`);
+
+    const manager = bot.config.teamline.vacations.manager;
+    if (b.status !== 'pending' && bot.find(message.user).name !== manager) {
+      const employee = findEmployee(uri, bot, message);
+      message.reply(`I will your request to @${manager}.`);
+
+      const formattedFrom = moment(b.start).format('DD MMMM HH:mm');
+      const formattedTo = moment(b.end).format('DD MMMM HH:mm');
+
+      const details = `(#${b.id}) from *${formattedFrom}* to *${formattedTo}*`;
+      bot.sendMessage(manager, `Hey, @${employee.name} wants to remove vacation ${details}`);
+      return;
+    }
+
     await del(`break/${id}`);
 
     message.reply(`Removed vacation #${id}`);
