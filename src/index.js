@@ -22,17 +22,22 @@ export default async bot => {
     bot.log.error('[teamline]', e);
   }
 
-  const employees = await get('employees');
+  bot.pocket.model('TeamlineNotified', { id: Number, expireAt: { type: Date, expires: 0 } });
+
   bot.agenda.define('ask-for-actions', async (job, done) => {
+    const employees = await get('employees');
+
     const d = moment();
     for (const user of bot.users) {
+      if (user.name !== 'mahdi') continue;
       const emp = employees.find(a => a.username === user.name);
-      if (emp._notified) continue;
+      const notified = await bot.pocket.find('TeamlineNotified', { id: emp.id }).exec();
+      if (!emp || notified.length) continue;
 
       const actions = await get(`employee/${emp.id}/actions/today`);
       if (actions.length) continue;
 
-      const workhours = await get(`employees/${emp.id}/workhour`, {
+      const workhours = await get(`employee/${emp.id}/workhour`, {
         weekday: d.day(),
         include: 'Timerange'
       });
@@ -49,7 +54,11 @@ export default async bot => {
         await wait(RATE_LIMIT);
       }
 
-      emp._notified = true;
+      const expireAt = moment().add(1, 'day')
+                          .hours(schedule.start.hours())
+                          .minutes(schedule.start.minutes() - 1);
+
+      bot.pocket.save('TeamlineNotified', { id: emp.id, expireAt });
     }
 
     done();
@@ -57,7 +66,7 @@ export default async bot => {
 
   try {
     const job = bot.agenda.create('ask-for-actions');
-    job.repeatEvery('15 minutes');
+    job.repeatEvery('5 minutes');
     job.save();
   } catch (e) {
     bot.log.error('[teamline] error scheduling ask-for-actions and publish-actions', e);

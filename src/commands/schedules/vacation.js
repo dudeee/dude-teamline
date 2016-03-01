@@ -5,7 +5,7 @@ import moment from 'moment';
 
 const INVALID_DATE = /invalid date/i;
 export default (bot, uri) => {
-  const { get, post, put } = request(bot, uri);
+  const { get, post, put, del } = request(bot, uri);
 
   bot.command('^vacation [char] (from|starting|starting in) <string> (to|for) <string>', async message => { //eslint-disable-line
     let [username, from, to] = message.match;
@@ -24,9 +24,8 @@ export default (bot, uri) => {
     }
     if (INVALID_DATE.test(end.toString())) {
       end = humanDate(to, message.preformatted.includes('for') ? start : new Date());
+      if (end < start) end = humanDate(to, start);
     }
-
-    if (end < start) end = humanDate(to, start);
 
     const employee = await findEmployee(uri, bot, message, username);
 
@@ -64,17 +63,25 @@ export default (bot, uri) => {
     await message.reply(`${name} vacations:`, { attachments, websocket: false });
   });
 
+  bot.command('vacations remove [char] [number]', async message => {
+    const [username, id] = message.match;
+    const employee = await findEmployee(uri, bot, message, username);
+    await del(`employee/${employee.id}/breaks/${id}`);
+
+    message.reply(`Removed ${employee.firstname}'s vacation #${id}`);
+  });
+
   const printBreaks = (list) =>
     list.map(entry => {
       const format = 'DD MMMM YYYY, HH:mm';
 
       const fields = [{
         title: 'From',
-        value: moment(entry.start).format(format),
+        value: moment(entry.start, 'DD MM HH:mm').format(format),
         short: true
       }, {
         title: 'To',
-        value: moment(entry.end).format(format),
+        value: moment(entry.end, 'DD MM HH:mm').format(format),
         short: true
       }];
 
@@ -95,6 +102,6 @@ export default (bot, uri) => {
       const fallback = `${fields[0].title}: *${fields[0].value}*\n` +
                        `${fields[1].title}: *${fields[1].value}*\n`;
 
-      return { color: colors[entry.status], fields, fallback };
+      return { color: colors[entry.status], fields, fallback, author_name: `#${entry.id}` };
     });
 };
