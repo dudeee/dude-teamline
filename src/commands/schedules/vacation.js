@@ -29,7 +29,7 @@ export default (bot, uri) => {
 
     const employee = await findEmployee(uri, bot, message, username);
 
-    const data = { start: start + 0, end: end + 0, reason };
+    const data = { start: start.toISOString(), end: end.toISOString(), reason };
     const b = await post(`employee/${employee.id}/break`, data);
 
     const userinfo = `${employee.firstname} ${employee.lastname}`;
@@ -63,12 +63,11 @@ export default (bot, uri) => {
     await message.reply(`${name} vacations:`, { attachments, websocket: false });
   });
 
-  bot.command('vacations remove [char] [number]', async message => {
-    const [username, id] = message.match;
-    const employee = await findEmployee(uri, bot, message, username);
-    await del(`employee/${employee.id}/breaks/${id}`);
+  bot.command('vacations remove [number]', async message => {
+    const [id] = message.match;
+    await del(`break/${id}`);
 
-    message.reply(`Removed ${employee.firstname}'s vacation #${id}`);
+    message.reply(`Removed vacation #${id}`);
   });
 
   const printBreaks = (list) =>
@@ -77,11 +76,11 @@ export default (bot, uri) => {
 
       const fields = [{
         title: 'From',
-        value: moment(entry.start, 'DD MM HH:mm').format(format),
+        value: moment(entry.start).format(format),
         short: true
       }, {
         title: 'To',
-        value: moment(entry.end, 'DD MM HH:mm').format(format),
+        value: moment(entry.end).format(format),
         short: true
       }];
 
