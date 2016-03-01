@@ -38,16 +38,17 @@ export default (bot, uri) => {
     const manager = bot.config.teamline.vacations.manager;
     message.reply('Your request for a vacation is submitted!');
 
-    const [index] = await bot.ask(manager, `Hey, ${userinfo} wants to go on a vacation ` + //eslint-disable-line
+    const approved = await bot.ask(manager, `Hey, ${userinfo} wants to go on a vacation ` + //eslint-disable-line
                                            `from ${formattedFrom} to ${formattedTo}.\n` +
                                            (reason ? `Reason: ${reason}` : ``) +
-                                           `Do you grant the permission?`, ['Yes', 'No']);
+                                           `Do you grant the permission?`, Boolean);
 
-    if (index === 0) {
-      message.reply('Alright, your vacation request was accepted. Have fun! ⛱');
+    const details = `from *${formattedFrom}* to *${formattedTo}*`;
+    if (approved) {
+      message.reply(`Alright, your vacation request ${details} was accepted. Have fun! ⛱`);
       await put(`break/${b.id}`, { status: 'accepted' });
     } else {
-      message.reply('Your vacation request was rejected. 😟');
+      message.reply(`Your vacation request ${details} was rejected. 😟`);
       await put(`break/${b.id}`, { status: 'rejected' });
     }
   });
