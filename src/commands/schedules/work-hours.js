@@ -9,6 +9,9 @@ export default (bot, uri) => {
     ({ start: moment(time.start, 'HH:mm'), end: moment(time.end, 'HH:mm') })
   );
 
+  moment.relativeTimeThreshold('m', 60);
+  moment.relativeTimeThreshold('h', Infinity);
+
   bot.command('^schedules set [char] [string] > [string]', async message => {
     const [username] = message.match;
 
@@ -130,13 +133,13 @@ export default (bot, uri) => {
         const breaks = breakTimes.reduce((g, h) => {
           if (start.isSameOrBefore(h.start) && end.isSameOrAfter(h.start) &&
               start.isSameOrBefore(h.end) && end.isSameOrAfter(h.end)) {
-            return g + Math.abs(h.end.diff(h.start, 'minutes'));
+            return g + Math.abs(h.end.diff(h.start, 'minutes', true));
           }
 
           return g;
         }, 0);
 
-        const diff = end.diff(start, 'minutes');
+        const diff = end.diff(start, 'minutes', true);
         return x + Math.abs(diff) - breaks;
       }, 0);
       return a + innersum;
@@ -163,8 +166,7 @@ export default (bot, uri) => {
     });
 
     const duration = moment.duration(sum, 'minutes');
-    const hours = duration.days() * 24 + duration.hours();
-    const sumtext = `Sum of working hours: ${hours} hours` + // eslint-disable-line
+    const sumtext = `Sum of vacations: ${parseInt(duration.asHours(), 10)} hours` + // eslint-disable-line
                     (duration.minutes() ? ` and ${duration.minutes()} minutes` : ``);
     list.push({
       pretext: sumtext,

@@ -48,6 +48,7 @@ export default (bot, uri) => {
         default: break;
       }
 
+      // Detect duplicate actions
       let ac = await get(`employee/${employee.id}/action`, { name: action });
       if (ac) {
         ac.Role = await get(`action/${ac.id}/role`);

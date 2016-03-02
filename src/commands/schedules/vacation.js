@@ -6,6 +6,9 @@ import moment from 'moment';
 export default (bot, uri) => {
   const { get, post, put, del } = request(bot, uri);
 
+  moment.relativeTimeThreshold('m', 60);
+  moment.relativeTimeThreshold('h', Infinity);
+
   bot.command('^vacation(s)? [char] (from|starting|starting in) <string> (to|for) <string>', async message => { //eslint-disable-line
     let [username, from, to] = message.match;
     username = username.trim();
@@ -114,9 +117,13 @@ export default (bot, uri) => {
       ]
     });
 
+    const workhours = await get(`employee/${employee.id}/workhours`, {
+      include: 'Timerange'
+    });
+
     const name = username ? `${employee.firstname} ${employee.lastname}'s` : 'Your';
 
-    const attachments = Array.from(printBreaks(breaks));
+    const attachments = Array.from(printBreaks(breaks, workhours));
     await message.reply(`${name} vacations:`, { attachments, websocket: false });
   });
 
@@ -142,8 +149,25 @@ export default (bot, uri) => {
     message.reply(`Removed vacation #${id}`);
   });
 
-  const printBreaks = (list) =>
-    list.map(entry => {
+  const printBreaks = (list) => {
+    const sum = list.reduce((a, b) => {
+      const start = moment(b.start);
+      const end = moment(b.end);
+
+      const t = end.diff(start, 'minutes', true);
+
+      return a + t;
+    }, 0);
+
+    const duration = moment.duration(sum, 'minutes');
+    const sumtext = `Sum of vacations: ${parseInt(duration.asHours(), 10)} hours` + // eslint-disable-line
+                    (duration.minutes() ? ` and ${duration.minutes()} minutes` : ``);
+    const sumAttachment = {
+      pretext: sumtext,
+      fallback: sumtext
+    };
+
+    return list.map(entry => {
       const format = 'DD MMMM YYYY, HH:mm';
 
       const fields = [{
@@ -174,5 +198,6 @@ export default (bot, uri) => {
                        `${fields[1].title}: *${fields[1].value}*\n`;
 
       return { color: colors[entry.status], fields, fallback, author_name: `#${entry.id}` };
-    });
+    }).concat(sumAttachment);
+  };
 };
