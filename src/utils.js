@@ -120,12 +120,15 @@ export function fuzzy(string, list, DISTANCE_REQUIRED) {
 
     distance.push({
       distance: d,
-      index: i
+      index: i,
+      length: sentence.length
     });
   }
 
   const max = distance.reduce((a, b) => {
-    if (b.distance > a.distance) {
+    if (b.distance > a.distance ||
+       (b.distance === a.distance &&
+        Math.abs(string.length - b.length) < Math.abs(string.length - a.length))) {
       return b;
     }
 

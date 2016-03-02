@@ -80,6 +80,10 @@ export default (bot, uri) => {
         if (!pr) {
           if (tm) {
             pr = await get(`team/${tm.id}/${model}`, { name });
+
+            if (!pr) {
+              pr = await get(model, { name });
+            }
           } else {
             pr = await get(model, { name });
           }
@@ -182,11 +186,11 @@ export default (bot, uri) => {
           }
         }
 
-        const role = project.startsWith('(') && project.endsWith(')');
+        const role = /\([^)]+\)/.exec(project);
 
         const names = role ? roleNames : projectNames;
         const relatedNames = role ? relatedRoleNames : relatedProjectNames;
-        const name = role ? project.slice(1, -1) : project;
+        const name = role ? role[0].slice(1, -1) : project;
 
         // Find the most similar project name available, we don't want to bug the user
         const [relatedDistance, relatedIndex] = fuzzy(name, relatedNames, DISTANCE_REQUIRED);

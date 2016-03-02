@@ -1,4 +1,5 @@
 import unirest from 'unirest';
+import qs from 'qs';
 
 export default (bot, uri) => {
   const { auth } = bot.config.teamline;
@@ -10,7 +11,7 @@ export default (bot, uri) => {
       bot.log.silly('[teamline] request GET', url, query);
       return new Promise((resolve, reject) => {
         unirest.get(url)
-          .query(query)
+          .query(qs.stringify(query))
           .query({
             [auth.key]: auth.token
           }).end(response => {
@@ -70,7 +71,7 @@ export default (bot, uri) => {
       bot.log.silly('[teamline] request DELETE', url, query);
       return new Promise((resolve, reject) => {
         unirest.delete(url)
-          .query(query)
+          .query(qs.stringify(query))
           .query({
             [auth.key]: auth.token
           }).end(response => {

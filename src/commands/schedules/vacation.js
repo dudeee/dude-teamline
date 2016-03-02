@@ -3,7 +3,6 @@ import request from '../../request';
 import humanDate from 'date.js';
 import moment from 'moment';
 
-const INVALID_DATE = /invalid date/i;
 export default (bot, uri) => {
   const { get, post, put, del } = request(bot, uri);
 
@@ -17,24 +16,51 @@ export default (bot, uri) => {
     const reason = lines[1] || null;
 
 
-    let start = moment(from, 'DD MMMM HH:mm');
-    let end = moment(to, 'DD MMMM HH:mm');
-    if (INVALID_DATE.test(start.toString())) {
-      start = humanDate(from);
+    let start = moment(from, 'DD MMMM HH:mm', true);
+    let end = moment(to, 'DD MMMM HH:mm', true);
+    if (!start.isValid()) {
+      start = moment(humanDate(from));
     }
-    if (INVALID_DATE.test(end.toString())) {
-      end = humanDate(to, message.preformatted.includes('for') ? start : new Date());
-      if (end < start) end = humanDate(to, start);
+    if (!end.isValid()) {
+      end = moment(humanDate(to, message.preformatted.includes('for') ? start : new Date()));
+      if (end < start) end = moment(humanDate(to, start));
     }
 
     const employee = await findEmployee(uri, bot, message, username);
+    const startWorkhour = await get(`employee/${employee.id}/workhour`, {
+      weekday: start.day(),
+      include: 'Timerange'
+    });
+    const endWorkhour = await get(`employee/${employee.id}/workhour`, {
+      weekday: end.day(),
+      include: 'Timerange'
+    });
+
+    if (!startWorkhour) {
+      message.reply(`You don't have a working hour on *${from}*: *${start.format('dddd')}*.`);
+      return;
+    }
+    if (!endWorkhour) {
+      message.reply(`You don't have a working hour on *${to}*: *${end.format('dddd')}*.`);
+      return;
+    }
+
+    const startTimerange = moment(startWorkhour.Timeranges[0].start, 'HH:mm')
+                            .year(start.year())
+                            .dayOfYear(start.dayOfYear());
+    const endTimerange = moment(endWorkhour.Timeranges[0].end, 'HH:mm')
+                            .year(end.year())
+                            .dayOfYear(end.dayOfYear());
+
+    start = moment.max(start, startTimerange);
+    end = moment.min(end, endTimerange);
 
     const data = { start: start.toISOString(), end: end.toISOString(), reason };
     const b = await post(`employee/${employee.id}/break`, data);
 
     const userinfo = `${employee.firstname} ${employee.lastname}`;
-    const formattedFrom = moment(start).format('DD MMMM HH:mm');
-    const formattedTo = moment(end).format('DD MMMM HH:mm');
+    const formattedFrom = start.format('DD MMMM HH:mm');
+    const formattedTo = end.format('DD MMMM HH:mm');
     const manager = bot.config.teamline.vacations.manager;
 
     const details = `(#${b.id}) from *${formattedFrom}* to *${formattedTo}*`;
@@ -59,10 +85,34 @@ export default (bot, uri) => {
     }, 1000 * 30);
   });
 
-  bot.command('vacations [char]', async message => {
-    const [username] = message.match;
+  bot.command('vacations [char] [string]', async message => {
+    const [username, daterange] = message.match;
+
+    const range = (daterange || '').split('to').filter(a => a).map(a => moment(humanDate(a)));
+    if (range.length === 1) {
+      range.push(moment().hours(0).minutes(0).seconds(0));
+    } else if (range.length === 0) {
+      range.push(moment().subtract(1, 'week').hours(0).minutes(0).seconds(0));
+      range.push(moment().add(1, 'day').hours(0).minutes(0).seconds(0));
+    }
+
     const employee = await findEmployee(uri, bot, message, username);
-    const breaks = await get(`employee/${employee.id}/breaks`);
+    const breaks = await get(`employee/${employee.id}/breaks`, {
+      $or: [
+        {
+          start: {
+            $lt: range[1].toISOString(),
+            $gt: range[0].toISOString()
+          }
+        },
+        {
+          end: {
+            $lt: range[1].toISOString(),
+            $gt: range[0].toISOString()
+          },
+        }
+      ]
+    });
 
     const name = username ? `${employee.firstname} ${employee.lastname}'s` : 'Your';
 
