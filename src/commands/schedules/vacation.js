@@ -18,9 +18,11 @@ export default (bot, uri) => {
     const lines = message.preformatted.split('\n');
     const reason = lines[1] || null;
 
-
-    let start = moment(from, 'DD MMMM HH:mm', true);
-    let end = moment(to, 'DD MMMM HH:mm', true);
+    const formats = start = ['DD MMMM HH:mm', 'D MMMM H:m', 'D MM H:m', 'D MM HH:mm',
+                             'DD MM H:m', 'DD MM HH:mm',
+                             'DD M HH:mm', 'D M HH:mm', 'D M H:m', 'DD M H:m'];
+    let start = moment(from, formats, true);
+    let end = moment(to, formats, true);
     if (!start.isValid()) {
       start = moment(humanDate(from));
     }
