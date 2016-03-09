@@ -1,6 +1,7 @@
 import { wait } from '../utils';
 import moment from 'moment';
 import request from '../../request';
+import workhoursModifications from '../commands/functions/workhours-modifications';
 
 export default (bot, uri) => {
   const { get } = request(bot, uri);
@@ -18,10 +19,13 @@ export default (bot, uri) => {
       const actions = await get(`employee/${emp.id}/actions/today`);
       if (actions.length) continue;
 
-      const workhours = await get(`employee/${emp.id}/workhour`, {
+      const modifications = await get(`employee/${emp.id}/schedulemodifications`);
+      const rawWorkhours = await get(`employee/${emp.id}/workhour`, {
         weekday: d.day(),
         include: 'Timerange'
       });
+
+      const workhours = workhoursModifications(rawWorkhours, modifications);
 
       if (!workhours || !workhours.Timeranges.length) continue;
 
