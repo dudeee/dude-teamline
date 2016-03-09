@@ -1,4 +1,4 @@
-import { wait } from './utils';
+import { wait } from '../utils';
 import moment from 'moment';
 import request from '../../request';
 

@@ -1,4 +1,4 @@
-import { printList } from './utils';
+import { printList } from '../utils';
 import moment from 'moment';
 import _ from 'lodash';
 import request from '../../request';
