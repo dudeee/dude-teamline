@@ -19,6 +19,7 @@ export default (bot, uri) => {
 
     const employee = await findEmployee(uri, bot, message);
     const actions = await parseActionList(actionList, employee);
+    bot.log.debug('[teamline, define] actions', actions);
 
     // Used to indicate errors / warnings / success
     const attachments = new bot.Attachments();
@@ -89,13 +90,13 @@ export default (bot, uri) => {
             pr = await get(model, { name });
           }
         }
-        if (!tm) {
-          tm = await get(`${model}/${pr.id}/team`);
-
-          if (!tm) return;
+        if (tm) {
+          await get(`associate/${model}/${pr.id}/team/${tm.id}`);
         }
 
-        await get(`associate/${model}/${pr.id}/team/${tm.id}`);
+        bot.log.debug('[teamline, debug] action', ac);
+        bot.log.debug('[teamline, debug] pr', pr);
+        bot.log.debug('[teamline, debug] tm', tm);
 
         await get(`associate/action/${ac.id}/${model}/${pr.id}`);
         await get(`associate/${model}/${pr.id}/employee/${employee.id}`);
@@ -154,7 +155,7 @@ export default (bot, uri) => {
 
     return string.split('\n')
       .filter(a => a) // filter out empty lines
-      .map(a => a.split('>'))
+      .map(a => a.replace(/^actions/, '').split('>'))
       .map(([team = '', project = '', action = '']) => [team.trim(), project.trim(), action.trim()])
       .filter(([team = '', project = '']) => team && project)
       .map(([team, project, action]) => {

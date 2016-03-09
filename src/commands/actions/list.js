@@ -89,13 +89,19 @@ export default (bot, uri) => {
 
     if (type === 'teams') {
       if (user) {
-        list = await Promise.all(list.map(team =>
-          get(`team/${team.id}?include=Employee`)
-        ));
+        list = await Promise.all(list.map(async team => {
+          const Manager = team.Manager ? await get(`employee/${team.Manager}`) : null;
+          const t = await get(`team/${team.id}?include=Employee`);
+
+          return { ...t, Manager };
+        }));
       }
 
       const reply = list.map(item => {
-        const head = `*${item.name}* (${item.Employees.length} employees)`;
+        let head = `*${item.name}* (${item.Employees.length} employees)`;
+        if (item.Manager) {
+          head += `\nManager: *${item.Manager}*`;
+        }
 
         const employees = item.Employees.map(emp =>
           `    · @${emp.username} – ${emp.firstname} ${emp.lastname}`

@@ -69,14 +69,15 @@ export default (bot, uri) => {
     const employee = await findEmployee(uri, bot, message, username);
 
     const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
+    const modifications = await get(`employee/${employee.id}/schedulemodifications`);
 
 
-    if (!result.length) {
+    if (!result.length && !modifications.length) {
       return message.reply('You have not set your working hours yet.');
     }
 
     const name = username ? `${employee.firstname}'s` : 'Your';
-    const attachments = printHours(result);
+    const attachments = printHours(result, modifications);
     message.reply(`${name} weekly schedule:`, { attachments, websocket: false });
   });
 
@@ -115,8 +116,54 @@ export default (bot, uri) => {
         return { day: dd, ranges: r };
       });
 
-  const printHours = workhours => {
-    const sorted = workhours.sort((a, b) =>
+  const printHours = (workhours, modifications) => {
+    const addmodifications = modifications.filter(h => h.type === 'add').map(item => {
+      const Timeranges = [{
+        start: moment(item.start).format('HH:mm'),
+        end: moment(item.end).format('HH:mm'),
+      }];
+
+      const weekday = moment(item.start).day();
+      const wh = workhours.find(a => a.weekday === weekday);
+      if (wh) {
+        wh.modified = true;
+        wh.Timeranges = wh.Timeranges.concat(Timeranges);
+        return null;
+      }
+
+      return { weekday, Timeranges };
+    }).filter(a => a);
+    modifications
+      .filter(h => h.type === 'sub')
+      .forEach(time => {
+        const s = moment(time.start);
+        const e = moment(time.end);
+
+        const wh = workhours.find(a => a.weekday === s.day() && moment().week() === s.week());
+        if (wh) {
+          wh.modified = true;
+          wh.Timeranges.forEach(item => {
+            const iS = moment(item.start, 'HH:mm');
+            const iE = moment(item.end, 'HH:mm');
+
+            if (s.isSameOrAfter(iS)) {
+              if (Math.abs(e.diff(iE), 'minutes')) {
+                wh.Timeranges.push({
+                  start: e.format('HH:mm'),
+                  end: item.end
+                });
+              }
+
+              item.end = s.format('HH:mm');
+            }
+
+            return item;
+          });
+        }
+      });
+
+
+    const sorted = workhours.concat(addmodifications).sort((a, b) =>
       a.weekday - b.weekday
     );
 
@@ -145,20 +192,20 @@ export default (bot, uri) => {
       return a + innersum;
     }, 0);
 
-    const list = sorted.map(({ weekday, Timeranges }) => {
+    const list = sorted.map(({ weekday, Timeranges, modified }) => {
       const day = moment().day(weekday).format('dddd');
 
       return {
-        title: day,
+        title: (modified ? ':pencil2: ' : '') + day,
         color: DAY_COLORS[weekday],
         fields: Timeranges.reduce((a, t) =>
           a.concat([{
             title: 'From',
-            value: t.start,
+            value: moment(t.start, 'HH:mm').format('HH:mm'),
             short: true
           }, {
             title: 'To',
-            value: t.end,
+            value: moment(t.end, 'HH:mm').format('HH:mm'),
             short: true
           }])
         , [])
@@ -166,7 +213,7 @@ export default (bot, uri) => {
     });
 
     const duration = moment.duration(sum, 'minutes');
-    const sumtext = `Sum of vacations: ${parseInt(duration.asHours(), 10)} hours` + // eslint-disable-line
+    const sumtext = `Sum of working hours: ${parseInt(duration.asHours(), 10)} hours` + // eslint-disable-line
                     (duration.minutes() ? ` and ${duration.minutes()} minutes` : ``);
     list.push({
       pretext: sumtext,

@@ -1,6 +1,6 @@
 {
   "name": "bolt-teamline",
-  "version": "1.15.2",
+  "version": "1.16.0",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
@@ -36,6 +36,7 @@
     "eslint-config-airbnb": "4.0.0",
     "lodash": "4.2.0",
     "moment": "2.11.1",
+    "moment-parseformat": "2.1.1",
     "natural": "0.2.1",
     "qs": "6.1.0",
     "unirest": "0.4.2"
