@@ -1,7 +1,7 @@
 import { printList } from '../utils';
 import moment from 'moment';
 import _ from 'lodash';
-import request from '../../request';
+import request from '../request';
 
 export default (bot, uri) => {
   const { get } = request(bot, uri);

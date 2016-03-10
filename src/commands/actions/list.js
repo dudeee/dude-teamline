@@ -90,24 +90,26 @@ export default (bot, uri) => {
     if (type === 'teams') {
       if (user) {
         list = await Promise.all(list.map(async team => {
-          const Manager = team.Manager ? await get(`employee/${team.Manager}`) : null;
-          const t = await get(`team/${team.id}?include=Employee`);
+          const t = await get(`team/${team.id}`, {
+            include: ['Employee']
+          });
+          const Managers = await get(`team/${team.id}/managers`);
 
-          return { ...t, Manager };
+          return { ...t, Managers };
         }));
       }
 
       const reply = list.map(item => {
-        let head = `*${item.name}* (${item.Employees.length} employees)`;
-        if (item.Manager) {
-          head += `\nManager: *${item.Manager}*`;
-        }
+        const head = `*${item.name}* (${item.Employees.length} employees)`;
+        const managers = item.Managers.map(emp =>
+          `    · @${emp.username} – ${emp.firstname} ${emp.lastname}`
+        ).join('\n');
 
         const employees = item.Employees.map(emp =>
           `    · @${emp.username} – ${emp.firstname} ${emp.lastname}`
         ).join('\n');
 
-        return `･ ${head}\n${employees}`;
+        return `･ ${head}\nManagers:\n${managers}\nEmployees:\n${employees}`;
       }).join('\n\n');
 
       return message.reply(reply || bot.t('dialogs.empty'));

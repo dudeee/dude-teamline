@@ -1,6 +1,6 @@
 import { wait } from '../utils';
 import moment from 'moment';
-import request from '../../request';
+import request from '../request';
 import workhoursModifications from '../commands/functions/workhours-modifications';
 
 export default (bot, uri) => {
