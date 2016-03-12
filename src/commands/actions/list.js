@@ -107,14 +107,14 @@ export default (bot, uri) => {
       const reply = list.map(item => {
         const head = `*${item.name}* (${item.Employees.length} employees)`;
         const managers = item.Managers.map(emp =>
-          `    · @${emp.username} – ${emp.firstname} ${emp.lastname}`
+          `      · @${emp.username} – ${emp.firstname} ${emp.lastname}`
         ).join('\n');
 
         const employees = item.Employees.map(emp =>
-          `    · @${emp.username} – ${emp.firstname} ${emp.lastname}`
+          `      · @${emp.username} – ${emp.firstname} ${emp.lastname}`
         ).join('\n');
 
-        return `･ ${head}\nManagers:\n${managers}\nEmployees:\n${employees}`;
+        return `･ ${head}\n  ･ Managers:\n${managers}\n  ･ Employees:\n${employees}`;
       }).join('\n\n');
 
       return message.reply(reply || bot.t('dialogs.empty'));
@@ -165,7 +165,7 @@ export default (bot, uri) => {
     }
   });
 
-  bot.listen(/^(?:action(?:s?))\s*(\S*)\s*([^-,]*)?\s*(?:-|,)?\s*(.*)?/gi, async message => {
+  bot.listen(/^(?:action(?:s?))\s*(\S*)\s*([^-,]*)?\s*(?:-|,|to)?\s*(.*)?/gi, async message => {
     if (message.preformatted.includes('>')) return;
 
     let [user, from, to] = message.match; // eslint-disable-line

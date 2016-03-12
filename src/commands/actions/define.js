@@ -81,13 +81,12 @@ export default (bot, uri) => {
         }
         if (!pr) {
           if (tm) {
-            pr = await get(`team/${tm.id}/${model}`, { name });
-
-            if (!pr) {
-              pr = await get(model, { name });
-            }
+            pr = await get(`employee/${employee.id}/${model}`, { name }) ||
+                 await get(`team/${tm.id}/${model}`, { name }) ||
+                 await get(model, { name });
           } else {
-            pr = await get(model, { name });
+            pr = await get(`employee/${employee.id}/${model}`, { name }) ||
+                 await get(model, { name });
           }
         }
         if (tm) {

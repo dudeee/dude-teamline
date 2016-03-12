@@ -16,7 +16,13 @@ export default async (uri, bot, message, user) => {
   const employee = await get('employee', { username });
 
   if (!employee) {
-    return message.reply('You are not a registered employee');
+    if (!user) {
+      message.reply('You are not a registered employee');
+    } else {
+      message.reply(`User ${user} not found.`);
+    }
+
+    return null;
   }
 
   return employee;

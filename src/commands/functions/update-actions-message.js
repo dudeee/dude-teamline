@@ -21,11 +21,17 @@ export default async (bot, uri, employee) => {
   const text = `${userinfo}\n${list}`;
 
   if (empMessage) {
+    if (!allActions.length) {
+      await bot.deleteMessage('actions', empMessage.ts);
+      return;
+    }
     await bot.updateMessage('actions', empMessage.ts, text, {
       as_user: true
     });
-    return true;
+    return;
   }
+
+  if (!allActions.length) return;
 
   await bot.sendMessage('actions', text, {
     websocket: false,
@@ -33,5 +39,5 @@ export default async (bot, uri, employee) => {
     parse: 'full',
     as_user: true
   });
-  return false;
+  return;
 };

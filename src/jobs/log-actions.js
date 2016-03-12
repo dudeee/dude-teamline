@@ -97,6 +97,6 @@ export default (bot, uri) => {
   });
 
   const job = bot.agenda.create('log-actions');
-  job.repeatEvery('5 minute');
+  job.repeatEvery('1 minute');
   job.save();
 };
