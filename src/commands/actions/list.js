@@ -93,11 +93,16 @@ export default (bot, uri) => {
           const t = await get(`team/${team.id}`, {
             include: ['Employee']
           });
-          const Managers = await get(`team/${team.id}/managers`);
 
-          return { ...t, Managers };
+          return { ...t };
         }));
       }
+
+      list = await Promise.all(list.map(async team => {
+        const Managers = await get(`team/${team.id}/managers`);
+
+        return { ...team, Managers };
+      }));
 
       const reply = list.map(item => {
         const head = `*${item.name}* (${item.Employees.length} employees)`;

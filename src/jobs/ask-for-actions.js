@@ -7,6 +7,7 @@ export default (bot, uri) => {
   const { get } = request(bot, uri);
 
   bot.agenda.define('ask-for-actions', async (job, done) => {
+    bot.log.verbose('[teamline] ask-for-actions');
     const employees = await get('employees');
 
     const d = moment();
@@ -20,12 +21,12 @@ export default (bot, uri) => {
       if (actions.length) continue;
 
       const modifications = await get(`employee/${emp.id}/schedulemodifications`);
-      const rawWorkhours = await get(`employee/${emp.id}/workhour`, {
+      const rawWorkhours = await get(`employee/${emp.id}/workhours`, {
         weekday: d.day(),
         include: 'Timerange'
       });
 
-      const workhours = workhoursModifications(rawWorkhours, modifications);
+      const [workhours] = workhoursModifications(rawWorkhours, modifications);
 
       if (!workhours || !workhours.Timeranges.length) continue;
 

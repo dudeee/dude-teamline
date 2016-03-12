@@ -7,6 +7,7 @@ export default (bot, uri) => {
   const { get } = request(bot, uri);
 
   bot.agenda.define('log-actions', async (job, done) => {
+    bot.log.verbose('[teamline] log-actions');
     if (moment().hours() < 10) return;
 
     const teams = await get('teams');
