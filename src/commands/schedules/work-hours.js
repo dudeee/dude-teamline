@@ -70,7 +70,7 @@ export default (bot, uri) => {
     const employee = await findEmployee(uri, bot, message, username);
 
     const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
-    const modifications = await get(`employee/${employee.id}/schedulemodifications`);
+    const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`);
 
 
     if (!result.length && !modifications.length) {

@@ -20,7 +20,7 @@ export default (bot, uri) => {
       const actions = await get(`employee/${emp.id}/actions/today`);
       if (actions.length) continue;
 
-      const modifications = await get(`employee/${emp.id}/schedulemodifications`);
+      const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`);
       const rawWorkhours = await get(`employee/${emp.id}/workhours`, {
         weekday: d.day(),
         include: 'Timerange'

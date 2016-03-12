@@ -41,7 +41,7 @@ export default (bot, uri) => {
 
     if (scope) scope = `/${scope}`;
     let list = user ? await get(`employee/${employee.id}/${type}${scope}`, query)
-                      : await get(`${type}${scope}`, query);
+                    : await get(`${type}${scope}`, query);
 
     if (!list.length) {
       return message.reply(bot.t('dialogs.empty'));
@@ -192,15 +192,11 @@ export default (bot, uri) => {
         $gte: +fromDate,
         $lte: +toDate
       }),
-      include: 'Project'
+      include: ['Project', 'Role']
     };
     const url = `employee/${employee.id}/actions`;
     const actions = await* (await get(url, query)).map(action => {
-      if (!action.Project) {
-        return get(`action/${action.id}?include=Role`);
-      }
-
-      if (action.Project.state === 'closed') return null;
+      if (action.Project && action.Project.state === 'closed') return null;
 
       return action;
     }).filter(a => a);

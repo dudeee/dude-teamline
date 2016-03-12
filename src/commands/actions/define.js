@@ -106,15 +106,8 @@ export default (bot, uri) => {
     }
 
     const url = `employee/${employee.id}/actions/today`;
-    const allActions = await get(url, { include: 'Project' });
-    const allActionsWithRoles = await* allActions.map(action => {
-      if (!action.Project) {
-        return get(`action/${action.id}`, { include: 'Role' });
-      }
-
-      return action;
-    });
-    const list = printList(allActionsWithRoles);
+    const allActions = await get(url, { include: ['Project', 'Role'] });
+    const list = printList(allActions);
 
     if (attachments.length > 1) attachments.splice(0, 1);
     message.reply(list, {
@@ -123,19 +116,7 @@ export default (bot, uri) => {
       parse: 'full'
     });
 
-    const userinfo = `${employee.firstname} ${employee.lastname}`;
-
-    const text = `${userinfo}\n${list}`;
-
-    const updated = await updateActionsMessage(bot, uri, employee);
-    if (updated) return;
-
-    bot.sendMessage('actions', text, {
-      websocket: false,
-      links: true,
-      parse: 'full',
-      as_user: true
-    });
+    await updateActionsMessage(bot, uri, employee);
   });
 
   async function parseActionList(string, employee) {

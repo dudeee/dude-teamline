@@ -6,15 +6,8 @@ export default async (bot, uri, employee) => {
   const { get } = request(bot, uri);
 
   const url = `employee/${employee.id}/actions/today`;
-  const allActions = await get(url, { include: 'Project' });
-  const allActionsWithRoles = await* allActions.map(action => {
-    if (!action.Project) {
-      return get(`action/${action.id}`, { include: 'Role' });
-    }
-
-    return action;
-  });
-  const list = printList(allActionsWithRoles);
+  const allActions = await get(url, { include: ['Project', 'Role'] });
+  const list = printList(allActions);
 
   const history = await bot.call('channels.history', {
     channel: bot.find('actions').id,
@@ -34,5 +27,11 @@ export default async (bot, uri, employee) => {
     return true;
   }
 
+  await bot.sendMessage('actions', text, {
+    websocket: false,
+    links: true,
+    parse: 'full',
+    as_user: true
+  });
   return false;
 };
