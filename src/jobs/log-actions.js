@@ -57,8 +57,6 @@ export default (bot, uri) => {
             return `${emp.firstname} ${emp.lastname}\n${actionList}`;
           }).join('\n\n');
 
-        if (!list.length) continue;
-
         const text = `${head}\n${list}`;
 
         const history = await bot.call('channels.history', {
@@ -71,10 +69,17 @@ export default (bot, uri) => {
         const channel = bot.find(name).id;
 
         if (msg) {
+          if (!list.length) {
+            bot.deleteMessage(channel, msg.ts);
+            continue;
+          }
+
           bot.updateMessage(channel, msg.ts, text, {
             as_user: true
           });
         } else {
+          if (!list.length) continue;
+
           msg = await bot.sendMessage(channel, text, {
             websocket: false,
             parse: 'full',

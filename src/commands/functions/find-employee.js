@@ -1,28 +1,30 @@
 import request from '../../request';
 
 const self = ['me', 'my', 'myself'];
-export default async (uri, bot, message, user) => {
+export default async (uri, bot, message, user, exclude = []) => {
   const { get } = request(bot, uri);
+  let employee;
+  let username;
 
-  if (user) {
-    const username = user.replace('@', '');
+  if (user && !self.includes(user)) {
+    username = user.replace('@', '');
 
-    if (!self.includes(username)) {
-      return get('employee', { username });
-    }
+    employee = await get('employee', { username });
+  } else {
+    username = bot.find(message.user).name;
+    employee = await get('employee', { username });
   }
 
-  const username = bot.find(message.user).name;
-  const employee = await get('employee', { username });
-
   if (!employee) {
-    if (!user) {
-      message.reply('You are not a registered employee');
-    } else {
-      message.reply(`User ${user} not found.`);
+    if (!exclude.includes(user)) {
+      if (!user) {
+        message.reply('You are not a registered employee');
+      } else {
+        message.reply(`Couldn't find user *${username}*! :thinking_face:`);
+      }
     }
 
-    return null;
+    throw new Error(`User ${username} not found.`);
   }
 
   return employee;

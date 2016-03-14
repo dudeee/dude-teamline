@@ -29,11 +29,13 @@ export default (bot, uri) => {
         query.include = 'Project';
         break;
       case 'teams':
+        scope = scope || 'open';
         if (!user) {
           query.include = 'Employee';
         }
         break;
       case 'roles':
+        scope = scope || 'open';
         query.include = 'Team';
         break;
       default: break;
@@ -90,11 +92,9 @@ export default (bot, uri) => {
     if (type === 'teams') {
       if (user) {
         list = await Promise.all(list.map(async team => {
-          const t = await get(`team/${team.id}`, {
-            include: ['Employee']
-          });
+          const Employees = await get(`team/${team.id}/employees`);
 
-          return { ...t };
+          return { ...team, Employees };
         }));
       }
 
@@ -175,7 +175,7 @@ export default (bot, uri) => {
     from = from || 'today';
     to = to || from;
 
-    const employee = await findEmployee(uri, bot, message, user);
+    const employee = await findEmployee(uri, bot, message, user, ['clear', 'remove']);
 
     const fromDate = humanDate(from);
     fromDate.setHours(0);
@@ -195,11 +195,9 @@ export default (bot, uri) => {
       include: ['Project', 'Role']
     };
     const url = `employee/${employee.id}/actions`;
-    const actions = await* (await get(url, query)).map(action => {
-      if (action.Project && action.Project.state === 'closed') return null;
-
-      return action;
-    }).filter(a => a);
+    const actions = (await get(url, query)).filter(action =>
+      (action.Role && !action.Role.closed) || (action.Project && action.Project.state !== 'closed')
+    );
 
     const placeholder = user ? 'His' : 'Your';
     message.reply(printList(actions, bot.t('teamline.actions.list.empty', { user: placeholder })));

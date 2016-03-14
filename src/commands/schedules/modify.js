@@ -81,36 +81,41 @@ export default (bot, uri) => {
     const userinfo = `${employee.firstname} ${employee.lastname}`;
     const formattedFrom = start.format('DD MMMM HH:mm');
     const formattedTo = end.format('DD MMMM HH:mm');
-    const manager = bot.config.teamline.modifications.manager;
+    const manager = _.get(bot.config, 'teamline.modifications.manager');
     const length = Math.abs(start.diff(end, 'hours', true));
     const details = `(#${b.id}) from *${formattedFrom}* to *${formattedTo}*`;
 
-    const approveLength = _.get(bot.config, 'teamline.vacations.approve-length') || 2;
+    const approveLength = _.get(bot.config, 'teamline.modifications.approve-length') || 2;
     if (length < approveLength) {
       await put(`schedulemodification/${b.id}`, { status: 'accepted' });
       message.reply(`Alright, your request ${details} is accepted!`);
       return;
     }
 
-    message.reply(`Your request for a schedule modification ${details} is submitted!`);
+    if (type === 'sub') {
+      message.reply(`Your request for a schedule modification ${details} is submitted!`);
 
-    setTimeout(async () => {
-      const stillThere = await get(`schedulemodification/${b.id}`);
-      if (!stillThere) return;
+      setTimeout(async () => {
+        const stillThere = await get(`schedulemodification/${b.id}`);
+        if (!stillThere) return;
 
-      const approved = await bot.ask(manager, `Hey, ${userinfo} wants to a ${add} a modification ` + //eslint-disable-line
-                                             `from ${formattedFrom} to ${formattedTo}.\n` +
-                                             (reason ? `Reason: ${reason}\n` : ``) +
-                                             `Do you grant the permission?`, Boolean);
+        const approved = await bot.ask(manager, `Hey, ${userinfo} wants to a ${add} a modification ` + //eslint-disable-line
+                                               `from ${formattedFrom} to ${formattedTo}.\n` +
+                                               (reason ? `Reason: ${reason}\n` : ``) +
+                                               `Do you grant the permission?`, Boolean);
 
-      if (approved) {
-        message.reply(`Alright, your modification request ${details} was accepted. Have fun! ⛱`);
-        await put(`schedulemodification/${b.id}`, { status: 'accepted' });
-      } else {
-        message.reply(`Your modification request ${details} was rejected. 😟`);
-        await put(`schedulemodification/${b.id}`, { status: 'rejected' });
-      }
-    }, 1000 * 30);
+        if (approved) {
+          message.reply(`Alright, your modification request ${details} was accepted. Have fun! ⛱`);
+          await put(`schedulemodification/${b.id}`, { status: 'accepted' });
+        } else {
+          message.reply(`Your modification request ${details} was rejected. 😟`);
+          await put(`schedulemodification/${b.id}`, { status: 'rejected' });
+        }
+      }, 1000 * 30);
+    } else {
+      await put(`schedulemodification/${b.id}`, { status: 'accepted' });
+      message.reply(`Alright, your modification request ${details} is accepted. :+1:`);
+    }
   });
 
   bot.command('schedule(s)? modifications [char] [string]', async message => {
@@ -166,7 +171,7 @@ export default (bot, uri) => {
 
       const details = `(#${b.id}) from *${formattedFrom}* to *${formattedTo}*`;
       const answer = await bot.ask(manager,
-                                   `Hey, @${employee.name} wants to remove modification ${details}`,
+                                   `Hey, @${employee.username} wants to remove modification ${details}`, //eslint-disable-line
                                    Boolean);
       if (answer) {
         await del(`schedulemodification/${id}`);

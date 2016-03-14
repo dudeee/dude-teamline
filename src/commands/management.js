@@ -62,4 +62,10 @@ export default async (bot, uri) => {
   }, {
     permissions: ['admin', 'human-resource']
   });
+
+  bot.command('teamline refresh', async message => {
+    get('?refresh');
+
+    message.reply(bot.t('teamline.actions.refresh'));
+  });
 };
