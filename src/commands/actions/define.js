@@ -71,7 +71,7 @@ export default (bot, uri) => {
         }
 
         // Detect duplicate actions
-        let ac = await get(`project/${pr.id}/action`, {
+        let ac = await get(`${model}/${pr.id}/action`, {
           name: action,
           date: {
             $gt: moment().hours(0).minutes(0).seconds(0).toISOString()
