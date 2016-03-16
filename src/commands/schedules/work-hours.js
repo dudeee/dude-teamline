@@ -142,10 +142,19 @@ export default (bot, uri) => {
         }, 0);
 
         const diff = end.diff(start, 'minutes', true);
-        return x + Math.abs(diff) - breaks;
-      }, 0);
-      return a + innersum;
-    }, 0);
+        return {
+          total: x.total + Math.abs(diff),
+          calculated: x.calculated + Math.abs(diff) - breaks,
+          breaks: a.breaks + breaks
+        };
+      }, { total: 0, calculated: 0, breaks: 0 });
+
+      return {
+        total: a.total + innersum.total,
+        calculated: a.calculated + innersum.calculated,
+        breaks: a.breaks + innersum.breaks
+      };
+    }, { total: 0, calculated: 0, breaks: 0 });
 
     const list = sorted.map(({ weekday, Timeranges, modified }) => {
       const day = moment().day(weekday).format('dddd');
@@ -167,13 +176,29 @@ export default (bot, uri) => {
       };
     });
 
-    const duration = moment.duration(sum, 'minutes');
-    const sumtext = `Sum of working hours: ${parseInt(duration.asHours(), 10)} hours` + // eslint-disable-line
-                    (duration.minutes() ? ` and ${duration.minutes()} minutes` : ``);
-    list.push({
-      pretext: sumtext,
-      fallback: sumtext,
-    });
+    const textify = s => {
+      const duration = moment.duration(s, 'minutes');
+      return `${parseInt(duration.asHours(), 10)} hours` + // eslint-disable-line
+                        (duration.minutes() ? ` and ${duration.minutes()} minutes` : ``);
+    };
+
+    const summary = {
+      title: 'Summary',
+      fields: [{
+        title: 'Total',
+        value: textify(sum.total),
+        short: true
+      }, {
+        title: 'Breaks',
+        value: textify(sum.breaks),
+        short: true
+      }, {
+        title: 'Calculated',
+        value: textify(sum.calculated)
+      }]
+    };
+
+    list.push(summary);
 
     return list;
   };
