@@ -2,6 +2,7 @@ import { fuzzy, printList } from '../../utils';
 import findEmployee from '../functions/find-employee';
 import request from '../../request';
 import updateActionsMessage from '../functions/update-actions-message';
+import logActions from '../functions/log-actions';
 import moment from 'moment';
 
 export default (bot, uri) => {
@@ -110,6 +111,7 @@ export default (bot, uri) => {
     });
 
     await updateActionsMessage(bot, uri, employee);
+    await logActions(bot, uri, employee);
   });
 
   async function parseActionList(string, employee) {
