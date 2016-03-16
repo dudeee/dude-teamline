@@ -145,7 +145,7 @@ export default (bot, uri) => {
         return {
           total: x.total + Math.abs(diff),
           calculated: x.calculated + Math.abs(diff) - breaks,
-          breaks: a.breaks + breaks
+          breaks: x.breaks + breaks
         };
       }, { total: 0, calculated: 0, breaks: 0 });
 
