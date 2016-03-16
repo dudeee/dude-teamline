@@ -14,7 +14,6 @@ export default async (bot, uri, employee) => {
   for (const team of teams) {
     try {
       const name = team.name.replace(/\s/, '-').toLowerCase();
-      console.log(name);
       const projects = await get(`team/${team.id}/projects`, {
         include: 'Action'
       });
@@ -66,7 +65,6 @@ export default async (bot, uri, employee) => {
       let msg = history.messages.find(a => a.text.startsWith(head));
 
       const channel = bot.find(name).id;
-      console.log(name, list.length);
 
       if (msg) {
         if (!list.length) {
