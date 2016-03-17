@@ -26,6 +26,9 @@ export default async (bot, uri, employee) => {
       return;
     }
     await bot.updateMessage('actions', empMessage.ts, text, {
+      websocket: false,
+      parse: 'full',
+      link_names: true,
       as_user: true
     });
     return;
@@ -35,7 +38,7 @@ export default async (bot, uri, employee) => {
 
   await bot.sendMessage('actions', text, {
     websocket: false,
-    links: true,
+    link_names: true,
     parse: 'full',
     as_user: true
   });

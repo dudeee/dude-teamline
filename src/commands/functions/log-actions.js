@@ -73,7 +73,9 @@ export default async (bot, uri, employee) => {
         }
 
         bot.updateMessage(channel, msg.ts, text, {
-          as_user: true
+          as_user: true,
+          link_names: true,
+          parse: 'full'
         });
       } else {
         if (!list.length) continue;
@@ -81,6 +83,7 @@ export default async (bot, uri, employee) => {
         msg = await bot.sendMessage(channel, text, {
           websocket: false,
           parse: 'full',
+          link_names: true,
           as_user: true
         });
 
