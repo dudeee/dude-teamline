@@ -7,8 +7,7 @@ import jobs from './jobs';
 const DEFAULT = {};
 
 export default async bot => {
-  _.defaults(bot.config.teamline, DEFAULT);
-  const config = bot.config.teamline;
+  const config = _.defaults(bot.config.teamline, DEFAULT);
   const { uri } = config;
 
   await bot.i18n.load(path.join(__dirname, '../locales/'));
@@ -19,8 +18,6 @@ export default async bot => {
   } catch (e) {
     bot.log.error('[teamline]', e);
   }
-
-  bot.pocket.model('TeamlineNotified', { id: Number, expireAt: { type: Date, expires: 0 } });
 
   /*eslint-disable */
   bot.help('actions', 'Teamline: Manage your actions', `

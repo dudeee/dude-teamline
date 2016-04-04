@@ -1,13 +1,13 @@
-import findEmployee from '../functions/find-employee';
-import parseDate from '../functions/parse-date';
-import request from '../../request';
+import findEmployee from '../../functions/find-employee';
+import parseDate from '../../functions/parse-date';
+import request from '../../functions/request';
 import humanDate from 'date.js';
 import moment from 'moment';
 import _ from 'lodash';
 
 export default (bot, uri) => {
   const { get, post, put, del } = request(bot, uri);
-  const breakTimes = (bot.config.teamline.breaks || []).map(time =>
+  const breakTimes = (_.get(bot.config, 'teamline.breaks') || []).map(time =>
     ({ start: moment(time.start, 'HH:mm'), end: moment(time.end, 'HH:mm') })
   );
 

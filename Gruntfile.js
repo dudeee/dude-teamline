@@ -8,16 +8,16 @@ module.exports = function(grunt) {
           src: '**/*.js',
           dest: 'build/'
         }, {
-					expand: true,
-					cwd: 'server',
-					src: '**/*.js',
-					dest: 'build/server/'
-				}]
+          expand: true,
+          cwd: 'server',
+          src: '**/*.js',
+          dest: 'build/server/'
+        }]
       }
     },
-		clean: {
-			files: ['build/**/*.js']
-		},
+    clean: {
+      files: ['build/**/*.js']
+    },
     watch: {
       scripts: {
         files: ['src/**/*.js', 'server/**/*.js'],

@@ -1,12 +1,13 @@
-import findEmployee from '../functions/find-employee';
-import workhoursModifications from '../functions/workhours-modifications';
-import request from '../../request';
+import findEmployee from '../../functions/find-employee';
+import workhoursModifications from '../../functions/workhours-modifications';
+import request from '../../functions/request';
 import moment from 'moment';
+import _ from 'lodash';
 
 const DAY_COLORS = ['#687fe0', '#86e453', '#eb5d7a', '#34bae4', '#757f8c', '#ecf76e', '#ac58e0'];
 export default (bot, uri) => {
   const { get, post, del } = request(bot, uri);
-  const breakTimes = (bot.config.teamline.breaks || []).map(time =>
+  const breakTimes = (_.get(bot.config, 'teamline.breaks') || []).map(time =>
     ({ start: moment(time.start, 'HH:mm'), end: moment(time.end, 'HH:mm') })
   );
 
@@ -18,7 +19,7 @@ export default (bot, uri) => {
 
     let employees = [];
     let employee;
-    if (username === 'all' || username === 'default') {
+    if (username === 'all' || username === 'default' || username === 'everyone') {
       employees = await get('employees');
     } else {
       employee = await findEmployee(uri, bot, message, username);
@@ -38,12 +39,12 @@ export default (bot, uri) => {
         });
 
         await Promise.all(item.ranges.map(async range => {
-          const tr = await post('timerange', {
+          await post(`workhour/${wh.id}/timerange`, {
             start: range[0].format('HH:mm'),
             end: range[1].format('HH:mm')
           });
 
-          await get(`associate/workhour/${wh.id}/timerange/${tr.id}`);
+          // await get(`associate/workhour/${wh.id}/timerange/${tr.id}`);
         }));
       }
     }

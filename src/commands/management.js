@@ -1,4 +1,4 @@
-import request from '../request';
+import request from '../functions/request';
 
 export default async (bot, uri) => {
   const { get, post, put, del } = request(bot, uri);

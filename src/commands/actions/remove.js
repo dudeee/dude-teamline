@@ -1,7 +1,7 @@
-import findEmployee from '../functions/find-employee';
-import request from '../../request';
-import updateActionsMessage from '../functions/update-actions-message';
-import logActions from '../functions/log-actions';
+import findEmployee from '../../functions/find-employee';
+import request from '../../functions/request';
+import updateActionsMessage from '../../functions/update-actions-message';
+import logActions from '../../functions/log-actions';
 
 export default (bot, uri) => {
   const { get, del } = request(bot, uri);

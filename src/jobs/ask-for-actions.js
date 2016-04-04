@@ -1,10 +1,13 @@
-import { wait } from '../utils';
+import { wait } from '../functions/utils';
 import moment from 'moment';
-import request from '../request';
-import workhoursModifications from '../commands/functions/workhours-modifications';
+import request from '../functions/request';
+import workhoursModifications from '../functions/workhours-modifications';
+import _ from 'lodash';
 
 export default (bot, uri) => {
   const { get } = request(bot, uri);
+
+  bot.pocket.model('TeamlineNotified', { id: Number, expireAt: { type: Date, expires: 0 } });
 
   bot.agenda.define('ask-for-actions', async (job, done) => {
     bot.log.verbose('[teamline] ask-for-actions');
@@ -38,7 +41,8 @@ export default (bot, uri) => {
 
       const diff = (d.hours() - schedule.start.hours()) * 60
                  + (d.minutes() - schedule.start.minutes());
-      if (diff > 0) {
+      const delay = _.get(bot.config, 'teamline.actions.ask.delay') || 30;
+      if (diff > delay) {
         await bot.sendMessage(user.name, 'Hey! What are you going to do today? 😁');
         const RATE_LIMIT = 1000;
         await wait(RATE_LIMIT);

@@ -178,3 +178,20 @@ export function clockEmoji(date = new Date()) {
     throw new TypeError('input date should be a date object or a valid date string');
   }
 }
+
+/**
+ * Promisify a callback-style function
+ * @param  {Function} fn    the function to modify
+ * @param  {Object} context the context to run the function with
+ * @return {Function}    the same function, returning Promise instead of accepting callback
+ */
+export function promisify(fn, context = null) {
+  return function(...args) { // eslint-disable-line
+    return new Promise((resolve, reject) => {
+      fn.call(context, ...args, function promisifiedCallback(e, ...rest) { // eslint-disable-line
+        if (e) reject(e);
+        else resolve(...rest);
+      });
+    });
+  };
+}

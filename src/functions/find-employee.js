@@ -1,4 +1,4 @@
-import request from '../../request';
+import request from './request';
 
 const self = ['me', 'my', 'myself'];
 export default async (uri, bot, message, user, exclude = []) => {
@@ -22,9 +22,9 @@ export default async (uri, bot, message, user, exclude = []) => {
       } else {
         message.reply(`Couldn't find user *${username}*! :thinking_face:`);
       }
-    }
 
-    throw new Error(`User ${username} not found.`);
+      throw new Error(`User ${username} not found.`);
+    }
   }
 
   return employee;

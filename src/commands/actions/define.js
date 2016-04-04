@@ -1,17 +1,17 @@
-import { fuzzy, printList } from '../../utils';
-import findEmployee from '../functions/find-employee';
-import request from '../../request';
-import updateActionsMessage from '../functions/update-actions-message';
-import logActions from '../functions/log-actions';
+import { fuzzy, printList } from '../../functions/utils';
+import findEmployee from '../../functions/find-employee';
+import request from '../../functions/request';
+import updateActionsMessage from '../../functions/update-actions-message';
+import logActions from '../../functions/log-actions';
 import moment from 'moment';
 
 export default (bot, uri) => {
   const { get, post, put } = request(bot, uri);
 
-  const DUPLICATE = 303;
-  const NOT_FOUND = 404;
-  const TEAM_NOT_FOUND = 405;
-  const NEW = 200;
+  const DUPLICATE = Symbol('duplicate');
+  const NOT_FOUND = Symbol('not_found');
+  const TEAM_NOT_FOUND = Symbol('team_not_found');
+  const NEW = Symbol('new');
   bot.command('^<actions | action> [string] > [string] [>] [string]', async message => {
     const t = (key, ...args) => bot.t(`teamline.actions.${key}`, ...args);
 
@@ -35,7 +35,7 @@ export default (bot, uri) => {
       switch (status) {
         case DUPLICATE:
           attachments.warning(t('define.errors.duplicate-project', { model: modelName, name }));
-          break;
+          continue;
         case NOT_FOUND:
           const newSyntax = role ? `+(${name})` : `+${name}`;
           attachments.danger(t('define.errors.notfound', {
@@ -99,16 +99,15 @@ export default (bot, uri) => {
       }
     }
 
-    const url = `employee/${employee.id}/actions/today`;
-    const allActions = await get(url, { include: ['Project', 'Role'] });
-    const list = printList(allActions);
-
-    if (attachments.length > 1) attachments.splice(0, 1);
     message.reply(list, {
       attachments,
       websocket: false,
       parse: 'full'
     });
+
+    const url = `employee/${employee.id}/actions/today`;
+    const allActions = await get(url, { include: ['Project', 'Role'] });
+    const list = printList(allActions);
 
     await updateActionsMessage(bot, uri, employee);
     await logActions(bot, uri, employee);

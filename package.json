@@ -1,16 +1,20 @@
 {
   "name": "bolt-teamline",
-  "version": "1.16.13",
+  "version": "1.16.14",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
-    "start": "node build/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src"
+    "test": "mocha test --compilers js:babel/register,js:babel/polyfill -w",
+    "test:single": "istanbul cover -x test _mocha -- test --compilers js:babel/register,js:babel/polyfill",
+    "test:single": "istanbul cover babel-node test/index",
+    "test:file": "mocha --compilers js:babel/register,js:babel/polyfill",
+    "check-coverage": "istanbul check-coverage --statements 85 --branches 80 --functions 85 --lines 85",
+    "report-coverage": "cat ./coverage/lcov.info | codecov",
+    "lint": "eslint src test"
   },
   "config": {
     "ghooks": {
-      "pre-commit": "npm run lint && grunt"
+      "pre-commit": "npm run lint && grunt && npm run test:single && npm run check-coverage"
     }
   },
   "keywords": [
@@ -23,14 +27,24 @@
   "license": "MIT",
   "devDependencies": {
     "babel": "5.8.3",
+    "body-parser": "1.15.0",
+    "chai": "3.5.0",
+    "codecov.io": "0.1.6",
+    "express": "4.13.4",
     "ghooks": "1.0.3",
     "grunt": "0.4.5",
     "grunt-babel": "5.0.3",
     "grunt-contrib-clean": "0.7.0",
-    "grunt-contrib-watch": "0.6.1"
+    "grunt-contrib-watch": "0.6.1",
+    "istanbul": "0.4.2",
+    "mocha": "2.4.5",
+    "sinon": "1.17.3",
+    "slack-bolt": "1.15.1",
+    "ws": "1.0.1"
   },
   "dependencies": {
     "babel-eslint": "4.1.8",
+    "chrono-node": "1.2.1",
     "date.js": "0.2.2",
     "eslint": "1.10.3",
     "eslint-config-airbnb": "4.0.0",

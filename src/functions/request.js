@@ -1,8 +1,9 @@
 import unirest from 'unirest';
 import qs from 'qs';
+import _ from 'lodash';
 
 export default (bot, uri) => {
-  const { auth } = bot.config.teamline;
+  const auth = _.get(bot.config, 'teamline.auth') || { key: '', token: '' };
 
   return {
     get(url = '', query = {}) {

@@ -1,6 +1,6 @@
-import { printList } from '../../utils';
-import findEmployee from '../functions/find-employee';
-import request from '../../request';
+import { printList } from '../../functions/utils';
+import findEmployee from '../../functions/find-employee';
+import request from '../../functions/request';
 import humanDate from 'date.js';
 
 export default (bot, uri) => {
@@ -20,13 +20,15 @@ export default (bot, uri) => {
 
     const query = {};
 
+    if (type[type.length - 1] !== 's') type += 's';
+
     switch (type) {
       case 'projects':
         scope = scope || 'open';
         query.include = 'Team';
         break;
       case 'actions':
-        query.include = 'Project';
+        query.include = ['Project', 'Role'];
         break;
       case 'teams':
         scope = scope || 'open';

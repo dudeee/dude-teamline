@@ -1,9 +1,10 @@
-import { printList } from '../../utils';
+import { printList } from './utils';
 import moment from 'moment';
 import _ from 'lodash';
-import request from '../../request';
+import request from './request';
 
 export default async (bot, uri, employee) => {
+  if (_.get(bot.config, 'teamline.teamsChannels') === false) return;
   const { get } = request(bot, uri);
 
   bot.log.verbose('[teamline] log-actions');
@@ -63,7 +64,6 @@ export default async (bot, uri, employee) => {
       });
 
       let msg = history.messages.find(a => a.text.startsWith(head));
-
       const channel = bot.find(name).id;
 
       if (msg) {

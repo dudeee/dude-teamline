@@ -1,4 +1,4 @@
-import request from '../../request';
+import request from '../../functions/request';
 import moment from 'moment';
 // import { capitalize, groupBy } from 'lodash';
 

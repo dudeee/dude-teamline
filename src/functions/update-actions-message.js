@@ -1,8 +1,11 @@
 import moment from 'moment';
-import { printList } from '../../utils';
-import request from '../../request';
+import { printList } from './utils';
+import request from './request';
+import _ from 'lodash';
 
 export default async (bot, uri, employee) => {
+  if (_.get(bot.config, 'teamline.actionsChannel') === false) return;
+
   const { get } = request(bot, uri);
 
   const url = `employee/${employee.id}/actions/today`;
