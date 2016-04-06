@@ -1,6 +1,6 @@
 {
   "name": "bolt-teamline",
-  "version": "1.16.17",
+  "version": "1.16.18",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
@@ -20,7 +20,8 @@
     "bolt"
   ],
   "files": [
-    "build"
+    "build",
+    "locales"
   ],
   "author": "Mahdi Dibaiee <mdibaiee@aol.com> (http://dibaiee.ir/)",
   "license": "MIT",
