@@ -9,7 +9,8 @@ export default (bot, uri) => {
 
   bot.pocket.model('TeamlineNotified', { id: Number, expireAt: { type: Date, expires: 0 } });
 
-  bot.schedule.scheduleJob('0 * * * * * *', async (job, done) => {
+  bot.schedule.scheduleJob('0 * * * * * *', async () => {
+    console.log('ask-for-actions');
     bot.log.verbose('[teamline] ask-for-actions');
     const employees = await get('employees');
 
@@ -55,7 +56,5 @@ export default (bot, uri) => {
         bot.pocket.save('TeamlineNotified', { id: emp.id, expireAt });
       }
     }
-
-    done();
   });
 };

@@ -12,7 +12,10 @@ module.exports = function(grunt) {
           cwd: 'server',
           src: '**/*.js',
           dest: 'build/server/'
-        }, {
+        }]
+      },
+      test: {
+        files: [{
           expand: true,
           cwd: 'test',
           src: '**/*.js',

@@ -1,4 +1,5 @@
 before_script:
+  - grunt babel:test
   - npm prune
   - npm install
 script:
