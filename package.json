@@ -1,12 +1,11 @@
 {
   "name": "bolt-teamline",
-  "version": "1.16.14",
+  "version": "1.16.15",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
     "test": "mocha test --compilers js:babel/register,js:babel/polyfill -w",
-    "test:single": "istanbul cover -x test _mocha -- test --compilers js:babel/register,js:babel/polyfill",
-    "test:single": "istanbul cover babel-node test/index",
+    "test:single": "istanbul cover -x test _mocha -- test-build --compilers js:babel/polyfill",
     "test:file": "mocha --compilers js:babel/register,js:babel/polyfill",
     "check-coverage": "istanbul check-coverage --statements 85 --branches 80 --functions 85 --lines 85",
     "report-coverage": "cat ./coverage/lcov.info | codecov",

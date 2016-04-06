@@ -9,7 +9,7 @@ export default (bot, uri) => {
 
   bot.pocket.model('TeamlineNotified', { id: Number, expireAt: { type: Date, expires: 0 } });
 
-  bot.agenda.define('ask-for-actions', async (job, done) => {
+  bot.schedule.scheduleJob('0 * * * * * *', async (job, done) => {
     bot.log.verbose('[teamline] ask-for-actions');
     const employees = await get('employees');
 
@@ -58,8 +58,4 @@ export default (bot, uri) => {
 
     done();
   });
-
-  const job = bot.agenda.create('ask-for-actions');
-  job.repeatEvery('1 minute');
-  job.save();
 };

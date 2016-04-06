@@ -1,58 +1,29 @@
-import express from 'express';
 import { expect } from 'chai';
-import bolt from 'slack-bolt';
-import WebSocket from 'ws';
-import bodyParser from 'body-parser';
 import commands from '../build/commands/index';
-import { slack, teamline } from './fixtures';
+import { teamline } from './fixtures';
+import initialize from './initialize';
+import cleanup from './cleanup';
 
 const LONG_DELAY = 10000;
 
 describe('schedules', function functions() {
   this.timeout(LONG_DELAY);
 
-  let server;
   let bot;
-  let ws;
   let app;
   let uri;
-  before(done => {
-    if (server) server.close();
-    if (ws) ws.close();
-
-    ws = new WebSocket.Server({ port: 9090 });
-    app = express();
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: true }));
-    server = app.listen(9091);
-
-    bot = bolt({
-      log: {
-        level: 'silly'
-      },
-      teamline: {
-        actionsChannel: false,
-        teamsChannels: false
-      }
-    }, true);
-
-    ws._events = {};
-
-    bot.connect('ws://127.0.0.1:9090');
-    bot._api = 'http://127.0.0.1:9091/';
-    uri = bot._api.slice(0, -1);
-
-    Object.assign(bot, slack);
+  before(async () => {
+    const initialized = await initialize();
+    bot = initialized.bot;
+    app = initialized.app;
+    uri = initialized.uri;
 
     app.get('/employee', (request, response, next) => {
       response.json(teamline.users[0]);
       next();
     });
 
-    bot.on('ready', () => {
-      commands(bot, uri);
-      done();
-    });
+    commands(bot, uri);
   });
 
   describe('work-hours', () => {
@@ -146,9 +117,5 @@ describe('schedules', function functions() {
     });
   });
 
-  after(async () => {
-    if (server) server.close();
-    if (ws) ws.close();
-    await bot.stop();
-  });
+  after(cleanup);
 });

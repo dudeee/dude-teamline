@@ -1,52 +1,30 @@
-import express from 'express';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import _ from 'lodash';
-import bolt from 'slack-bolt';
-import WebSocket from 'ws';
-import bodyParser from 'body-parser';
 import findEmployee from '../build/functions/find-employee';
 import logActions from '../build/functions/log-actions';
 import updateActionsMessage from '../build/functions/update-actions-message';
 import workhoursModifications from '../build/functions/workhours-modifications';
 import moment from 'moment';
-import { slack, teamline } from './fixtures';
+import { teamline } from './fixtures';
+import initialize from './initialize';
+import cleanup from './cleanup';
 
 const LONG_DELAY = 10000;
 
 describe('functions', function functions() {
   this.timeout(LONG_DELAY);
 
-  let server;
   let bot;
-  let ws;
   let app;
   let uri;
-  before(done => {
-    if (server) server.close();
-    if (ws) ws.close();
-
-    ws = new WebSocket.Server({ port: 9090 });
-    app = express();
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: true }));
-    server = app.listen(9091);
-
-    bot = bolt({
-      log: {
-        level: 'silly'
-      }
-    }, true);
-
-    ws._events = {};
-
-    bot.connect('ws://127.0.0.1:9090');
-    bot._api = 'http://127.0.0.1:9091/';
-    uri = bot._api.slice(0, -1);
-
-    Object.assign(bot, slack);
-
-    bot.on('ready', done);
+  before(async () => {
+    const initialized = await initialize();
+    bot = initialized.bot;
+    bot.config.teamline.actionsChannel = true;
+    bot.config.teamline.teamsChannels = true;
+    app = initialized.app;
+    uri = initialized.uri;
   });
 
   describe('find-employee', () => {
@@ -104,6 +82,8 @@ describe('functions', function functions() {
         done();
       }
     });
+
+    after(cleanup);
   });
 
   describe('log-actions', () => {
@@ -252,6 +232,8 @@ describe('functions', function functions() {
 
       logActions(bot, uri, teamline.users[0]);
     });
+
+    after(cleanup);
   });
 
   describe('update-actions-message', () => {
@@ -357,6 +339,8 @@ describe('functions', function functions() {
 
       updateActionsMessage(bot, uri, teamline.users[0]);
     });
+
+    after(cleanup);
   });
 
   describe('workhours-modifications', () => {
@@ -412,11 +396,13 @@ describe('functions', function functions() {
       expect(second.start).to.equal('16:00');
       expect(second.end).to.equal('18:00');
     });
+
+    after(cleanup);
   });
 
-  after(async () => {
-    if (server) server.close();
-    if (ws) ws.close();
-    await bot.stop();
+  after(cleanup);
+  after(() => {
+    bot.config.teamline.actionsChannel = false;
+    bot.config.teamline.teamsChannels = false;
   });
 });

@@ -1,44 +1,21 @@
-import express from 'express';
 import { expect } from 'chai';
 import _ from 'lodash';
-import WebSocket from 'ws';
-import bodyParser from 'body-parser';
-import bolt from 'slack-bolt';
 import sync from '../build/sync-users';
+import initialize from './initialize';
 
 const LONG_DELAY = 3000;
 
 describe('sync users', function main() {
   this.timeout(LONG_DELAY);
-  let server;
+
   let bot;
-  let ws;
   let app;
   let uri;
-  before(done => {
-    ws = new WebSocket.Server({ port: 9090 });
-    app = express();
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: true }));
-    server = app.listen(9091);
-
-    bot = bolt({
-      log: {
-        level: 'silly'
-      },
-      teamline: {
-        actionsChannel: false,
-        teamsChannels: false
-      }
-    }, true);
-
-    ws._events = {};
-
-    bot.connect('ws://127.0.0.1:9090');
-    bot._api = 'http://127.0.0.1:9091/';
-    uri = bot._api.slice(0, -1);
-
-    bot.on('ready', done);
+  before(async () => {
+    const initialized = await initialize();
+    bot = initialized.bot;
+    app = initialized.app;
+    uri = initialized.uri;
   });
 
   it('should create employee if it doesn\'t exist', async () => {
@@ -171,11 +148,5 @@ describe('sync users', function main() {
     expect(stats1.updated).to.equal(1);
 
     app._router.stack.length -= 3;
-  });
-
-  after(async () => {
-    if (server) server.close();
-    if (ws) ws.close();
-    await bot.stop();
   });
 });
