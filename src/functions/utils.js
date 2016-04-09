@@ -48,55 +48,55 @@ function jaro(a, b) {
   return (1 / 3) * (m / a.length + m / b.length + (m - t) / m) || 0;
 }
 
-export function factoriadic(n, length) {
-  let fd = [];
-  let last = n;
-  for (let i = 1; ; i++) {
-    fd.unshift(last % i);
-    last = Math.floor(last / i);
-    if (last <= 0) break;
-  }
-
-  if (fd.length < length) {
-    const i = length - fd.length;
-
-    fd = new Array(i).fill(0).concat(fd);
-  }
-
-  return fd;
-}
-
-export function factorial(n) {
-  let total = 1;
-  for (let i = 1; i <= n; i++) {
-    total *= i;
-  }
-
-  return total;
-}
-
-export function permutations(arr) {
-  const n = arr.length;
-  const b = factorial(n);
-
-  const ps = [];
-
-  for (let i = 0; i < b; i++) {
-    const fd = factoriadic(i, n);
-    const from = arr.slice(0);
-    const record = [];
-
-    for (let j of fd) {
-      j = j || 0;
-      record.push(from[j]);
-      from.splice(j, 1);
-    }
-
-    ps.push(record);
-  }
-
-  return ps;
-}
+// export function factoriadic(n, length) {
+//   let fd = [];
+//   let last = n;
+//   for (let i = 1; ; i++) {
+//     fd.unshift(last % i);
+//     last = Math.floor(last / i);
+//     if (last <= 0) break;
+//   }
+//
+//   if (fd.length < length) {
+//     const i = length - fd.length;
+//
+//     fd = new Array(i).fill(0).concat(fd);
+//   }
+//
+//   return fd;
+// }
+//
+// export function factorial(n) {
+//   let total = 1;
+//   for (let i = 1; i <= n; i++) {
+//     total *= i;
+//   }
+//
+//   return total;
+// }
+//
+// export function permutations(arr) {
+//   const n = arr.length;
+//   const b = factorial(n);
+//
+//   const ps = [];
+//
+//   for (let i = 0; i < b; i++) {
+//     const fd = factoriadic(i, n);
+//     const from = arr.slice(0);
+//     const record = [];
+//
+//     for (let j of fd) {
+//       j = j || 0;
+//       record.push(from[j]);
+//       from.splice(j, 1);
+//     }
+//
+//     ps.push(record);
+//   }
+//
+//   return ps;
+// }
 
 const NEIGHBOUR_RANGE = 2;
 export function fuzzy(string, list, DISTANCE_REQUIRED) {
@@ -140,6 +140,7 @@ export function fuzzy(string, list, DISTANCE_REQUIRED) {
   return [max.distance, max.index];
 }
 
+/* istanbul ignore next */
 export function wait(ms) {
   return new Promise(resolve => {
     setTimeout(resolve, ms);
@@ -151,6 +152,7 @@ export function wait(ms) {
  * @param  {Date|String} date = new Date(]
  * @return {string} emoji string
  */
+/* istanbul ignore next */
 export function clockEmoji(date = new Date()) {
   try {
     const timeRegex = /\d{2}:\d{2}:\d{2}/;
@@ -185,6 +187,7 @@ export function clockEmoji(date = new Date()) {
  * @param  {Object} context the context to run the function with
  * @return {Function}    the same function, returning Promise instead of accepting callback
  */
+/* istanbul ignore next */
 export function promisify(fn, context = null) {
   return function(...args) { // eslint-disable-line
     return new Promise((resolve, reject) => {

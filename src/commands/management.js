@@ -1,5 +1,6 @@
 import request from '../functions/request';
 
+/* istanbul ignore next */
 export default async (bot, uri) => {
   const { get, post, put, del } = request(bot, uri);
 

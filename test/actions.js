@@ -31,8 +31,20 @@ describe('actions', function functions() {
 
   describe('remove', () => {
     it('should clear all actions for today when calling `actions clear`', (done) => {
-      app.delete('/employee/:id/actions/today', () => {
+      app.delete('/employee/:id/actions/today', (request, response, next) => {
+        response.json({
+          ok: true
+        });
+
+        next();
+      });
+
+      socket.on('message', message => {
+        const msg = JSON.parse(message);
+        expect(msg.text).to.equal(bot.t('teamline.actions.remove.clear'));
+
         app._router.stack.length -= 1;
+        delete socket._events.message;
         done();
       });
 
@@ -49,7 +61,20 @@ describe('actions', function functions() {
         next();
       });
 
-      app.delete('/action/0', () => {
+      app.delete('/action/0', (request, response, next) => {
+        response.json({
+          ok: true,
+          name: 'some'
+        });
+
+        next();
+      });
+
+      socket.on('message', message => {
+        const msg = JSON.parse(message);
+        expect(msg.text).to.equal(bot.t('teamline.actions.remove.remove', { action: 'some' }));
+        delete socket._events.message;
+
         app._router.stack.length -= 2;
         done();
       });

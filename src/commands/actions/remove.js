@@ -12,7 +12,10 @@ export default (bot, uri) => {
 
     message.reply(bot.t('teamline.actions.remove.clear'));
 
+    // These are tested in their own tests
+    /* istanbul ignore next */
     await updateActionsMessage(bot, uri, employee);
+    /* istanbul ignore next */
     await logActions(bot, uri, employee);
   });
 
@@ -27,7 +30,10 @@ export default (bot, uri) => {
 
     message.reply(bot.t('teamline.actions.remove.remove', { action: action.name }));
 
+    // These are tested in their own tests
+    /* istanbul ignore next */
     await updateActionsMessage(bot, uri, employee);
+    /* istanbul ignore next */
     await logActions(bot, uri, employee);
   });
 };

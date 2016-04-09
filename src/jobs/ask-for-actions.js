@@ -4,25 +4,38 @@ import request from '../functions/request';
 import workhoursModifications from '../functions/workhours-modifications';
 import _ from 'lodash';
 
-export default (bot, uri) => {
+export default async (bot, uri) => {
   const { get } = request(bot, uri);
 
-  bot.pocket.model('TeamlineNotified', { id: Number, expireAt: { type: Date, expires: 0 } });
+  try {
+    await bot.pocket.model('TeamlineNotified');
+  } catch (e) {
+    bot.pocket.model('TeamlineNotified', { id: Number, expireAt: { type: Date, expires: 0 } });
+  }
 
-  bot.schedule.scheduleJob('0 * * * * * *', async () => {
-    console.log('ask-for-actions');
+  const job = bot.schedule.scheduleJob('0 * * * * * *', async () => {
     bot.log.verbose('[teamline] ask-for-actions');
+    const stats = { sent: 0, skipped: 0 };
     const employees = await get('employees');
 
     const d = moment();
     for (const user of bot.users) {
       const emp = employees.find(a => a.username === user.name);
-      if (!emp) continue;
+      if (!emp) {
+        stats.skipped++;
+        continue;
+      }
       const notified = await bot.pocket.find('TeamlineNotified', { id: emp.id }).exec();
-      if (notified.length) continue;
+      if (notified.length) {
+        stats.skipped++;
+        continue;
+      }
 
       const actions = await get(`employee/${emp.id}/actions/today`);
-      if (actions.length) continue;
+      if (actions.length) {
+        stats.skipped++;
+        continue;
+      }
 
       const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`);
       const rawWorkhours = await get(`employee/${emp.id}/workhours`, {
@@ -32,7 +45,10 @@ export default (bot, uri) => {
 
       const [workhours] = workhoursModifications(rawWorkhours, modifications);
 
-      if (!workhours || !workhours.Timeranges.length) continue;
+      if (!workhours || !workhours.Timeranges.length) {
+        stats.skipped++;
+        continue;
+      }
 
       const firstTimerange = workhours.Timeranges[0];
       const schedule = {
@@ -43,7 +59,7 @@ export default (bot, uri) => {
       const diff = (d.hours() - schedule.start.hours()) * 60
                  + (d.minutes() - schedule.start.minutes());
       const delay = _.get(bot.config, 'teamline.actions.ask.delay') || 30;
-      if (diff > delay) {
+      if (diff >= delay) {
         await bot.sendMessage(user.name, 'Hey! What are you going to do today? 😁');
         const RATE_LIMIT = 1000;
         await wait(RATE_LIMIT);
@@ -54,7 +70,14 @@ export default (bot, uri) => {
                             .minutes(schedule.start.minutes() - 1);
 
         bot.pocket.save('TeamlineNotified', { id: emp.id, expireAt });
+        stats.sent++;
+      } else {
+        stats.skipped++;
       }
     }
+
+    return stats;
   });
+
+  return job;
 };
