@@ -2,6 +2,8 @@ import { expect } from 'chai';
 import _ from 'lodash';
 import sync from '../build/sync-users';
 import initialize from './initialize';
+import { slack } from './fixtures';
+import cleanup from './cleanup';
 
 const LONG_DELAY = 3000;
 
@@ -54,6 +56,7 @@ describe('sync users', function main() {
     expect(stats.created).to.equal(1);
 
     app._router.stack.length -= 2;
+    bot.users = slack.users;
   });
 
   it('should remove employee if user is deleted from slack', async () => {
@@ -95,6 +98,7 @@ describe('sync users', function main() {
     expect(stats.deleted).to.equal(1);
 
     app._router.stack.length -= 2;
+    bot.users = slack.users;
   });
 
   it('should update employee if user is changed from slack', async () => {
@@ -147,6 +151,9 @@ describe('sync users', function main() {
     const stats1 = await sync(bot, uri);
     expect(stats1.updated).to.equal(1);
 
-    app._router.stack.length -= 3;
+    app._router.stack.length -= 2;
+    bot.users = slack.users;
   });
+
+  after(cleanup);
 });

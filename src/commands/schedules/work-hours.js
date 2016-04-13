@@ -3,6 +3,7 @@ import workhoursModifications from '../../functions/workhours-modifications';
 import request from '../../functions/request';
 import moment from 'moment';
 import _ from 'lodash';
+import parseDate from '../../functions/parse-date';
 
 const DAY_COLORS = ['#687fe0', '#86e453', '#eb5d7a', '#34bae4', '#757f8c', '#ecf76e', '#ac58e0'];
 export default (bot, uri) => {
@@ -66,20 +67,41 @@ export default (bot, uri) => {
     });
   }, { permissions: ['human-resource', 'admin'] });
 
-  bot.command('^schedules [char]$', async message => {
-    const [username] = message.match;
-    const employee = await findEmployee(uri, bot, message, username);
+  bot.command('^schedules [char] [string]$', async message => {
+    const [username, vdate] = message.match;
+    const date = vdate ? parseDate(vdate) || moment().day(-1) : moment().day(-1);
+
+    if (vdate && vdate.includes('week')) {
+      if (date.range) {
+        date.from.day(-1).hours(0).minutes(0).seconds(0).milliseconds(0);
+        date.to.day(6).hours(0).minutes(0).seconds(0).milliseconds(0);
+      } else {
+        date.day(-1).hours(0).minutes(0).seconds(0).milliseconds(0);
+      }
+    }
+
+    const exclude = ['in', 'out', 'modifications', 'shift'];
+    if (exclude.includes(username)) return;
+    const employee = await findEmployee(uri, bot, message, username, exclude);
 
     const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
-    const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`);
-
+    const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
+      start: {
+        $gt: (date.range ? date.to : date).toISOString()
+      },
+      end: {
+        $lt: (date.range ? date.from : moment(date).add(1, 'week')).toISOString()
+      }
+    });
 
     if (!result.length && !modifications.length) {
-      return message.reply('You have not set your working hours yet.');
+      message.reply('You have not set your working hours yet.');
+      return;
     }
 
     const name = username ? `${employee.firstname}'s` : 'Your';
-    const attachments = printHours(workhoursModifications(result, modifications));
+    const d = date.range ? date.to : date;
+    const attachments = printHours(workhoursModifications(result, modifications, d));
     message.reply(`${name} weekly schedule:`, { attachments, websocket: false });
   });
 
@@ -92,8 +114,8 @@ export default (bot, uri) => {
 
     const date = moment(day, 'dddd');
 
-    if (username === 'all') {
-      await del('workhour', { weekday: date.day() });
+    if (['everyone', 'all'].includes(username)) {
+      await del('workhours', { weekday: date.day() });
       return message.reply(`Cleared everyone's schedule for *${date.format('dddd')}*.`);
     }
 
@@ -118,6 +140,7 @@ export default (bot, uri) => {
         return { day: dd, ranges: r };
       });
 
+  /* istanbul ignore next */
   const printHours = (workhours) => {
     const sorted = workhours.sort((a, b) =>
       a.weekday - b.weekday
