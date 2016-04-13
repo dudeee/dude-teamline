@@ -5,6 +5,7 @@ import findEmployee from '../build/functions/find-employee';
 import logActions from '../build/functions/log-actions';
 import updateActionsMessage from '../build/functions/update-actions-message';
 import workhoursModifications from '../build/functions/workhours-modifications';
+import parseDate from '../build/functions/parse-date';
 import moment from 'moment';
 import { teamline } from './fixtures';
 import initialize from './initialize';
@@ -397,7 +398,66 @@ describe('functions', function functions() {
       expect(second.end).to.equal('18:00');
     });
 
+    it('should consider date parameter to match the weeks of year', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const modifications = [{
+        type: 'sub',
+        start: moment().weekday(0).hours(9).minutes(0).seconds(0).add(1, 'week'),
+        end: moment().weekday(0).hours(16).minutes(0).seconds(0).add(1, 'week')
+      }];
+
+      const calculated = workhoursModifications(workhours, modifications);
+
+      expect(calculated[0].Timeranges.length).to.equal(1);
+      expect(calculated[0].modified).not.to.be.ok;
+
+      const withDate = workhoursModifications(workhours, modifications, moment().add(1, 'week'));
+
+      const [first, second] = withDate[0].Timeranges;
+      expect(first.start).to.equal('8:30');
+      expect(first.end).to.equal('09:00');
+
+      expect(second.start).to.equal('16:00');
+      expect(second.end).to.equal('18:00');
+    });
+
+
     after(cleanup);
+  });
+
+  describe('parse-date', () => {
+    it('should add `in` to the string in case it\'s missing', () => {
+      const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
+      const date = (parseDate('2 hours').toDate() * 1).toString().slice(0, 9);
+      expect(d).to.equal(date);
+    });
+
+    it('should strip down keywords from|until|for|till', () => {
+      const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
+      const date = (parseDate('for 2 hours').toDate() * 1).toString().slice(0, 9);
+      expect(d).to.equal(date);
+    });
+
+    it('should return a range if the string is split using to|-|until|till', () => {
+      const first = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
+      const second = (Date.now() + 1000 * 60 * 60 * 3).toString().slice(0, 9);
+
+      const range = parseDate('from 2 hours to 3 hours');
+
+      const from = (range.from.toDate() * 1).toString().slice(0, 9);
+      const to = (range.to.toDate() * 1).toString().slice(0, 9);
+
+      expect(range.range).to.be.ok;
+      expect(first).to.equal(from);
+      expect(second).to.equal(to);
+    });
   });
 
   after(cleanup);

@@ -3,6 +3,7 @@ import bolt from 'slack-bolt';
 import WebSocket from 'ws';
 import bodyParser from 'body-parser';
 import { slack } from './fixtures';
+import commands from '../build/commands/index';
 
 let instances;
 export default async function initialize() {
@@ -41,6 +42,7 @@ export default async function initialize() {
 
   bot.connect('ws://127.0.0.1:9090');
   bot._api = 'http://127.0.0.1:9091/';
+
   const uri = bot._api.slice(0, -1);
 
   Object.assign(bot, slack);
@@ -50,6 +52,7 @@ export default async function initialize() {
       instances = {
         server, uri, bot, app, socket, ws
       };
+      commands(bot, uri);
       resolve(instances);
     });
   });

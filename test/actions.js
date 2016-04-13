@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import _ from 'lodash';
-import commands from '../build/commands/index';
 import { teamline } from './fixtures';
 import initialize from './initialize';
 import cleanup from './cleanup';
@@ -12,21 +11,17 @@ describe('actions', function functions() {
 
   let bot;
   let app;
-  let uri;
   let socket;
   before(async () => {
     const initialized = await initialize();
     bot = initialized.bot;
     app = initialized.app;
-    uri = initialized.uri;
     socket = initialized.socket;
 
     app.get('/employee', (request, response, next) => {
       response.json(teamline.users[0]);
       next();
     });
-
-    commands(bot, uri);
   });
 
   describe('remove', () => {

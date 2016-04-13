@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-export default (workhours, modifications) => {
+export default (workhours, modifications, date = moment()) => {
   const addmodifications = modifications.filter(h => h.type === 'add').map(item => {
     const Timeranges = [{
       start: moment(item.start).format('HH:mm'),
@@ -9,7 +9,7 @@ export default (workhours, modifications) => {
 
     const s = moment(item.start);
     const weekday = s.day();
-    const wh = workhours.find(a => a.weekday === weekday && moment().week() === s.week());
+    const wh = workhours.find(a => a.weekday === weekday && date.week() === s.week());
     if (wh) {
       wh.modified = true;
       wh.Timeranges = wh.Timeranges.concat(Timeranges);
@@ -25,7 +25,7 @@ export default (workhours, modifications) => {
       const s = moment(time.start);
       const e = moment(time.end);
 
-      const wh = workhours.find(a => a.weekday === s.day() && moment().week() === s.week());
+      const wh = workhours.find(a => a.weekday === s.day() && date.week() === s.week());
       if (wh) {
         wh.modified = true;
         wh.Timeranges.forEach(item => {
