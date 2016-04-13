@@ -211,9 +211,9 @@ describe('schedules', function functions() {
 
             expect(request.body.type).to.equal('sub');
             const start = moment('12:00', 'HH:mm');
-            expect(request.body.start).to.equal(start.toISOString());
             const end = moment('18:00', 'HH:mm');
-            expect(request.body.end).to.equal(end.toISOString());
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
 
             done();
             next();
@@ -251,10 +251,9 @@ describe('schedules', function functions() {
 
             expect(request.body.type).to.equal('sub');
             const start = moment().milliseconds(0);
-            const approx = moment(new Date(request.body.start)).milliseconds(0);
-            expect(approx.toISOString()).to.equal(start.toISOString());
             const end = moment('12:00', 'HH:mm');
-            expect(request.body.end).to.equal(end.toISOString());
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
 
             done();
             next();
@@ -292,9 +291,9 @@ describe('schedules', function functions() {
 
             expect(request.body.type).to.equal('sub');
             const start = moment('11:00', 'HH:mm');
-            expect(request.body.start).to.equal(start.toISOString());
             const end = moment('12:00', 'HH:mm');
-            expect(request.body.end).to.equal(end.toISOString());
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
 
             done();
             next();
@@ -332,12 +331,9 @@ describe('schedules', function functions() {
 
             expect(request.body.type).to.equal('sub');
             const start = moment().milliseconds(0);
-            const approxStart = moment(new Date(request.body.start)).milliseconds(0);
-            expect(approxStart.toISOString()).to.equal(start.toISOString());
-
             const end = moment().add(2, 'hours').milliseconds(0);
-            const approxEnd = moment(new Date(request.body.end)).milliseconds(0);
-            expect(approxEnd.toISOString()).to.equal(end.toISOString());
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
 
             done();
             next();
@@ -377,9 +373,9 @@ describe('schedules', function functions() {
 
             expect(request.body.type).to.equal('add');
             const start = moment('18:00', 'HH:mm');
-            expect(request.body.start).to.equal(start.toISOString());
             const end = moment('12:00', 'HH:mm');
-            expect(request.body.end).to.equal(end.toISOString());
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
 
             done();
             next();
@@ -417,9 +413,9 @@ describe('schedules', function functions() {
 
             expect(request.body.type).to.equal('add');
             const start = moment('11:00', 'HH:mm');
-            expect(request.body.start).to.equal(start.toISOString());
             const end = moment('12:00', 'HH:mm');
-            expect(request.body.end).to.equal(end.toISOString());
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
 
             done();
             next();
@@ -457,10 +453,9 @@ describe('schedules', function functions() {
 
             expect(request.body.type).to.equal('add');
             const start = moment('18:00', 'HH:mm');
-            expect(moment(request.body.start).diff(start, 'seconds')).to.be.lt(2);
-
             const end = moment('20:00', 'HH:mm');
-            expect(moment(request.body.end).diff(end, 'seconds')).to.be.lt(2);
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
 
             done();
             next();
@@ -510,8 +505,8 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal(expected[i].type);
-            expect(request.body.start).to.equal(expected[i].start);
-            expect(request.body.end).to.equal(expected[i].end);
+            almostEqual(request.body.start, expected[i].start);
+            almostEqual(request.body.end, expected[i].end);
 
             if (i === 1) {
               done();
@@ -564,10 +559,8 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal(expected[i].type);
-            const approxStart = moment(new Date(request.body.start)).milliseconds(0);
-            expect(approxStart.diff(expected[i].start, 'seconds')).to.be.lt(2);
-            const approxEnd = moment(new Date(request.body.end)).milliseconds(0);
-            expect(approxEnd.diff(expected[i].end, 'seconds')).to.be.lt(2);
+            almostEqual(request.body.start, expected[i].start);
+            almostEqual(request.body.end, expected[i].end);
 
             if (i === 1) {
               done();
@@ -619,10 +612,8 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal(expected[i].type);
-            const approxStart = moment(new Date(request.body.start)).milliseconds(0);
-            expect(approxStart.diff(expected[i].start, 'seconds')).to.be.lt(2);
-            const approxEnd = moment(new Date(request.body.end)).milliseconds(0);
-            expect(approxEnd.diff(expected[i].end, 'seconds')).to.be.lt(2);
+            almostEqual(request.body.start, expected[i].start);
+            almostEqual(request.body.end, expected[i].end);
 
             if (i === 1) {
               done();
@@ -674,10 +665,8 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal(expected[i].type);
-            const approxStart = moment(new Date(request.body.start)).milliseconds(0);
-            expect(approxStart.diff(expected[i].start, 'seconds')).to.be.lt(2);
-            const approxEnd = moment(new Date(request.body.end)).milliseconds(0);
-            expect(approxEnd.diff(expected[i].end, 'seconds')).to.be.lt(2);
+            almostEqual(request.body.start, expected[i].start);
+            almostEqual(request.body.end, expected[i].end);
 
             if (i === 1) {
               done();
@@ -704,3 +693,5 @@ describe('schedules', function functions() {
 
   after(cleanup);
 });
+
+const almostEqual = (d1, d2) => expect(moment(d1).diff(d2, 'seconds')).to.be.lt(2);
