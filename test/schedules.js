@@ -11,15 +11,19 @@ describe('schedules', function functions() {
 
   let bot;
   let app;
+  let socket;
+  let t;
   before(async () => {
     const initialized = await initialize();
     bot = initialized.bot;
     app = initialized.app;
+    socket = initialized.socket;
 
     app.get('/employee', (request, response, next) => {
       response.json(teamline.users[0]);
       next();
     });
+    t = (key, ...args) => bot.t(`teamline.schedules.${key}`, ...args);
   });
 
   describe('work-hours', () => {
@@ -690,6 +694,110 @@ describe('schedules', function functions() {
     after(cleanup);
   });
 
+  describe('available', () => {
+    before(() => {
+      app.get('/employee', (request, response, next) => {
+        response.json(bot.users[0]);
+
+        next();
+      });
+    });
+
+    it('should indicate the employee is currently available if the working hours match', done => {
+      app.get('/employee/:id/workhours', (request, response, next) => {
+        response.json([{
+          weekday: moment().day(),
+          Timeranges: [{
+            start: moment().subtract(1, 'hour').format('HH:mm'),
+            end: moment().add(1, 'hour').format('HH:mm')
+          }]
+        }]);
+        next();
+      });
+
+      app.get('/employee/:id/schedulemodifications/accepted', (request, response, next) => {
+        response.json([]);
+
+        next();
+      });
+
+      socket.on('message', message => {
+        const msg = JSON.parse(message);
+        expect(msg.text).to.equal(t('available.now'));
+
+        app._router.stack.length -= 2;
+        delete socket._events.message;
+        done();
+      });
+
+      bot.inject('message', {
+        text: 'available someone',
+        mention: true
+      });
+    });
+
+    it('should give information on the timerange the employee will be available, if not available now', done => { // eslint-disable-line
+      app.get('/employee/:id/workhours', (request, response, next) => {
+        response.json([{
+          weekday: moment().day(),
+          Timeranges: [{
+            start: moment().add(1, 'hour').format('HH:mm'),
+            end: moment().add(2, 'hour').format('HH:mm')
+          }]
+        }]);
+        next();
+      });
+
+      app.get('/employee/:id/schedulemodifications/accepted', (request, response, next) => {
+        response.json([]);
+
+        next();
+      });
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        expect(request.query.text).to.equal(t('available.range', {
+          start: `*${moment().add(1, 'hour').format('HH:mm')}*`,
+          end: `*${moment().add(2, 'hour').format('HH:mm')}*`
+        }));
+
+        app._router.stack.length -= 3;
+        next();
+        done();
+      });
+
+      bot.inject('message', {
+        text: 'available someone',
+        mention: true
+      });
+    });
+
+    it('should indicate if employee is not available on the specified day', done => {
+      app.get('/employee/:id/workhours', (request, response, next) => {
+        response.json([]);
+        next();
+      });
+
+      app.get('/employee/:id/schedulemodifications/accepted', (request, response, next) => {
+        response.json([]);
+
+        next();
+      });
+
+      socket.on('message', message => {
+        const msg = JSON.parse(message);
+        expect(msg.text).to.equal(t('available.not', { date: 'tomorrow' }));
+
+        app._router.stack.length -= 2;
+        delete socket._events.message;
+        done();
+      });
+
+      bot.inject('message', {
+        text: 'available someone tomorrow',
+        mention: true
+      });
+    });
+  });
 
   after(cleanup);
 });

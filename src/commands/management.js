@@ -4,7 +4,7 @@ import request from '../functions/request';
 export default async (bot, uri) => {
   const { get, post, put, del } = request(bot, uri);
 
-  bot.listen(/teamline manage add (\w+) (.*)/i, async message => {
+  bot.listen(/^teamline manage add (\w+) (.*)/i, async message => {
     const [type, name] = message.match;
     const t = type.toLowerCase();
 
@@ -15,7 +15,7 @@ export default async (bot, uri) => {
     permissions: ['admin', 'human-resource']
   });
 
-  bot.listen(/teamline manage done (\w+) (?:#)?(\d+)/i, async message => {
+  bot.listen(/^teamline manage done (\w+) (?:#)?(\d+)/i, async message => {
     const [type, id] = message.match;
     const t = type.toLowerCase();
 
@@ -28,7 +28,7 @@ export default async (bot, uri) => {
     permissions: ['admin', 'human-resource']
   });
 
-  bot.listen(/teamline manage undone (\w+) (?:#)?(\d+)/i, async message => {
+  bot.listen(/^teamline manage undone (\w+) (?:#)?(\d+)/i, async message => {
     const [type, id] = message.match;
     const t = type.toLowerCase();
 
@@ -41,7 +41,7 @@ export default async (bot, uri) => {
     permissions: ['admin', 'human-resource']
   });
 
-  bot.listen(/teamline manage delete (\w+) (?:#)?(\d+)/i, async message => {
+  bot.listen(/^teamline manage delete (\w+) (?:#)?(\d+)/i, async message => {
     const [type, id] = message.match;
     const t = type.toLowerCase();
 
@@ -52,7 +52,7 @@ export default async (bot, uri) => {
     permissions: ['admin', 'human-resource']
   });
 
-  bot.listen(/teamline manage connect (\w+) (?:#)?(\d+) (?:with|to|->)?\s?(\w+) (?:#)?(\d+)/i, async message => { // eslint-disable-line
+  bot.listen(/^teamline manage connect (\w+) (?:#)?(\d+) (?:with|to|->)?\s?(\w+) (?:#)?(\d+)/i, async message => { // eslint-disable-line
     const [st, sourceId, tt, targetId] = message.match;
     const sourceType = st.toLowerCase();
     const targetType = tt.toLowerCase();
@@ -64,7 +64,7 @@ export default async (bot, uri) => {
     permissions: ['admin', 'human-resource']
   });
 
-  bot.command('teamline refresh', async message => {
+  bot.command('^teamline refresh', async message => {
     get('?refresh');
 
     message.reply(bot.t('teamline.actions.refresh'));
