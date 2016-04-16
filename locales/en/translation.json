@@ -18,6 +18,13 @@
         "remove": "Removed action *%action%*"
       },
       "refresh": "Sent a request to refresh data 🔄"
+    },
+    "schedules": {
+      "available": {
+        "now": "As far as I know, he should be available right now.",
+        "range": "He should be available between %start% and %end%.",
+        "not": "He won't be available %date%."
+      }
     }
   }
 }
