@@ -5,6 +5,7 @@ import findEmployee from '../build/functions/find-employee';
 import logActions from '../build/functions/log-actions';
 import updateActionsMessage from '../build/functions/update-actions-message';
 import workhoursModifications from '../build/functions/workhours-modifications';
+import notifyColleagues from '../build/functions/notify-colleagues';
 import parseDate from '../build/functions/parse-date';
 import moment from 'moment';
 import { teamline } from './fixtures';
@@ -457,6 +458,65 @@ describe('functions', function functions() {
       expect(range.range).to.be.ok;
       expect(first).to.equal(from);
       expect(second).to.equal(to);
+    });
+  });
+
+  describe('notify-colleagues', () => {
+    before(() => {
+      app.get('/employee/:id/teams/open', (request, response, next) => {
+        response.json([{
+          name: 'test'
+        }]);
+        next();
+      });
+    });
+    it('should not send any message in case of no modifications', async () => {
+      const r = await notifyColleagues(bot, uri, [], teamline.users[0]);
+      expect(r).to.equal(false);
+    });
+
+    it('should not send any message in case of `add` modifications', async () => {
+      const modification = { type: 'add' };
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(false);
+    });
+
+    it('should not send any message if the duration is less than a day and it\'s not for today' , async () => { // eslint-disable-line
+      const start = moment().add(1, 'day');
+      const end = moment().add(1, 'day').add(1, 'hour');
+      const modification = {
+        type: 'sub',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(false);
+    });
+
+    it('should notify if the modification starts today' , async done => { // eslint-disable-line
+      const start = moment();
+      const end = moment().add(2, 'days');
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.out', {
+          user: `@${teamline.users[0].username}`,
+          start: `*${start.format('DD MMMM, HH:mm')}*`,
+          end: `*${end.format('DD MMMM, HH:mm')}*`,
+          teams: '@test'
+        });
+        expect(request.query.text).to.equal(text);
+
+        done();
+        next();
+      });
+
+      const modification = {
+        type: 'sub',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(true);
     });
   });
 

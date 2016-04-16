@@ -24,6 +24,9 @@
         "now": "As far as I know, he should be available right now.",
         "range": "He should be available between %start% and %end%.",
         "not": "He won't be available %date%."
+      },
+      "notification": {
+        "out": "%user% won't be available from %start% until %end%.\n %teams% ^"
       }
     }
   }

@@ -3,7 +3,6 @@ import workhoursModifications from '../../functions/workhours-modifications';
 import parseDate from '../../functions/parse-date';
 import request from '../../functions/request';
 import moment from 'moment';
-import _ from 'lodash';
 
 export default (bot, uri) => {
   const { get } = request(bot, uri);

@@ -1,4 +1,5 @@
 import findEmployee from '../../functions/find-employee';
+import notifyColleagues from '../../functions/notify-colleagues';
 import parseDate from '../../functions/parse-date';
 import request from '../../functions/request';
 import moment from 'moment';
@@ -56,11 +57,11 @@ export default (bot, uri) => {
       });
 
       const formatted = {
-        start: start.format('HH:mm'),
-        end: end.format('HH:mm')
+        start: start.format('DD MMMM, HH:mm'),
+        end: end.format('DD MMMM, HH:mm')
       };
       message.reply(`Okay, I see that you are going to be available from `
-                   + `*${formatted.start}* to *${formatted.end}*. :thumbsup:`);
+                   + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
     } else {
       let start;
       let end;
@@ -81,20 +82,24 @@ export default (bot, uri) => {
       start.milliseconds(0);
 
       if (command === 'out') {
-        await post(`employee/${employee.id}/schedulemodification`, {
+        const modification = {
           type: 'sub',
           start: start.toISOString(),
           end: end.toISOString(),
           reason,
           status: 'accepted'
-        });
+        };
+
+        await post(`employee/${employee.id}/schedulemodification`, modification);
 
         const formatted = {
-          start: moment(start).format('HH:mm'),
-          end: moment(end).format('HH:mm')
+          start: moment(start).format('DD MMMM, HH:mm'),
+          end: moment(end).format('DD MMMM, HH:mm')
         };
         message.reply(`Okay, I see that you are not going to be available from `
-                     + `*${formatted.start}* to *${formatted.end}*. :thumbsup:`);
+                     + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
+
+        notifyColleagues(bot, uri, [modification], employee);
       } else if (command === 'shift') {
         await post(`employee/${employee.id}/schedulemodification`, {
           type: 'sub',
@@ -117,17 +122,17 @@ export default (bot, uri) => {
         });
 
         const unavailable = {
-          start: start.format('HH:mm'),
-          end: end.format('HH:mm')
+          start: start.format('DD MMMM, HH:mm'),
+          end: end.format('DD MMMM, HH:mm')
         };
         const available = {
-          start: tend.format('HH:mm'),
-          end: shiftEnd.format('HH:mm')
+          start: tend.format('DD MMMM, HH:mm'),
+          end: shiftEnd.format('DD MMMM, HH:mm')
         };
 
         message.reply(`Okay, I see that you are not going to be available from `
-                     + `*${unavailable.start}* to *${unavailable.end}*, but you will be available`
-                     + `from *${available.start}* to *${available.start}*. :thumbsup:`);
+                     + `*${unavailable.start}* until *${unavailable.end}*, but you will be available ` // eslint-disable-line
+                     + `from *${available.start}* until *${available.start}*. :thumbsup:`);
       }
     }
   });

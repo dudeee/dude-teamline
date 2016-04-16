@@ -7,8 +7,8 @@ export default (string, base = moment(), separators = /\b(?:to|-|until|till)\b/i
     const [from, to] = string.split(separators);
 
     return {
-      from: moment(parse(from)),
-      to: moment(parse(to)),
+      from: moment(parse(from.trim())),
+      to: moment(parse(to.trim())),
       range: true
     };
   }
