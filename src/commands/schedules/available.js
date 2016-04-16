@@ -3,19 +3,22 @@ import workhoursModifications from '../../functions/workhours-modifications';
 import parseDate from '../../functions/parse-date';
 import request from '../../functions/request';
 import moment from 'moment';
+import _ from 'lodash';
 
 export default (bot, uri) => {
   const { get } = request(bot, uri);
   const t = (key, ...args) => bot.t(`teamline.schedules.${key}`, ...args);
+  moment.updateLocale('en', _.get(bot.config, 'moment') || {});
+  moment.locale('en');
 
   bot.command('^available [char] [string]', async message => {
     const [username, vdate] = message.match;
     const employee = await findEmployee(uri, bot, message, username);
 
-    const date = parseDate(vdate).isValid() ? parseDate(vdate) : moment();
+    const date = parseDate(bot, vdate).isValid() ? parseDate(bot, vdate) : moment();
 
     const workhours = await get(`employee/${employee.id}/workhours`, {
-      weekday: date.day(),
+      weekday: date.weekday(),
       include: 'Timerange'
     });
     const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
@@ -27,7 +30,7 @@ export default (bot, uri) => {
       }
     });
 
-    const [computed] = workhoursModifications(workhours, modifications, date);
+    const [computed] = workhoursModifications(bot, workhours, modifications, date);
 
     if (!computed || !computed.Timeranges.length) {
       message.reply(t('available.not', { date: vdate || 'today' }));

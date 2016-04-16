@@ -1,7 +1,11 @@
 import 'sugar';
 import moment from 'moment';
+import _ from 'lodash';
 
-export default (string, base = moment(), separators = /\b(?:to|-|until|till)\b/i) => {
+export default (bot, string, base = moment(), separators = /\b(?:to|-|until|till)\b/i) => {
+  moment.updateLocale('en', _.get(bot.config, 'moment') || {});
+  moment.locale('en');
+
   string = string.replace(/\b(?:from|since|for)\b/gi, '');
   if (separators.test(string)) {
     const [from, to] = string.split(separators);

@@ -39,11 +39,11 @@ export default async (bot, uri) => {
 
       const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`);
       const rawWorkhours = await get(`employee/${emp.id}/workhours`, {
-        weekday: d.day(),
+        weekday: d.weekday(),
         include: 'Timerange'
       });
 
-      const [workhours] = workhoursModifications(rawWorkhours, modifications);
+      const [workhours] = workhoursModifications(bot, rawWorkhours, modifications);
 
       if (!workhours || !workhours.Timeranges.length) {
         stats.skipped++;

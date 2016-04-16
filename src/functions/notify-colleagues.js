@@ -4,7 +4,7 @@ import request from './request';
 
 export default async (bot, uri, modifications, employee) => {
   const channel = _.get(bot.config, 'teamline.schedules.notification.channel') || 'office';
-  const { get } = await request(bot, uri);
+  const { get } = request(bot, uri);
 
   const teams = await get(`employee/${employee.id}/teams/open`);
   const names = teams.map(team => `@${team.name.replace(/\s/, '').toLowerCase()}`);

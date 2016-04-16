@@ -361,7 +361,7 @@ describe('functions', function functions() {
         end: moment().weekday(0).hours(21).minutes(0).seconds(0)
       }];
 
-      const calculated = workhoursModifications(workhours, modifications);
+      const calculated = workhoursModifications(bot, workhours, modifications);
 
       expect(calculated[0].Timeranges.length).to.equal(2);
       expect(calculated[0].modified).to.equal(true);
@@ -386,7 +386,7 @@ describe('functions', function functions() {
       }];
 
 
-      const calculated = workhoursModifications(workhours, modifications);
+      const calculated = workhoursModifications(bot, workhours, modifications);
 
       expect(calculated[0].Timeranges.length).to.equal(2);
       expect(calculated[0].modified).to.equal(true);
@@ -414,12 +414,12 @@ describe('functions', function functions() {
         end: moment().weekday(0).hours(16).minutes(0).seconds(0).add(1, 'week')
       }];
 
-      const calculated = workhoursModifications(workhours, modifications);
+      const calculated = workhoursModifications(bot, workhours, modifications);
 
       expect(calculated[0].Timeranges.length).to.equal(1);
       expect(calculated[0].modified).not.to.be.ok;
 
-      const withDate = workhoursModifications(workhours, modifications, moment().add(1, 'week'));
+      const withDate = workhoursModifications(bot, workhours, modifications, moment().add(1, 'week')); // eslint-disable-line
 
       const [first, second] = withDate[0].Timeranges;
       expect(first.start).to.equal('8:30');
@@ -436,13 +436,13 @@ describe('functions', function functions() {
   describe('parse-date', () => {
     it('should add `in` to the string in case it\'s missing', () => {
       const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const date = (parseDate('2 hours').toDate() * 1).toString().slice(0, 9);
+      const date = (parseDate(bot, '2 hours').toDate() * 1).toString().slice(0, 9);
       expect(d).to.equal(date);
     });
 
     it('should strip down keywords from|until|for|till', () => {
       const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const date = (parseDate('for 2 hours').toDate() * 1).toString().slice(0, 9);
+      const date = (parseDate(bot, 'for 2 hours').toDate() * 1).toString().slice(0, 9);
       expect(d).to.equal(date);
     });
 
@@ -450,7 +450,7 @@ describe('functions', function functions() {
       const first = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
       const second = (Date.now() + 1000 * 60 * 60 * 3).toString().slice(0, 9);
 
-      const range = parseDate('from 2 hours to 3 hours');
+      const range = parseDate(bot, 'from 2 hours to 3 hours');
 
       const from = (range.from.toDate() * 1).toString().slice(0, 9);
       const to = (range.to.toDate() * 1).toString().slice(0, 9);

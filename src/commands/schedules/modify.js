@@ -9,6 +9,8 @@ export default (bot, uri) => {
   const { get, post } = request(bot, uri);
   moment.relativeTimeThreshold('m', 60);
   moment.relativeTimeThreshold('h', Infinity);
+  moment.updateLocale('en', _.get(bot.config, 'moment') || {});
+  moment.locale('en');
 
   bot.command('^schedules? <char> [string]', async message => { //eslint-disable-line
     const [command, vdate] = message.match;
@@ -23,13 +25,13 @@ export default (bot, uri) => {
       include: 'Timerange'
     });
 
-    const wh = _.find(workhours, { weekday: moment().day() });
+    const wh = _.find(workhours, { weekday: moment().weekday() });
     // const timerange = wh.timeranges.find(a =>
     //   moment(a.start, 'hh:mm').issameorbefore(moment()) &&
     //   moment(a.end, 'hh:mm').issameorafter(moment())
     // );
     const timerange = wh.Timeranges[wh.Timeranges.length - 1];
-    const date = parseDate(vdate);
+    const date = parseDate(bot, vdate);
 
     if (command === 'in') {
       let start;

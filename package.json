@@ -1,13 +1,13 @@
 {
   "name": "bolt-teamline",
-  "version": "1.19.0",
+  "version": "1.19.2",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
     "test": "grunt babel:test && mocha test --compilers js:babel/polyfill -w",
     "test:single": "istanbul cover -x test _mocha -- test-build --compilers js:babel/polyfill",
     "test:file": "mocha --compilers js:babel/register,js:babel/polyfill",
-    "check-coverage": "istanbul check-coverage --statements 85 --branches 80 --functions 85 --lines 85",
+    "check-coverage": "istanbul check-coverage --statements 85 --branches 70 --functions 85 --lines 85",
     "report-coverage": "cat ./coverage/lcov.info | codecov",
     "lint": "eslint src test"
   },
@@ -47,7 +47,7 @@
     "eslint": "1.10.3",
     "eslint-config-airbnb": "4.0.0",
     "lodash": "4.2.0",
-    "moment": "2.11.1",
+    "moment": "2.12.0",
     "moment-parseformat": "2.1.1",
     "natural": "0.2.1",
     "qs": "6.1.0",
