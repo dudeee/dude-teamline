@@ -11,6 +11,13 @@ export default async (bot, uri, modifications, employee) => {
 
   const modification = _.find(modifications, { type: 'sub' });
   if (!modification) return false;
+  const shiftIn = _.find(modifications, { type: 'add' });
+  let inStart;
+  let inEnd;
+  if (shiftIn) {
+    inStart = moment(shiftIn.start);
+    inEnd = moment(shiftIn.end);
+  }
 
   const start = moment(modification.start);
   const end = moment(modification.end);
@@ -23,13 +30,21 @@ export default async (bot, uri, modifications, employee) => {
   if (duration <= 1 && start.isAfter(tomorrow)) return false;
 
   if (start.isBefore(tomorrow) && start.isSameOrAfter(today)) {
-    out();
+    send();
     return true;
   }
 
   if (duration > 1) {
-    out();
+    send();
     return true;
+  }
+
+  function send() {
+    if (shiftIn) {
+      shift();
+    } else {
+      out();
+    }
   }
 
   function out() {
@@ -37,6 +52,22 @@ export default async (bot, uri, modifications, employee) => {
       user: `@${employee.username}`,
       start: `*${start.format('DD MMMM, HH:mm')}*`,
       end: `*${end.format('DD MMMM, HH:mm')}*`,
+      teams: names
+    });
+
+    bot.sendMessage(channel, text, {
+      websocket: false,
+      parse: 'full'
+    });
+  }
+
+  function shift() {
+    const text = bot.t('teamline.schedules.notification.shift', {
+      user: `@${employee.username}`,
+      outStart: `*${start.format('DD MMMM, HH:mm')}*`,
+      outEnd: `*${end.format('DD MMMM, HH:mm')}*`,
+      inStart: `*${inStart.format('DD MMMM, HH:mm')}*`,
+      inEnd: `*${inEnd.format('DD MMMM, HH:mm')}*`,
       teams: names
     });
 

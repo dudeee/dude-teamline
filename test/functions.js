@@ -493,7 +493,7 @@ describe('functions', function functions() {
       expect(r).to.equal(false);
     });
 
-    it('should notify if the modification starts today' , async done => { // eslint-disable-line
+    it('should notify if the modification starts today', async done => {
       const start = moment();
       const end = moment().add(2, 'days');
 
@@ -506,6 +506,8 @@ describe('functions', function functions() {
         });
         expect(request.query.text).to.equal(text);
 
+        app._router.stack.length -= 1;
+
         done();
         next();
       });
@@ -516,6 +518,68 @@ describe('functions', function functions() {
       };
 
       const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(true);
+    });
+
+    it('should notify if the modification duration is more than 1 day', async done => {
+      const start = moment().add(1, 'day');
+      const end = moment().add(3, 'days');
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.out', {
+          user: `@${teamline.users[0].username}`,
+          start: `*${start.format('DD MMMM, HH:mm')}*`,
+          end: `*${end.format('DD MMMM, HH:mm')}*`,
+          teams: '@test'
+        });
+        expect(request.query.text).to.equal(text);
+
+        app._router.stack.length -= 1;
+        done();
+        next();
+      });
+
+      const modification = {
+        type: 'sub',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(true);
+    });
+
+    it('should give information on both `in` and `out` when using `shift`', async done => {
+      const start = moment().add(1, 'day');
+      const end = moment().add(3, 'days');
+      const inStart = moment().add(4, 'days');
+      const inEnd = moment().add(4, 'days').add(5, 'hours');
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.shift', {
+          user: `@${teamline.users[0].username}`,
+          outStart: `*${start.format('DD MMMM, HH:mm')}*`,
+          outEnd: `*${end.format('DD MMMM, HH:mm')}*`,
+          inStart: `*${inStart.format('DD MMMM, HH:mm')}*`,
+          inEnd: `*${inEnd.format('DD MMMM, HH:mm')}*`,
+          teams: '@test'
+        });
+        expect(request.query.text).to.equal(text);
+
+        app._router.stack.length -= 1;
+        done();
+        next();
+      });
+
+      const modifications = [{
+        type: 'sub',
+        start, end
+      }, {
+        type: 'add',
+        start: inStart,
+        end: inEnd
+      }];
+
+      const r = await notifyColleagues(bot, uri, modifications, teamline.users[0]);
       expect(r).to.equal(true);
     });
   });

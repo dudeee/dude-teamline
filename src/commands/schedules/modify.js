@@ -101,25 +101,28 @@ export default (bot, uri) => {
 
         notifyColleagues(bot, uri, [modification], employee);
       } else if (command === 'shift') {
-        await post(`employee/${employee.id}/schedulemodification`, {
+        const outModification = {
           type: 'sub',
           start: start.toISOString(),
           end: end.toISOString(),
           reason,
           status: 'accepted'
-        });
+        };
+
+        await post(`employee/${employee.id}/schedulemodification`, outModification);
 
         const tend = moment(timerange.end, 'HH:mm');
         const shiftEnd = tend.clone().add(moment(end).diff(start));
         tend.milliseconds(0);
         shiftEnd.milliseconds(0);
-        await post(`employee/${employee.id}/schedulemodification`, {
+        const inModification = {
           type: 'add',
           start: tend.toISOString(),
           end: shiftEnd.toISOString(),
           reason,
           status: 'accepted'
-        });
+        };
+        await post(`employee/${employee.id}/schedulemodification`, inModification);
 
         const unavailable = {
           start: start.format('DD MMMM, HH:mm'),
@@ -133,6 +136,8 @@ export default (bot, uri) => {
         message.reply(`Okay, I see that you are not going to be available from `
                      + `*${unavailable.start}* until *${unavailable.end}*, but you will be available ` // eslint-disable-line
                      + `from *${available.start}* until *${available.start}*. :thumbsup:`);
+
+        notifyColleagues(bot, uri, [inModification, outModification], employee);
       }
     }
   });
