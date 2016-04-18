@@ -87,8 +87,8 @@ These filters include:
 
 bot.help('schedules', 'Teamline: Manage weekly schedules', `
 *View someone's weekly schedule*:
-\`schedules @username\` – View \`@username\`'s weekly schedule
-\`schedules\` – View your own weekly schedule
+\`schedules @username [date]\` – View \`@username\`'s weekly schedule on the specified time (e.g. next week)
+\`schedules [date]\` – View your own weekly schedule
 
 *Temporary modifications*:
 Sometimes you want to make a change to your current week's schedule, maybe you are going
@@ -96,24 +96,36 @@ for a vacation, maybe you want to work some extra time, or maybe you want to swa
 You can specify a reason for these modifications on the second line of your message. (\`shift+enter\`)
 
 You can add a timerange to your schedule this way:
-\`schedules add from March 09 8:30 to March 09 15:00\`
+\`schedule in [timerange]\`
+\`schedules in for 2 hours\` – Assumes you will be available 2 extra hours at the end of your working hour
+So, if your normal working hour is until 18:00, it's assumed that you will stay until 20:00
+\`schedules in 19:00 to 20:00\` – Also accepts specific ranges
+\`schedules in tomorrow 8:00 to tomorrow 18:00\`
 
 You can subtract a timerange from your weekly schedule like so:
-\`schedules subtract from March 10 9:30 to March 10 10:40\`
+\`schedules out [timerange]\`
+\`schedules out for 2 hours\` – Assumes you won't be available for the next 2 hours (from now for 2 hours)
+\`schedules out until 16:00\` – Assumes you won't be available from now until 16:00
+\`schedules out tomorrow 8:30 to tomorrow 15:00\` – Also accepts specific ranges
 
-Sometimes, these modifications require privilage from your manager, in these cases, I will ask your
-manager for the permission and notify you about it.
+Sometimes you won't be available for some time today, but you want to stay at office for some extra hour.
+An example would be like this: Imagine your working hour for today is from 8:30 to 18:00, now you have
+some work to do in the next 2 hours, so you won't be available, but you will come back to office and stay until
+20:00 to fill the gap. In these situations you can use another command, called \`shift\` to do this instead of
+two commands. It's like an alias for \`in\` and \`out\`.
+The example above could be done like this: \`schedules shift for 2 hours\`
+It's the equivalent of issuing two commands: \`schedules out for 2 hours\` \`schedules in for 2 hours\`
 
-Your modification requests can be seen by issuing the following command:
-\`schedules modifications\`
-\`schedules modifications myself today to 1 month\`
-\`schedules modifications @username today to 1 month\`
-
-These modifications are marked by colors indicating their status:
-- Yellow: Pending
-- Green: Approved
-- Red: Rejected
+*Undo*:
+You can also undo your changes using \`schedules undo\`.
 `);
+
+bot.help('available', 'See when someone is available in one day',
+`It's for when you want to make sure someone is available at the office at a specified time.
+The usage is simple:
+\`available @someone\` – See if he's available today (or right now).
+\`available @someone [date]\`
+\`available @someone tomorrow\` – See if someone is available on a certain date`)
   /*eslint-enable */
 
   try {
