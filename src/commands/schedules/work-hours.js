@@ -15,6 +15,9 @@ export default (bot, uri) => {
   moment.relativeTimeThreshold('m', 60);
   moment.relativeTimeThreshold('h', Infinity);
 
+  moment.updateLocale('en', _.get(bot.config, 'moment') || {});
+  moment.locale('en');
+
   bot.command('^schedules set [char] [string] > [string]', async message => {
     const [username] = message.match;
 
@@ -33,10 +36,10 @@ export default (bot, uri) => {
 
     for (const item of list) {
       for (const emp of employees) {
-        await del(`employee/${emp.id}/workhours`, { weekday: item.day.day() });
+        await del(`employee/${emp.id}/workhours`, { weekday: item.day.weekday() });
 
         const wh = await post(`employee/${emp.id}/workhour`, {
-          weekday: item.day.day()
+          weekday: item.day.weekday()
         });
 
         await Promise.all(item.ranges.map(async range => {
@@ -69,14 +72,14 @@ export default (bot, uri) => {
 
   bot.command('^schedules [char] [string]$', async message => {
     const [username, vdate] = message.match;
-    const date = vdate ? parseDate(vdate) || moment().day(-1) : moment().day(-1);
+    const date = vdate ? parseDate(bot, vdate) || moment().weekday(0) : moment().weekday(0);
 
     if (vdate && vdate.includes('week')) {
       if (date.range) {
-        date.from.day(-1).hours(0).minutes(0).seconds(0).milliseconds(0);
-        date.to.day(6).hours(0).minutes(0).seconds(0).milliseconds(0);
+        date.from.weekday(0).hours(0).minutes(0).seconds(0).milliseconds(0);
+        date.to.weekday(6).hours(0).minutes(0).seconds(0).milliseconds(0);
       } else {
-        date.day(-1).hours(0).minutes(0).seconds(0).milliseconds(0);
+        date.weekday(0).hours(0).minutes(0).seconds(0).milliseconds(0);
       }
     }
 
@@ -87,10 +90,10 @@ export default (bot, uri) => {
     const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
     const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
       start: {
-        $gt: (date.range ? date.to : date).toISOString()
+        $gt: (date.range ? date.from : date).toISOString()
       },
       end: {
-        $lt: (date.range ? date.from : moment(date).add(1, 'week')).toISOString()
+        $lt: (date.range ? date.to : moment(date).add(1, 'week')).toISOString()
       }
     });
 
@@ -101,7 +104,7 @@ export default (bot, uri) => {
 
     const name = username ? `${employee.firstname}'s` : 'Your';
     const d = date.range ? date.to : date;
-    const attachments = printHours(workhoursModifications(result, modifications, d));
+    const attachments = printHours(workhoursModifications(bot, result, modifications, d));
     message.reply(`${name} weekly schedule:`, { attachments, websocket: false });
   });
 
@@ -115,13 +118,13 @@ export default (bot, uri) => {
     const date = moment(day, 'dddd');
 
     if (['everyone', 'all'].includes(username)) {
-      await del('workhours', { weekday: date.day() });
+      await del('workhours', { weekday: date.weekday() });
       return message.reply(`Cleared everyone's schedule for *${date.format('dddd')}*.`);
     }
 
     const employee = await findEmployee(uri, bot, message, username);
 
-    await del(`employee/${employee.id}/workhours`, { weekday: date.day() });
+    await del(`employee/${employee.id}/workhours`, { weekday: date.weekday() });
 
     message.reply(`Cleared your schedule for *${date.format('dddd')}*.`);
   }, { permissions: ['human-resource', 'admin'] });
@@ -145,11 +148,6 @@ export default (bot, uri) => {
     const sorted = workhours.sort((a, b) =>
       a.weekday - b.weekday
     );
-
-    // Weekday starts with Saturday here
-    if (sorted[sorted.length - 1].weekday === 6) {
-      sorted.unshift(sorted.pop());
-    }
 
     const sum = sorted.reduce((a, b) => {
       const innersum = b.Timeranges.reduce((x, y) => {
@@ -181,7 +179,7 @@ export default (bot, uri) => {
     }, { total: 0, calculated: 0, breaks: 0 });
 
     const list = sorted.map(({ weekday, Timeranges, modified }) => {
-      const day = moment().day(weekday).format('dddd');
+      const day = moment().weekday(weekday).format('dddd');
 
       return {
         title: (modified ? ':pencil2: ' : '') + day,

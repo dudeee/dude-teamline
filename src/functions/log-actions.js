@@ -6,6 +6,8 @@ import request from './request';
 export default async (bot, uri, employee) => {
   if (_.get(bot.config, 'teamline.teamsChannels') === false) return;
   const { get } = request(bot, uri);
+  moment.updateLocale('en', _.get(bot.config, 'moment') || {});
+  moment.locale('en');
 
   bot.log.verbose('[teamline] log-actions');
 

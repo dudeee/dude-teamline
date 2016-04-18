@@ -5,6 +5,7 @@ import findEmployee from '../build/functions/find-employee';
 import logActions from '../build/functions/log-actions';
 import updateActionsMessage from '../build/functions/update-actions-message';
 import workhoursModifications from '../build/functions/workhours-modifications';
+import notifyColleagues from '../build/functions/notify-colleagues';
 import parseDate from '../build/functions/parse-date';
 import moment from 'moment';
 import { teamline } from './fixtures';
@@ -360,7 +361,7 @@ describe('functions', function functions() {
         end: moment().weekday(0).hours(21).minutes(0).seconds(0)
       }];
 
-      const calculated = workhoursModifications(workhours, modifications);
+      const calculated = workhoursModifications(bot, workhours, modifications);
 
       expect(calculated[0].Timeranges.length).to.equal(2);
       expect(calculated[0].modified).to.equal(true);
@@ -385,7 +386,7 @@ describe('functions', function functions() {
       }];
 
 
-      const calculated = workhoursModifications(workhours, modifications);
+      const calculated = workhoursModifications(bot, workhours, modifications);
 
       expect(calculated[0].Timeranges.length).to.equal(2);
       expect(calculated[0].modified).to.equal(true);
@@ -413,12 +414,12 @@ describe('functions', function functions() {
         end: moment().weekday(0).hours(16).minutes(0).seconds(0).add(1, 'week')
       }];
 
-      const calculated = workhoursModifications(workhours, modifications);
+      const calculated = workhoursModifications(bot, workhours, modifications);
 
       expect(calculated[0].Timeranges.length).to.equal(1);
       expect(calculated[0].modified).not.to.be.ok;
 
-      const withDate = workhoursModifications(workhours, modifications, moment().add(1, 'week'));
+      const withDate = workhoursModifications(bot, workhours, modifications, moment().add(1, 'week')); // eslint-disable-line
 
       const [first, second] = withDate[0].Timeranges;
       expect(first.start).to.equal('8:30');
@@ -435,13 +436,13 @@ describe('functions', function functions() {
   describe('parse-date', () => {
     it('should add `in` to the string in case it\'s missing', () => {
       const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const date = (parseDate('2 hours').toDate() * 1).toString().slice(0, 9);
+      const date = (parseDate(bot, '2 hours').toDate() * 1).toString().slice(0, 9);
       expect(d).to.equal(date);
     });
 
     it('should strip down keywords from|until|for|till', () => {
       const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const date = (parseDate('for 2 hours').toDate() * 1).toString().slice(0, 9);
+      const date = (parseDate(bot, 'for 2 hours').toDate() * 1).toString().slice(0, 9);
       expect(d).to.equal(date);
     });
 
@@ -449,7 +450,7 @@ describe('functions', function functions() {
       const first = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
       const second = (Date.now() + 1000 * 60 * 60 * 3).toString().slice(0, 9);
 
-      const range = parseDate('from 2 hours to 3 hours');
+      const range = parseDate(bot, 'from 2 hours to 3 hours');
 
       const from = (range.from.toDate() * 1).toString().slice(0, 9);
       const to = (range.to.toDate() * 1).toString().slice(0, 9);
@@ -457,6 +458,129 @@ describe('functions', function functions() {
       expect(range.range).to.be.ok;
       expect(first).to.equal(from);
       expect(second).to.equal(to);
+    });
+  });
+
+  describe('notify-colleagues', () => {
+    before(() => {
+      app.get('/employee/:id/teams/open', (request, response, next) => {
+        response.json([{
+          name: 'test'
+        }]);
+        next();
+      });
+    });
+    it('should not send any message in case of no modifications', async () => {
+      const r = await notifyColleagues(bot, uri, [], teamline.users[0]);
+      expect(r).to.equal(false);
+    });
+
+    it('should not send any message in case of `add` modifications', async () => {
+      const modification = { type: 'add' };
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(false);
+    });
+
+    it('should not send any message if the duration is less than a day and it\'s not for today' , async () => { // eslint-disable-line
+      const start = moment().add(1, 'day');
+      const end = moment().add(1, 'day').add(1, 'hour');
+      const modification = {
+        type: 'sub',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(false);
+    });
+
+    it('should notify if the modification starts today', async done => {
+      const start = moment();
+      const end = moment().add(2, 'days');
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.out', {
+          user: `@${teamline.users[0].username}`,
+          start: `*${start.format('DD MMMM, HH:mm')}*`,
+          end: `*${end.format('DD MMMM, HH:mm')}*`,
+          teams: '@test'
+        });
+        expect(request.query.text).to.equal(text);
+
+        app._router.stack.length -= 1;
+
+        done();
+        next();
+      });
+
+      const modification = {
+        type: 'sub',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(true);
+    });
+
+    it('should notify if the modification duration is more than 1 day', async done => {
+      const start = moment().add(1, 'day');
+      const end = moment().add(3, 'days');
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.out', {
+          user: `@${teamline.users[0].username}`,
+          start: `*${start.format('DD MMMM, HH:mm')}*`,
+          end: `*${end.format('DD MMMM, HH:mm')}*`,
+          teams: '@test'
+        });
+        expect(request.query.text).to.equal(text);
+
+        app._router.stack.length -= 1;
+        done();
+        next();
+      });
+
+      const modification = {
+        type: 'sub',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(true);
+    });
+
+    it('should give information on both `in` and `out` when using `shift`', async done => {
+      const start = moment().add(1, 'day');
+      const end = moment().add(3, 'days');
+      const inStart = moment().add(4, 'days');
+      const inEnd = moment().add(4, 'days').add(5, 'hours');
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.shift', {
+          user: `@${teamline.users[0].username}`,
+          outStart: `*${start.format('DD MMMM, HH:mm')}*`,
+          outEnd: `*${end.format('DD MMMM, HH:mm')}*`,
+          inStart: `*${inStart.format('DD MMMM, HH:mm')}*`,
+          inEnd: `*${inEnd.format('DD MMMM, HH:mm')}*`,
+          teams: '@test'
+        });
+        expect(request.query.text).to.equal(text);
+
+        app._router.stack.length -= 1;
+        done();
+        next();
+      });
+
+      const modifications = [{
+        type: 'sub',
+        start, end
+      }, {
+        type: 'add',
+        start: inStart,
+        end: inEnd
+      }];
+
+      const r = await notifyColleagues(bot, uri, modifications, teamline.users[0]);
+      expect(r).to.equal(true);
     });
   });
 

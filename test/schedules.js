@@ -138,7 +138,7 @@ describe('schedules', function functions() {
       });
       it('should remove the specified day from user\'s schedule', done => {
         app.delete('/employee/:id/workhours', (request, response, next) => {
-          expect(+request.query.weekday).to.equal(moment('sunday', 'dddd').day());
+          expect(+request.query.weekday).to.equal(moment('sunday', 'dddd').weekday());
 
           next();
           done();
@@ -157,7 +157,7 @@ describe('schedules', function functions() {
 
       it('should remove the specified day from everyone\'s schedule', done => {
         app.delete('/workhours', (request, response, next) => {
-          expect(+request.query.weekday).to.equal(moment('sunday', 'dddd').day());
+          expect(+request.query.weekday).to.equal(moment('sunday', 'dddd').weekday());
 
           next();
           done();
@@ -197,7 +197,7 @@ describe('schedules', function functions() {
         it('should set a `sub` modifications from the specified time to the end of working hour', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -237,7 +237,7 @@ describe('schedules', function functions() {
         it('should set a `sub` modifications from now to the specified time', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -277,7 +277,7 @@ describe('schedules', function functions() {
         it('should set a `sub` modifications in the specified range', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -317,7 +317,7 @@ describe('schedules', function functions() {
         it('should set a `sub` modifications from now for the specified duration', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -359,7 +359,7 @@ describe('schedules', function functions() {
         it('should set a `add` modifications from end of working hour to the specified time', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -399,7 +399,7 @@ describe('schedules', function functions() {
         it('should set a `add` modifications in the specified range', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -439,7 +439,7 @@ describe('schedules', function functions() {
         it('should set a `add` modifications from end of working hour for the specified duration', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -481,7 +481,7 @@ describe('schedules', function functions() {
         it('should set a `sub` modifications from the specified time to the end of working hour and `add` from end of working hour for the duration', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -534,7 +534,7 @@ describe('schedules', function functions() {
         it('should set a `sub` modifications from now to the specified time and `add` the duration to end of working hour', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -588,7 +588,7 @@ describe('schedules', function functions() {
         it('should set a `sub` modifications in the specified range and `add` the duration to end of working hour', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -641,7 +641,7 @@ describe('schedules', function functions() {
         it('should set a `sub` modifications from now for the specified duration and `add` the duration to end of working hour', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
-              weekday: moment().day(),
+              weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
                 end: '18:00'
@@ -706,7 +706,7 @@ describe('schedules', function functions() {
     it('should indicate the employee is currently available if the working hours match', done => {
       app.get('/employee/:id/workhours', (request, response, next) => {
         response.json([{
-          weekday: moment().day(),
+          weekday: moment().weekday(),
           Timeranges: [{
             start: moment().subtract(1, 'hour').format('HH:mm'),
             end: moment().add(1, 'hour').format('HH:mm')
@@ -739,7 +739,7 @@ describe('schedules', function functions() {
     it('should give information on the timerange the employee will be available, if not available now', done => { // eslint-disable-line
       app.get('/employee/:id/workhours', (request, response, next) => {
         response.json([{
-          weekday: moment().day(),
+          weekday: moment().weekday(),
           Timeranges: [{
             start: moment().add(1, 'hour').format('HH:mm'),
             end: moment().add(2, 'hour').format('HH:mm')

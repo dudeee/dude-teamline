@@ -5,6 +5,8 @@ import _ from 'lodash';
 
 export default async (bot, uri, employee) => {
   if (_.get(bot.config, 'teamline.actionsChannel') === false) return;
+  moment.updateLocale('en', _.get(bot.config, 'moment') || {});
+  moment.locale('en');
 
   const { get } = request(bot, uri);
 

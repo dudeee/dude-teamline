@@ -61,7 +61,7 @@ describe('ask-for-actions', function functions() {
       app.get('/employee/:id/workhours', (request, response, next) => {
         expect(+request.params.id).to.equal(user.id);
         response.json([{
-          weekday: moment().day(),
+          weekday: moment().weekday(),
           Timeranges: [{
             start: moment().subtract(5, 'minutes').format('HH:mm'),
             end: moment().add(2, 'hours').format('HH:mm')
@@ -154,7 +154,7 @@ describe('ask-for-actions', function functions() {
       app.get('/employee/:id/workhours', (request, response, next) => {
         expect(+request.params.id).to.equal(user.id);
         response.json([{
-          weekday: moment().day(),
+          weekday: moment().weekday(),
           Timeranges: [{
             start: moment().subtract(1, 'minutes').format('HH:mm'),
             end: moment().add(2, 'hours').format('HH:mm')
