@@ -399,37 +399,6 @@ describe('functions', function functions() {
       expect(second.end).to.equal('18:00');
     });
 
-    it('should consider date parameter to match the weeks of year', () => {
-      const workhours = [{
-        weekday: 0,
-        Timeranges: [{
-          start: '8:30',
-          end: '18:00'
-        }]
-      }];
-
-      const modifications = [{
-        type: 'sub',
-        start: moment().weekday(0).hours(9).minutes(0).seconds(0).add(1, 'week'),
-        end: moment().weekday(0).hours(16).minutes(0).seconds(0).add(1, 'week')
-      }];
-
-      const calculated = workhoursModifications(bot, workhours, modifications);
-
-      expect(calculated[0].Timeranges.length).to.equal(1);
-      expect(calculated[0].modified).not.to.be.ok;
-
-      const withDate = workhoursModifications(bot, workhours, modifications, moment().add(1, 'week')); // eslint-disable-line
-
-      const [first, second] = withDate[0].Timeranges;
-      expect(first.start).to.equal('8:30');
-      expect(first.end).to.equal('09:00');
-
-      expect(second.start).to.equal('16:00');
-      expect(second.end).to.equal('18:00');
-    });
-
-
     after(cleanup);
   });
 

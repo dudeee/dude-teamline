@@ -103,8 +103,7 @@ export default (bot, uri) => {
     }
 
     const name = username ? `${employee.firstname}'s` : 'Your';
-    const d = date.range ? date.to : date;
-    const attachments = printHours(workhoursModifications(bot, result, modifications, d));
+    const attachments = printHours(workhoursModifications(bot, result, modifications));
     message.reply(`${name} weekly schedule:`, { attachments, websocket: false });
   });
 

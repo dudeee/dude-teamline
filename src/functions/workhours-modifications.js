@@ -1,7 +1,7 @@
 import moment from 'moment';
 import _ from 'lodash';
 
-export default (bot, workhours, modifications, date = moment()) => {
+export default (bot, workhours, modifications) => {
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
@@ -13,7 +13,7 @@ export default (bot, workhours, modifications, date = moment()) => {
 
     const s = moment(item.start);
     const weekday = s.weekday();
-    const wh = workhours.find(a => a.weekday === weekday && date.week() === s.week());
+    const wh = workhours.find(a => a.weekday === weekday);
     if (wh) {
       wh.modified = true;
       wh.Timeranges = wh.Timeranges.concat(Timeranges);
@@ -29,7 +29,7 @@ export default (bot, workhours, modifications, date = moment()) => {
       const s = moment(time.start);
       const e = moment(time.end);
 
-      const wh = workhours.find(a => a.weekday === s.weekday() && date.week() === s.week());
+      const wh = workhours.find(a => a.weekday === s.weekday());
       if (wh) {
         wh.modified = true;
         wh.Timeranges.forEach(item => {
