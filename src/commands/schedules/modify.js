@@ -137,7 +137,7 @@ export default (bot, uri) => {
 
         message.reply(`Okay, I see that you are not going to be available from `
                      + `*${unavailable.start}* until *${unavailable.end}*, but you will be available ` // eslint-disable-line
-                     + `from *${available.start}* until *${available.start}*. :thumbsup:`);
+                     + `from *${available.start}* until *${available.end}*. :thumbsup:`);
 
         notifyColleagues(bot, uri, [inModification, outModification], employee);
       }
