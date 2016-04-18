@@ -6,7 +6,7 @@ import moment from 'moment';
 import _ from 'lodash';
 
 export default (bot, uri) => {
-  const { get, post } = request(bot, uri);
+  const { get, post, del } = request(bot, uri);
   moment.relativeTimeThreshold('m', 60);
   moment.relativeTimeThreshold('h', Infinity);
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
@@ -15,7 +15,7 @@ export default (bot, uri) => {
   bot.command('^schedules? <char> [string]', async message => { //eslint-disable-line
     const [command, vdate] = message.match;
 
-    if (!['in', 'out', 'shift'].includes(command)) return;
+    if (!['in', 'out', 'shift', 'undo'].includes(command)) return;
 
     const lines = message.preformatted.split('\n');
     const reason = lines[1] || null;
@@ -26,10 +26,6 @@ export default (bot, uri) => {
     });
 
     const wh = _.find(workhours, { weekday: moment().weekday() });
-    // const timerange = wh.timeranges.find(a =>
-    //   moment(a.start, 'hh:mm').issameorbefore(moment()) &&
-    //   moment(a.end, 'hh:mm').issameorafter(moment())
-    // );
     const timerange = wh.Timeranges[wh.Timeranges.length - 1];
     const date = parseDate(bot, vdate);
 
@@ -144,71 +140,16 @@ export default (bot, uri) => {
     }
   });
 
-  // bot.command('schedule(s)? modifications [char] [string]', async message => {
-  //   const [username, daterange] = message.match;
-  //
-  //   const range = (daterange || '').split(/to|-/).filter(a => a).map(a => moment(humanDate(a)));
-  //   if (range.length === 1) {
-  //     range.push(moment().hours(0).minutes(0).seconds(0));
-  //   } else if (range.length === 0) {
-  //     range.push(moment().subtract(1, 'week').hours(0).minutes(0).seconds(0));
-  //     range.push(moment().add(1, 'week').hours(0).minutes(0).seconds(0));
-  //   }
-  //
-  //   const employee = await findEmployee(uri, bot, message, username);
-  //   const schedulemodifications = await get(`employee/${employee.id}/schedulemodifications`, {
-  //     $or: [
-  //       {
-  //         start: {
-  //           $lt: range[1].toISOString(),
-  //           $gt: range[0].toISOString()
-  //         }
-  //       },
-  //       {
-  //         end: {
-  //           $lt: range[1].toISOString(),
-  //           $gt: range[0].toISOString()
-  //         },
-  //       }
-  //     ]
-  //   });
-  //
-  //   const workhours = await get(`employee/${employee.id}/workhours`, {
-  //     include: 'Timerange'
-  //   });
-  //
-  //   const name = username ? `${employee.firstname} ${employee.lastname}'s` : 'Your';
-  //
-  //   const attachments = Array.from(printScheduleModifications(schedulemodifications, workhours));
-  //   await message.reply(`${name} modifications:`, { attachments, websocket: false });
-  // });
-  //
-  // bot.command('schedule(s)? modifications remove [number]', async message => {
-  //   const [id] = message.match;
-  //   const b = await get(`schedulemodification/${id}`);
-  //
-  //   const manager = bot.config.teamline.modifications.manager;
-  //   if (b.status !== 'pending' && bot.find(message.user).name !== manager) {
-  //     const employee = await findEmployee(uri, bot, message);
-  //     message.reply(`I will your request to @${manager}.`);
-  //
-  //     const formattedFrom = moment(b.start).format('DD MMMM HH:mm');
-  //     const formattedTo = moment(b.end).format('DD MMMM HH:mm');
-  //
-  //     const details = `(#${b.id}) from *${formattedFrom}* to *${formattedTo}*`;
-  //     const answer = await bot.ask(manager,
-  //                                  `Hey, @${employee.username} wants to remove
-  //                                  modification ${details}`,
-  //                                  Boolean);
-  //     if (answer) {
-  //       await del(`schedulemodification/${id}`);
-  //       message.reply(`@${manager} approved your remove request. Removed modification #${id}.`);
-  //     }
-  //     return;
-  //   }
-  //
-  //   await del(`schedulemodification/${id}`);
-  //
-  //   message.reply(`Removed modification #${id}`);
-  // });
+  bot.command('schedules? undo', async message => {
+    // const [id] = message.match;
+    const employee = await findEmployee(uri, bot, message);
+    const list = await get(`employee/${employee.id}/schedulemodifications`);
+    const last = list[list.length - 1];
+    const modification = await del(`schedulemodification/${last.id}`);
+
+    const start = moment(modification.start).format('DD MMMM, HH:mm');
+    const end = moment(modification.end).format('DD MMMM, HH:mm');
+
+    message.reply(`Removed modification from *${start}* until *${end}*.`);
+  });
 };

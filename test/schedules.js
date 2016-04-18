@@ -691,6 +691,36 @@ describe('schedules', function functions() {
       });
     });
 
+    describe('undo', () => {
+      it('should remove the last modification submitted', done => {
+        const start = moment();
+        const end = moment().add(1, 'hour');
+
+        app.get('/employee/:id/schedulemodifications', (request, response, next) => {
+          response.json([{}, {
+            id: 'last_modification',
+            start, end
+          }]);
+          next();
+        });
+
+        app.delete('/schedulemodification/:id', (request, response, next) => {
+          expect(request.params.id).to.equal('last_modification');
+
+          next();
+          done();
+          app._router.stack.length -= 2;
+        });
+
+
+        bot.inject('message', {
+          text: 'schedules undo',
+          mention: true,
+          user: bot.users[0].id
+        });
+      });
+    });
+
     after(cleanup);
   });
 
