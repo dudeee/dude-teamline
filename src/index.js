@@ -95,6 +95,7 @@ Sometimes you want to make a change to your current week's schedule, maybe you a
 for a vacation, maybe you want to work some extra time, or maybe you want to swap two days!
 You can specify a reason for these modifications on the second line of your message. (\`shift+enter\`)
 
+*In*:
 You can add a timerange to your schedule this way:
 \`schedule in [timerange]\`
 \`schedules in for 2 hours\` – Assumes you will be available 2 extra hours at the end of your working hour
@@ -102,17 +103,20 @@ So, if your normal working hour is until 18:00, it's assumed that you will stay 
 \`schedules in 19:00 to 20:00\` – Also accepts specific ranges
 \`schedules in tomorrow 8:00 to tomorrow 18:00\`
 
+*Out*:
 You can subtract a timerange from your weekly schedule like so:
 \`schedules out [timerange]\`
 \`schedules out for 2 hours\` – Assumes you won't be available for the next 2 hours (from now for 2 hours)
 \`schedules out until 16:00\` – Assumes you won't be available from now until 16:00
 \`schedules out tomorrow 8:30 to tomorrow 15:00\` – Also accepts specific ranges
 
+*Shift*:
 Sometimes you won't be available for some time today, but you want to stay at office for some extra hour.
 An example would be like this: Imagine your working hour for today is from 8:30 to 18:00, now you have
 some work to do in the next 2 hours, so you won't be available, but you will come back to office and stay until
 20:00 to fill the gap. In these situations you can use another command, called \`shift\` to do this instead of
 two commands. It's like an alias for \`in\` and \`out\`.
+
 The example above could be done like this: \`schedules shift for 2 hours\`
 It's the equivalent of issuing two commands: \`schedules out for 2 hours\` \`schedules in for 2 hours\`
 
