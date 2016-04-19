@@ -216,10 +216,6 @@ export default (bot, uri) => {
         value: textify(sum.total),
         short: true
       }, {
-        title: 'Breaks',
-        value: textify(sum.breaks),
-        short: true
-      }, {
         title: 'Calculated',
         value: textify(sum.calculated)
       }]
