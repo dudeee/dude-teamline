@@ -432,6 +432,7 @@ describe('functions', function functions() {
 
   describe('notify-colleagues', () => {
     before(() => {
+      _.set(bot.config, 'teamline.schedules.notification.mentionTeams', true);
       app.get('/employee/:id/teams/open', (request, response, next) => {
         response.json([{
           name: 'test'
@@ -557,5 +558,6 @@ describe('functions', function functions() {
   after(() => {
     bot.config.teamline.actionsChannel = false;
     bot.config.teamline.teamsChannels = false;
+    _.set(bot.config, 'teamline.schedules.notification.mentionTeams', false);
   });
 });
