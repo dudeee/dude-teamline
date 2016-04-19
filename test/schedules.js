@@ -128,7 +128,7 @@ describe('schedules', function functions() {
       after(cleanup);
     });
 
-    describe('schedules remove', () => {
+    describe('schedules unset', () => {
       before(() => {
         app.get('/employee', (request, response, next) => {
           response.json(bot.users[0]);
@@ -149,7 +149,7 @@ describe('schedules', function functions() {
           admin: [bot.users[0].name]
         };
         bot.inject('message', {
-          text: `schedules remove ${bot.users[0].name} sunday`,
+          text: `schedules unset ${bot.users[0].name} sunday`,
           mention: true,
           user: bot.users[0].id
         });
@@ -169,7 +169,7 @@ describe('schedules', function functions() {
         };
 
         bot.inject('message', {
-          text: `schedules remove all sunday`,
+          text: `schedules unset all sunday`,
           mention: true,
           user: bot.users[0].id
         });

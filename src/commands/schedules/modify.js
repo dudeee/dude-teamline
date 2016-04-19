@@ -15,7 +15,7 @@ export default (bot, uri) => {
   bot.command('^schedules? <char> [string]', async message => { //eslint-disable-line
     const [command, vdate] = message.match;
 
-    if (!['in', 'out', 'shift', 'undo'].includes(command)) return;
+    if (!(['in', 'out', 'shift'].includes(command))) return;
 
     const lines = message.preformatted.split('\n');
     const reason = lines[1] || null;
@@ -25,7 +25,7 @@ export default (bot, uri) => {
       include: 'Timerange'
     });
 
-    const wh = _.find(workhours, { weekday: moment().weekday() });
+    const wh = _.find(workhours, { weekday: moment().weekday() }) || { Timeranges: [] };
     const timerange = wh.Timeranges[wh.Timeranges.length - 1];
     const date = parseDate(bot, vdate);
 
@@ -140,7 +140,7 @@ export default (bot, uri) => {
     }
   });
 
-  bot.command('schedules? undo', async message => {
+  bot.command('^schedules? undo', async message => {
     // const [id] = message.match;
     const employee = await findEmployee(uri, bot, message);
     const list = await get(`employee/${employee.id}/schedulemodifications`);
