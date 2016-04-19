@@ -4,6 +4,7 @@ import request from './request';
 
 export default async (bot, uri, modifications, employee) => {
   const channel = _.get(bot.config, 'teamline.schedules.notification.channel') || 'office';
+  const enableTeams = _.get(bot.config, 'teamline.schedules.notification.mentionTeams') || false;
   const { get } = await request(bot, uri);
 
   const teams = await get(`employee/${employee.id}/teams/open`);
@@ -52,7 +53,7 @@ export default async (bot, uri, modifications, employee) => {
       user: `@${employee.username}`,
       start: `*${start.format('DD MMMM, HH:mm')}*`,
       end: `*${end.format('DD MMMM, HH:mm')}*`,
-      teams: names
+      teams: enableTeams ? names : []
     });
 
     bot.sendMessage(channel, text, {
@@ -68,7 +69,7 @@ export default async (bot, uri, modifications, employee) => {
       outEnd: `*${end.format('DD MMMM, HH:mm')}*`,
       inStart: `*${inStart.format('DD MMMM, HH:mm')}*`,
       inEnd: `*${inEnd.format('DD MMMM, HH:mm')}*`,
-      teams: names
+      teams: enableTeams ? names : []
     });
 
     bot.sendMessage(channel, text, {
