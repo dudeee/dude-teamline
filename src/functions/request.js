@@ -37,7 +37,7 @@ export default (bot, uri) => {
             [auth.key]: auth.token
           }).end(response => {
             if (response.error) {
-              bot.log.error('[teamline] request GET', url, body, 'Error', response.error);
+              bot.log.error('[teamline] request POST', url, body, 'Error', response.error);
               return reject(response.error);
             }
 
@@ -57,7 +57,7 @@ export default (bot, uri) => {
             [auth.key]: auth.token
           }).end(response => {
             if (response.error) {
-              bot.log.error('[teamline] request GET', url, body, 'Error', response.error);
+              bot.log.error('[teamline] request PUT', url, body, 'Error', response.error);
               return reject(response.error);
             }
 
@@ -77,7 +77,7 @@ export default (bot, uri) => {
             [auth.key]: auth.token
           }).end(response => {
             if (response.error) {
-              bot.log.error('[teamline] request GET', url, query, 'Error', response.error);
+              bot.log.error('[teamline] request DELETE', url, query, 'Error', response.error);
               return reject(response.error);
             }
 

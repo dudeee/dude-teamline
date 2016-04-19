@@ -18,7 +18,7 @@ export default (bot, uri) => {
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
-  bot.command('^schedules set [char] [string] > [string]', async message => {
+  bot.command('^schedules? set [char] [string] > [string]', async message => {
     const [username] = message.match;
 
     let employees = [];
@@ -36,7 +36,13 @@ export default (bot, uri) => {
 
     for (const item of list) {
       for (const emp of employees) {
-        await del(`employee/${emp.id}/workhours`, { weekday: item.day.weekday() });
+        try {
+          await del(`employee/${emp.id}/workhours`, { weekday: item.day.weekday() });
+        } catch (e) {
+          //
+        }
+
+        if (!item.ranges.length) continue;
 
         const wh = await post(`employee/${emp.id}/workhour`, {
           weekday: item.day.weekday()
@@ -83,7 +89,7 @@ export default (bot, uri) => {
       }
     }
 
-    const exclude = ['in', 'out', 'modifications', 'shift', 'undo'];
+    const exclude = ['in', 'out', 'modifications', 'shift', 'undo', 'set', 'unset'];
     if (exclude.includes(username)) return;
     const employee = await findEmployee(uri, bot, message, username, exclude);
 
@@ -107,14 +113,14 @@ export default (bot, uri) => {
     message.reply(`${name} weekly schedule:`, { attachments, websocket: false });
   });
 
-  bot.command('^schedules remove [char] [word]', async message => {
+  bot.command('^schedules unset [char] [word]', async message => {
     let [username, day] = message.match;
     if (!day) {
       day = username;
       username = null;
     }
 
-    const date = moment(day, 'dddd');
+    const date = moment().day(day);
 
     if (['everyone', 'all'].includes(username)) {
       await del('workhours', { weekday: date.weekday() });
@@ -135,9 +141,9 @@ export default (bot, uri) => {
       .filter(a => a)
       .map(entry => entry.split('>'))
       .map(([day, ranges]) => {
-        const dd = moment(day, 'ddd');
+        const dd = moment().day(day);
         const r = ranges.split(',').map(range =>
-          range.split(/-|to/i).map(date => moment(date, 'H:m'))
+          range.split(/-|to/i).map(date => moment(date, 'HH:mm'))
         );
         return { day: dd, ranges: r };
       });
