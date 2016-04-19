@@ -102,15 +102,15 @@ export default (bot, uri) => {
       }
     }
 
+    const url = `employee/${employee.id}/actions/today`;
+    const allActions = await get(url, { include: ['Project', 'Role'] });
+    const list = printList(allActions);
+
     message.reply(list, {
       attachments,
       websocket: false,
       parse: 'full'
     });
-
-    const url = `employee/${employee.id}/actions/today`;
-    const allActions = await get(url, { include: ['Project', 'Role'] });
-    const list = printList(allActions);
 
     await updateActionsMessage(bot, uri, employee);
     await logActions(bot, uri, employee);
