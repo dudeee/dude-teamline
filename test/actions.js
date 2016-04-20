@@ -39,7 +39,7 @@ describe('actions', function functions() {
         expect(msg.text).to.equal(bot.t('teamline.actions.remove.clear'));
 
         app._router.stack.length -= 1;
-        delete socket._events.message;
+        socket._events.message.length -= 1;
         done();
       });
 
@@ -68,7 +68,7 @@ describe('actions', function functions() {
       socket.on('message', message => {
         const msg = JSON.parse(message);
         expect(msg.text).to.equal(bot.t('teamline.actions.remove.remove', { action: 'some' }));
-        delete socket._events.message;
+        socket._events.message.length -= 1;
 
         app._router.stack.length -= 2;
         done();
@@ -103,7 +103,7 @@ describe('actions', function functions() {
           });
 
           app._router.stack.length -= 1;
-          delete socket._events.message;
+          socket._events.message.length -= 1;
           done();
         });
 
@@ -133,7 +133,7 @@ describe('actions', function functions() {
           });
 
           app._router.stack.length -= 1;
-          delete socket._events.message;
+          socket._events.message.length -= 1;
           done();
         });
 
@@ -166,7 +166,7 @@ describe('actions', function functions() {
           });
 
           app._router.stack.length -= 1;
-          delete socket._events.message;
+          socket._events.message.length -= 1;
           done();
         });
 
@@ -215,7 +215,7 @@ describe('actions', function functions() {
           });
 
           app._router.stack.length -= 3;
-          delete socket._events.message;
+          socket._events.message.length -= 1;
           done();
         });
 
@@ -248,7 +248,7 @@ describe('actions', function functions() {
             });
 
           app._router.stack.length -= 1;
-          delete socket._events.message;
+          socket._events.message.length -= 1;
           done();
         });
 

@@ -80,6 +80,13 @@ export default (bot, uri) => {
       start.milliseconds(0);
 
       if (command === 'out') {
+        const b = moment(wh.Timeranges[0].start, 'HH:mm');
+        const beginning = start.clone().hours(b.hours()).minutes(b.minutes());
+        start = moment.max(start, beginning);
+        const e = moment(timerange.end, 'HH:mm');
+        const finish = end.clone().hours(e.hours()).minutes(e.minutes());
+        end = moment.min(end, finish);
+
         const modification = {
           type: 'sub',
           start: start.toISOString(),
