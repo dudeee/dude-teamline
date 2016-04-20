@@ -560,6 +560,8 @@ describe('functions', function functions() {
       const r = await notifyColleagues(bot, uri, modifications, teamline.users[0]);
       expect(r).to.equal(true);
     });
+
+    after(cleanup);
   });
 
   after(cleanup);
