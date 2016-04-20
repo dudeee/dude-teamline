@@ -7,7 +7,8 @@ export const slack = {
       first_name: 'Mr',
       last_name: 'Test',
       email: 'test@test.com',
-      phone: '919999999'
+      phone: '919999999',
+      image_48: 'some_image_48.png'
     }
   }, {
     id: 'U234567',

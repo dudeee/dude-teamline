@@ -56,7 +56,7 @@ export default async (bot, uri, modifications, employee) => {
       teams: enableTeams ? names : []
     });
 
-    bot.sendMessage(channel, text, {
+    bot.sendAsUser(employee.username, channel, text, {
       websocket: false,
       parse: 'full'
     });
@@ -72,7 +72,7 @@ export default async (bot, uri, modifications, employee) => {
       teams: enableTeams ? names : []
     });
 
-    bot.sendMessage(channel, text, {
+    bot.sendAsUser(employee.username, channel, text, {
       websocket: false,
       parse: 'full'
     });

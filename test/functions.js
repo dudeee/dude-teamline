@@ -267,6 +267,8 @@ describe('functions', function functions() {
       app.get('/chat.postMessage', (request, response, next) => {
         const channel = bot.find(request.query.channel);
         expect(channel.name).to.equal('actions');
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
 
         const actions = _.filter(teamline.actioms, { UserId: 0 });
         actions.forEach(action => {
@@ -475,6 +477,8 @@ describe('functions', function functions() {
           teams: '@test'
         });
         expect(request.query.text).to.equal(text);
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
 
         app._router.stack.length -= 1;
 
@@ -503,6 +507,8 @@ describe('functions', function functions() {
           teams: '@test'
         });
         expect(request.query.text).to.equal(text);
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
 
         app._router.stack.length -= 1;
         done();
@@ -534,6 +540,8 @@ describe('functions', function functions() {
           teams: '@test'
         });
         expect(request.query.text).to.equal(text);
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
 
         app._router.stack.length -= 1;
         done();
@@ -552,6 +560,8 @@ describe('functions', function functions() {
       const r = await notifyColleagues(bot, uri, modifications, teamline.users[0]);
       expect(r).to.equal(true);
     });
+
+    after(cleanup);
   });
 
   after(cleanup);

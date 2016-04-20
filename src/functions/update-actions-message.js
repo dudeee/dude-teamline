@@ -41,7 +41,7 @@ export default async (bot, uri, employee) => {
 
   if (!allActions.length) return;
 
-  await bot.sendMessage('actions', text, {
+  await bot.sendAsUser(employee.username, 'actions', text, {
     websocket: false,
     link_names: true,
     parse: 'full',
