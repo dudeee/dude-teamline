@@ -352,6 +352,45 @@ describe('schedules', function functions() {
           });
         });
       });
+
+      it('should limit the daterange to workhour\'s boundaries', done => {
+        app.get('/employee/:id/workhours', (request, response, next) => {
+          response.json([{
+            weekday: moment().weekday(),
+            Timeranges: [{
+              start: '8:00',
+              end: '18:00'
+            }]
+          }]);
+
+          next();
+        });
+
+        app.post('/employee/:id/schedulemodification', (request, response, next) => {
+          response.json({
+            id: 'workhour_id',
+            ...request.body
+          });
+
+          expect(request.body.type).to.equal('sub');
+          const start = moment('8:00', 'HH:mm');
+          const end = moment('18:00', 'HH:mm');
+          almostEqual(request.body.start, start);
+          almostEqual(request.body.end, end);
+
+          done();
+          next();
+
+          app._router.stack.length -= 2;
+        });
+
+
+        bot.inject('message', {
+          text: 'schedules out from 1:00 to 23:00',
+          mention: true,
+          user: bot.users[0].id
+        });
+      });
     });
 
     describe('in', () => {
@@ -756,7 +795,7 @@ describe('schedules', function functions() {
         expect(msg.text).to.equal(t('available.now'));
 
         app._router.stack.length -= 2;
-        delete socket._events.message;
+        socket._events.message.length -= 1;
         done();
       });
 
@@ -818,7 +857,7 @@ describe('schedules', function functions() {
         expect(msg.text).to.equal(t('available.not', { date: 'tomorrow' }));
 
         app._router.stack.length -= 2;
-        delete socket._events.message;
+        socket._events.message.length -= 1;
         done();
       });
 

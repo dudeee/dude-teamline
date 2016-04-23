@@ -90,7 +90,7 @@ describe('ask-for-actions', function functions() {
 
         expect(notified).to.be.ok;
         app._router.stack.length -= 4;
-        delete socket._events.message;
+        socket._events.message.length -= 1;
         done();
       });
 
