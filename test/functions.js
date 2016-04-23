@@ -482,17 +482,19 @@ describe('functions', function functions() {
       expect(r).to.equal(false);
     });
 
-    it('should not send any message if the duration is less than a day and it\'s not for today' , async () => { // eslint-disable-line
-      const start = moment().add(1, 'day');
-      const end = moment().add(1, 'day').add(1, 'hour');
-      const modification = {
-        type: 'sub',
-        start, end
-      };
-
-      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-      expect(r).to.equal(false);
-    });
+    /* eslint-disable */
+    // it('should not send any message if the duration is less than a day and it\'s not for today' , async () => {
+    //   const start = moment().add(1, 'day');
+    //   const end = moment().add(1, 'day').add(1, 'hour');
+    //   const modification = {
+    //     type: 'sub',
+    //     start, end
+    //   };
+    //
+    //   const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+    //   expect(r).to.equal(false);
+    // });
+    /* eslint-enable */
 
     it('should notify if the modification starts today', async done => {
       const start = moment();

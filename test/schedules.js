@@ -218,6 +218,7 @@ describe('schedules', function functions() {
             const end = moment('18:00', 'HH:mm');
             almostEqual(request.body.start, start);
             almostEqual(request.body.end, end);
+            expect(request.body.reason).to.equal('some reason');
 
             done();
             next();
@@ -226,7 +227,7 @@ describe('schedules', function functions() {
           });
 
           bot.inject('message', {
-            text: `schedules out from 12:00`,
+            text: `schedules out from 12:00\nsome reason`,
             mention: true,
             user: bot.users[0].id
           });

@@ -76,7 +76,7 @@ export default (bot, uri) => {
     });
   }, { permissions: ['human-resource', 'admin'] });
 
-  bot.command('^schedules [char] [string]$', async message => {
+  bot.command('^schedules? [char] [string]$', async message => {
     const [username, vdate] = message.match;
     const date = vdate ? parseDate(bot, vdate) || moment().weekday(0) : moment().weekday(0);
 
@@ -113,7 +113,7 @@ export default (bot, uri) => {
     message.reply(`${name} weekly schedule:`, { attachments, websocket: false });
   });
 
-  bot.command('^schedules unset [char] [word]', async message => {
+  bot.command('^schedules? unset [char] [word]', async message => {
     let [username, day] = message.match;
     if (!day) {
       day = username;
