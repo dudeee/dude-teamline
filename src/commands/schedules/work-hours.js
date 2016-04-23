@@ -186,6 +186,16 @@ export default (bot, uri) => {
     const list = sorted.map(({ weekday, Timeranges, modified }) => {
       const day = moment().weekday(weekday).format('dddd');
 
+      // remove ranges if this day is full out
+      const isSame = Timeranges.every(range => {
+        const tempStart = moment(range.start, 'HH:mm');
+        const tempEnd = moment(range.end, 'HH:mm');
+        return tempStart.isSame(tempEnd);
+      });
+      if (isSame) {
+        Timeranges = [];
+      }
+
       return {
         title: (modified ? ':pencil2: ' : '') + day,
         color: DAY_COLORS[weekday],
@@ -198,8 +208,9 @@ export default (bot, uri) => {
             title: 'To',
             value: moment(t.end, 'HH:mm').format('HH:mm'),
             short: true
-          }])
-        , [])
+          }]), []
+        ),
+        text: Timeranges.length ? '' : 'Not available'
       };
     });
 
