@@ -22,23 +22,16 @@ export default async (bot, uri, modifications, employee) => {
 
   const start = moment(modification.start);
   const end = moment(modification.end);
-  const duration = end.clone().hours(0).minutes(0).seconds(0)
-                      .diff(start.clone().hours(0).minutes(0).seconds(0), 'days');
+  // const duration = end.clone().hours(0).minutes(0).seconds(0)
+  //                     .diff(start.clone().hours(0).minutes(0).seconds(0), 'days');
+  //
+  // const tomorrow = moment().add(1, 'day').hours(0).minutes(0).seconds(0);
+  // const today = moment().hours(0).minutes(0).seconds(0);
 
-  const tomorrow = moment().add(1, 'day').hours(0).minutes(0).seconds(0);
-  const today = moment().hours(0).minutes(0).seconds(0);
+  // if (duration <= 1 && start.isAfter(tomorrow)) return false;
 
-  if (duration <= 1 && start.isAfter(tomorrow)) return false;
-
-  if (start.isBefore(tomorrow) && start.isSameOrAfter(today)) {
-    send();
-    return true;
-  }
-
-  if (duration > 1) {
-    send();
-    return true;
-  }
+  send();
+  return true;
 
   function send() {
     if (shiftIn) {
@@ -50,10 +43,11 @@ export default async (bot, uri, modifications, employee) => {
 
   function out() {
     const text = bot.t('teamline.schedules.notification.out', {
-      user: `@${employee.username}`,
+      user: `${employee.username}`,
       start: `*${start.format('DD MMMM, HH:mm')}*`,
       end: `*${end.format('DD MMMM, HH:mm')}*`,
-      teams: enableTeams ? names : []
+      teams: enableTeams ? names : [],
+      reason: modification.reason
     });
 
     bot.sendAsUser(employee.username, channel, text, {
@@ -64,12 +58,13 @@ export default async (bot, uri, modifications, employee) => {
 
   function shift() {
     const text = bot.t('teamline.schedules.notification.shift', {
-      user: `@${employee.username}`,
+      user: `${employee.username}`,
       outStart: `*${start.format('DD MMMM, HH:mm')}*`,
       outEnd: `*${end.format('DD MMMM, HH:mm')}*`,
       inStart: `*${inStart.format('DD MMMM, HH:mm')}*`,
       inEnd: `*${inEnd.format('DD MMMM, HH:mm')}*`,
-      teams: enableTeams ? names : []
+      teams: enableTeams ? names : [],
+      reason: modification.reason
     });
 
     bot.sendAsUser(employee.username, channel, text, {
