@@ -199,7 +199,8 @@ export default (bot, uri) => {
             value: moment(t.end, 'HH:mm').format('HH:mm'),
             short: true
           }])
-        , [])
+        , []),
+        text: Timeranges.length ? '' : 'Not available today'
       };
     });
 

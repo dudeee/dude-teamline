@@ -372,6 +372,21 @@ describe('functions', function functions() {
       expect(modified.end).to.equal('21:00');
     });
 
+    it('should remove modifications with the same start and end time', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30:00',
+          end: '8:30'
+        }]
+      }];
+
+      const modifications = [];
+
+      const calculated = workhoursModifications(bot, workhours, modifications);
+      expect(calculated[0].Timeranges.length).to.equal(0);
+    });
+
     it('should remove modification hours from already scheduled days', () => {
       const workhours = [{
         weekday: 0,
