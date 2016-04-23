@@ -52,10 +52,12 @@ export default (bot, workhours, modifications) => {
       }
     });
 
-  return workhours.concat(addmodifications)
-    .map(a => { // eslint-disable-line
-      return { ...a, Timeranges: a.Timeranges.filter(({ start, end }) =>
-        ! moment(start, 'HH:mm').isSame(moment(end, 'HH:mm'))
-      ) };
-    });
+  const final = workhours.concat(addmodifications);
+  final.forEach(a => {
+    a.Timeranges = a.Timeranges.filter(({ start, end }) =>
+      !moment(start, 'HH:mm').isSame(moment(end, 'HH:mm'))
+    );
+  });
+
+  return final;
 };
