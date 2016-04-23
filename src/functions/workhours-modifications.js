@@ -52,5 +52,10 @@ export default (bot, workhours, modifications) => {
       }
     });
 
-  return workhours.concat(addmodifications);
+  return workhours.concat(addmodifications)
+    .map(a => { // eslint-disable-line
+      return { ...a, Timeranges: a.Timeranges.filter(({ start, end }) =>
+        ! moment(start, 'HH:mm').isSame(moment(end, 'HH:mm'))
+      ) };
+    });
 };
