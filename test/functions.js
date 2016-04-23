@@ -406,27 +406,41 @@ describe('functions', function functions() {
 
   describe('parse-date', () => {
     it('should add `in` to the string in case it\'s missing', () => {
-      const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const date = (parseDate(bot, '2 hours').toDate() * 1).toString().slice(0, 9);
+      const d = moment().add(2, 'hours').toString();
+      const date = parseDate(bot, '2 hours').toString();
       expect(d).to.equal(date);
     });
 
     it('should strip down keywords from|until|for|till', () => {
-      const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const date = (parseDate(bot, 'for 2 hours').toDate() * 1).toString().slice(0, 9);
+      const d = moment().add(2, 'hours').toString();
+      const date = parseDate(bot, 'for 2 hours').toString();
       expect(d).to.equal(date);
     });
 
     it('should return a range if the string is split using to|-|until|till', () => {
-      const first = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const second = (Date.now() + 1000 * 60 * 60 * 3).toString().slice(0, 9);
+      const first = moment().add(2, 'hours').toString();
+      const second = moment().add(3, 'hours').toString();
 
       const range = parseDate(bot, 'from 2 hours to 3 hours');
-
-      const from = (range.from.toDate() * 1).toString().slice(0, 9);
-      const to = (range.to.toDate() * 1).toString().slice(0, 9);
-
       expect(range.range).to.be.ok;
+
+      const from = range.from.toString();
+      const to = (range.to).toString();
+
+      expect(first).to.equal(from);
+      expect(second).to.equal(to);
+    });
+
+    it('should set the first date as base if the second one is smaller than the first', () => {
+      const first = moment().add(1, 'day').hours(0).minutes(0).seconds(0).toString();
+      const second = moment().add(1, 'day').hours(8).minutes(0).seconds(0).toString();
+
+      const range = parseDate(bot, 'tomorrow until 8:00');
+      expect(range.range).to.be.ok;
+
+      const from = range.from.toString();
+      const to = range.to.toString();
+
       expect(first).to.equal(from);
       expect(second).to.equal(to);
     });
