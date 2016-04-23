@@ -3,7 +3,7 @@ import _ from 'lodash';
 import request from './request';
 
 export default async (bot, uri, modifications, employee) => {
-  const channel = _.get(bot.config, 'teamline.schedules.notification.channel') || 'office';
+  const channel = _.get(bot.config, 'teamline.schedules.notification.channel') || 'schedules';
   const enableTeams = _.get(bot.config, 'teamline.schedules.notification.mentionTeams') || false;
   const { get } = await request(bot, uri);
 

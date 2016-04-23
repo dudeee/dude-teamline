@@ -157,6 +157,18 @@ export default (bot, uri) => {
     const start = moment(modification.start).format('DD MMMM, HH:mm');
     const end = moment(modification.end).format('DD MMMM, HH:mm');
 
+    const channel = _.get(bot.config, 'teamline.schedules.notification.channel') || 'schedules';
+
+    const history = await bot.call('channels.history', {
+      channel: bot.find(channel).id,
+      oldest: moment().hours(0).minutes(0).seconds(0).unix()
+    });
+
+    const msg = _.find(history.messages, { username: employee.username });
+
+    if (msg) {
+      await bot.deleteMessage(channel, msg.ts);
+    }
     message.reply(`Removed modification from *${start}* until *${end}*.`);
   });
 };

@@ -758,6 +758,58 @@ describe('schedules', function functions() {
           user: bot.users[0].id
         });
       });
+
+      it('should remove the last message from user in channel', done => {
+        const start = moment();
+        const end = moment().add(1, 'hour');
+
+        app.get('/employee/:id/schedulemodifications', (request, response, next) => {
+          response.json([{}, {
+            id: 'last_modification',
+            start, end
+          }]);
+          next();
+        });
+
+        app.delete('/schedulemodification/:id', (request, response, next) => {
+          expect(request.params.id).to.equal('last_modification');
+          response.json({ ok: true });
+
+          next();
+        });
+
+        app.get('/channels.history', (request, response, next) => {
+          response.json({
+            ok: true,
+            messages: [
+              {
+                ts: 'new',
+                username: bot.users[0].name
+              },
+              {
+                ts: 'old',
+                username: bot.users[0].name
+              }
+            ]
+          });
+
+          next();
+        });
+
+        app.get('/chat.delete', (request, response, next) => {
+          expect(request.query.ts).to.equal('new');
+
+          next();
+          done();
+          app._router.stack.length -= 4;
+        });
+
+        bot.inject('message', {
+          text: 'schedules undo',
+          mention: true,
+          user: bot.users[0].id
+        });
+      });
     });
 
     after(cleanup);
