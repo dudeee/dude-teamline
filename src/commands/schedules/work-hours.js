@@ -200,7 +200,7 @@ export default (bot, uri) => {
             short: true
           }])
         , []),
-        text: Timeranges.length ? '' : 'Not available today'
+        text: Timeranges.length ? '' : 'Not available'
       };
     });
 
