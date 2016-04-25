@@ -54,8 +54,6 @@ export default (bot, uri) => {
         const duration = moment(date).diff(moment());
         end = date.isValid() ? start.clone().add(duration) : null;
       }
-      end.milliseconds(0);
-      start.milliseconds(0);
 
       await post(`employee/${employee.id}/schedulemodification`, {
         type: 'add',
@@ -96,8 +94,6 @@ export default (bot, uri) => {
         }
         end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
       }
-      // end.milliseconds(1);
-      // start.milliseconds(1);
 
       if (command === 'out') {
         const b = moment(wh.Timeranges[0].start, 'HH:mm');
@@ -138,8 +134,6 @@ export default (bot, uri) => {
 
         const tend = moment(timerange.end, 'HH:mm');
         const shiftEnd = tend.clone().add(moment(end).diff(start));
-        tend.milliseconds(0);
-        shiftEnd.milliseconds(0);
         const inModification = {
           type: 'add',
           start: tend.toISOString(),

@@ -296,7 +296,7 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal('sub');
-            const start = moment().milliseconds(0);
+            const start = moment();
             const end = moment('12:00', 'HH:mm');
             almostEqual(request.body.start, start);
             almostEqual(request.body.end, end);
@@ -376,8 +376,8 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal('sub');
-            const start = moment().milliseconds(0);
-            const end = moment().add(2, 'hours').milliseconds(0);
+            const start = moment();
+            const end = moment().add(2, 'hours');
             almostEqual(request.body.start, start);
             almostEqual(request.body.end, end);
 
@@ -414,8 +414,8 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal('sub');
-            const start = moment('12:00', 'HH:mm').milliseconds(0);
-            const end = start.clone().add(2, 'hours').milliseconds(0);
+            const start = moment('12:00', 'HH:mm');
+            const end = start.clone().add(2, 'hours');
             almostEqual(request.body.start, start);
             almostEqual(request.body.end, end);
 
@@ -613,8 +613,8 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal('add');
-            const start = moment('12:00', 'HH:mm').milliseconds(0);
-            const end = start.clone().add(2, 'hours').milliseconds(0);
+            const start = moment('12:00', 'HH:mm');
+            const end = start.clone().add(2, 'hours');
             almostEqual(request.body.start, start);
             almostEqual(request.body.end, end);
 
@@ -704,12 +704,12 @@ describe('schedules', function functions() {
           const duration = moment('12:00', 'HH:mm').diff(moment());
           const expected = [{
             type: 'sub',
-            start: moment().milliseconds(0).toISOString(),
+            start: moment().toISOString(),
             end: moment('12:00', 'HH:mm').toISOString()
           }, {
             type: 'add',
             start: moment('18:00', 'HH:mm').toISOString(),
-            end: moment('18:00', 'HH:mm').add(duration).milliseconds(0).toISOString()
+            end: moment('18:00', 'HH:mm').add(duration).toISOString()
           }];
           let i = 0;
 
@@ -810,12 +810,12 @@ describe('schedules', function functions() {
 
           const expected = [{
             type: 'sub',
-            start: moment().milliseconds(0).toISOString(),
-            end: moment().add(2, 'hours').milliseconds(0).toISOString()
+            start: moment().toISOString(),
+            end: moment().add(2, 'hours').toISOString()
           }, {
             type: 'add',
             start: moment('18:00', 'HH:mm').toISOString(),
-            end: moment('20:00', 'HH:mm').milliseconds(0).toISOString()
+            end: moment('20:00', 'HH:mm').toISOString()
           }];
           let i = 0;
 
@@ -861,12 +861,12 @@ describe('schedules', function functions() {
 
           const expected = [{
             type: 'sub',
-            start: moment('12:00', 'HH:mm').milliseconds(0).toISOString(),
-            end: moment('14:00', 'HH:mm').milliseconds(0).toISOString()
+            start: moment('12:00', 'HH:mm').toISOString(),
+            end: moment('14:00', 'HH:mm').toISOString()
           }, {
             type: 'add',
             start: moment('18:00', 'HH:mm').toISOString(),
-            end: moment('20:00', 'HH:mm').milliseconds(0).toISOString()
+            end: moment('20:00', 'HH:mm').toISOString()
           }];
           let i = 0;
 
