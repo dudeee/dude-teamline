@@ -275,47 +275,6 @@ describe('schedules', function functions() {
         });
       });
 
-      context('whole day', () => {
-        it('should set a `sub` modification for the whole working hour of the day', done => {
-          app.get('/employee/:id/workhours', (request, response, next) => {
-            response.json([{
-              weekday: moment().add(1, 'day').weekday(),
-              Timeranges: [{
-                start: '8:00',
-                end: '18:00'
-              }]
-            }]);
-
-            next();
-          });
-
-          app.post('/employee/:id/schedulemodification', (request, response, next) => {
-            response.json({
-              id: 'workhour_id',
-              ...request.body
-            });
-
-            expect(request.body.type).to.equal('sub');
-            const start = moment('8:00', 'HH:mm').add(1, 'day');
-            const end = moment('18:00', 'HH:mm').add(1, 'day');
-            almostEqual(request.body.start, start);
-            almostEqual(request.body.end, end);
-            expect(request.body.reason).to.equal('some reason');
-
-            done();
-            next();
-
-            app._router.stack.length -= 2;
-          });
-
-          bot.inject('message', {
-            text: `schedules out tomorrow\nsome reason`,
-            mention: true,
-            user: bot.users[0].id
-          });
-        });
-      });
-
       context('from', () => {
         it('should set a `sub` modifications from the specified time to the end of working hour', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {

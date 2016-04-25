@@ -456,6 +456,31 @@ describe('functions', function functions() {
       expect(third.end).to.equal('20:00');
     });
 
+    it('should merge modifications when their end and start collide', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const modifications = [{
+        type: 'add',
+        start: moment('18:00', 'HH:mm').weekday(0),
+        end: moment('21:00', 'HH:mm').weekday(0)
+      }];
+
+      const [calculated] = workhoursModifications(bot, workhours, modifications);
+
+      expect(calculated.Timeranges.length).to.equal(1);
+      expect(calculated.modified).to.equal(true);
+
+      const [timerange] = calculated.Timeranges;
+      expect(timerange.start).to.equal('8:30');
+      expect(timerange.end).to.equal('21:00');
+    });
+
     after(cleanup);
   });
 
