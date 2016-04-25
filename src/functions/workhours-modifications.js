@@ -36,7 +36,7 @@ export default (bot, workhours, modifications) => {
           const iS = moment(item.start, 'HH:mm').weekday(wh.weekday);
           const iE = moment(item.end, 'HH:mm').weekday(wh.weekday);
 
-          if (s.isSameOrAfter(iS)) {
+          if (s.isSameOrAfter(iS) && e.isSameOrBefore(iE)) {
             if (Math.abs(e.diff(iE), 'minutes')) {
               wh.Timeranges.push({
                 start: e.format('HH:mm'),
@@ -53,9 +53,11 @@ export default (bot, workhours, modifications) => {
     });
 
   const final = workhours.concat(addmodifications);
-  final.forEach(a => {
-    a.Timeranges = a.Timeranges.filter(({ start, end }) =>
+  final.forEach(wh => {
+    wh.Timeranges = wh.Timeranges.filter(({ start, end }) =>
       !moment(start, 'HH:mm').isSame(moment(end, 'HH:mm'))
+    ).sort((a, b) =>
+      moment(a.start, 'HH:mm').diff(moment(b.start, 'HH:mm'))
     );
   });
 

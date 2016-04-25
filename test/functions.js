@@ -359,8 +359,8 @@ describe('functions', function functions() {
 
       const modifications = [{
         type: 'add',
-        start: moment().weekday(0).hours(20).minutes(0).seconds(0),
-        end: moment().weekday(0).hours(21).minutes(0).seconds(0)
+        start: moment('20:00', 'HH:mm').weekday(0),
+        end: moment('21:00', 'HH:mm').weekday(0)
       }];
 
       const calculated = workhoursModifications(bot, workhours, modifications);
@@ -398,8 +398,8 @@ describe('functions', function functions() {
 
       const modifications = [{
         type: 'sub',
-        start: moment().weekday(0).hours(9).minutes(0).seconds(0),
-        end: moment().weekday(0).hours(16).minutes(0).seconds(0)
+        start: moment('9:00', 'HH:mm').weekday(0),
+        end: moment('16:00', 'HH:mm').weekday(0)
       }];
 
 
@@ -416,30 +416,84 @@ describe('functions', function functions() {
       expect(second.end).to.equal('18:00');
     });
 
+    // TODO: There is still a case when we apply an `out` on top of an `in` that doesn't work
+    it('should not get confused with multiple add/sub modifications', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const modifications = [{
+        type: 'add',
+        start: moment('19:00', 'HH:mm').weekday(0),
+        end: moment('20:00', 'HH:mm').weekday(0)
+      }, {
+        type: 'sub',
+        start: moment('9:00', 'HH:mm').weekday(0),
+        end: moment('11:00', 'HH:mm').weekday(0)
+      }];
+
+      // expected:
+      // 8:30 to 9:00
+      // 11:00 to 18:00
+      // 19:00 to 20:00
+
+      const [calculated] = workhoursModifications(bot, workhours, modifications);
+
+      expect(calculated.Timeranges.length).to.equal(3);
+      const [first, second, third] = calculated.Timeranges;
+
+      expect(first.start).to.equal('8:30');
+      expect(first.end).to.equal('09:00');
+
+      expect(second.start).to.equal('11:00');
+      expect(second.end).to.equal('18:00');
+
+      expect(third.start).to.equal('19:00');
+      expect(third.end).to.equal('20:00');
+    });
+
     after(cleanup);
   });
 
   describe('parse-date', () => {
     it('should add `in` to the string in case it\'s missing', () => {
-      const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const date = (parseDate(bot, '2 hours').toDate() * 1).toString().slice(0, 9);
+      const d = moment().add(2, 'hours').toString();
+      const date = parseDate(bot, '2 hours').toString();
       expect(d).to.equal(date);
     });
 
-    it('should strip down keywords from|until|for|till', () => {
-      const d = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const date = (parseDate(bot, 'for 2 hours').toDate() * 1).toString().slice(0, 9);
+    it('should strip down keywords from|until|till', () => {
+      const d = moment().add(2, 'hours').toString();
+      const date = parseDate(bot, 'from 2 hours').toString();
       expect(d).to.equal(date);
+    });
+
+    it('should take the first part separated by `for` as base, and next part as duration', () => {
+      const tomorrow = moment().add(1, 'day').hours(0).minutes(0).seconds(0).milliseconds(0);
+      const first = tomorrow.toString();
+      const second = tomorrow.add(1, 'hour').toString();
+      const range = parseDate(bot, 'tomorrow for 1 hour');
+      expect(range.range).to.be.ok;
+
+      const from = range.from.toString();
+      const to = range.to.toString();
+
+      expect(first).to.equal(from);
+      expect(second).to.equal(to);
     });
 
     it('should return a range if the string is split using to|-|until|till', () => {
-      const first = (Date.now() + 1000 * 60 * 60 * 2).toString().slice(0, 9);
-      const second = (Date.now() + 1000 * 60 * 60 * 3).toString().slice(0, 9);
+      const first = moment().add(2, 'hours').toString();
+      const second = moment().add(3, 'hours').toString();
 
       const range = parseDate(bot, 'from 2 hours to 3 hours');
 
-      const from = (range.from.toDate() * 1).toString().slice(0, 9);
-      const to = (range.to.toDate() * 1).toString().slice(0, 9);
+      const from = (range.from).toString();
+      const to = (range.to).toString();
 
       expect(range.range).to.be.ok;
       expect(first).to.equal(from);
