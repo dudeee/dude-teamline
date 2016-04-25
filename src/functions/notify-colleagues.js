@@ -22,8 +22,8 @@ export default async (bot, uri, modifications, employee) => {
 
   const start = moment(modification.start);
   const end = moment(modification.end);
-  // const duration = end.clone().hours(0).minutes(0).seconds(0)
-  //                     .diff(start.clone().hours(0).minutes(0).seconds(0), 'days');
+  const duration = end.clone().hours(0).minutes(0).seconds(0)
+                      .diff(start.clone().hours(0).minutes(0).seconds(0), 'days');
   //
   // const tomorrow = moment().add(1, 'day').hours(0).minutes(0).seconds(0);
   // const today = moment().hours(0).minutes(0).seconds(0);
@@ -42,10 +42,20 @@ export default async (bot, uri, modifications, employee) => {
   }
 
   function out() {
+    const formatted = {
+      start: start.format('DD MMMM, HH:mm'),
+      end: end.format('DD MMMM, HH:mm')
+    };
+
+    if (duration < 7) {
+      formatted.start = start.calendar();
+      formatted.end = end.calendar();
+    }
+
     const text = bot.t('teamline.schedules.notification.out', {
       user: `${employee.username}`,
-      start: `*${start.format('DD MMMM, HH:mm')}*`,
-      end: `*${end.format('DD MMMM, HH:mm')}*`,
+      start: `*${formatted.start}*`,
+      end: `*${formatted.end}*`,
       teams: enableTeams ? names : [],
       reason: modification.reason
     });
@@ -57,12 +67,26 @@ export default async (bot, uri, modifications, employee) => {
   }
 
   function shift() {
+    const formatted = {
+      start: start.format('DD MMMM, HH:mm'),
+      end: end.format('DD MMMM, HH:mm'),
+      inStart: inStart.format('DD MMMM, HH:mm'),
+      inEnd: inEnd.format('DD MMMM, HH:mm')
+    };
+
+    if (duration < 7) {
+      formatted.start = start.calendar();
+      formatted.end = end.calendar();
+      formatted.inStart = inStart.calendar();
+      formatted.inEnd = inEnd.calendar();
+    }
+
     const text = bot.t('teamline.schedules.notification.shift', {
       user: `${employee.username}`,
-      outStart: `*${start.format('DD MMMM, HH:mm')}*`,
-      outEnd: `*${end.format('DD MMMM, HH:mm')}*`,
-      inStart: `*${inStart.format('DD MMMM, HH:mm')}*`,
-      inEnd: `*${inEnd.format('DD MMMM, HH:mm')}*`,
+      outStart: `*${formatted.start}*`,
+      outEnd: `*${formatted.end}*`,
+      inStart: `*${formatted.inStart}*`,
+      inEnd: `*${formatted.inEnd}*`,
       teams: enableTeams ? names : [],
       reason: modification.reason
     });

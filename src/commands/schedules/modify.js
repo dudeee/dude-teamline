@@ -13,7 +13,9 @@ export default (bot, uri) => {
   moment.locale('en');
 
   bot.command('^schedules? <char> [string]', async message => { //eslint-disable-line
-    const [command, vdate] = message.match;
+    const [command] = message.match;
+    const line = message.preformatted.split('\n')[0];
+    const vdate = line.slice(line.indexOf(command) + command.length + 1).trim();
 
     if (!(['in', 'out', 'shift'].includes(command))) return;
 
@@ -87,7 +89,7 @@ export default (bot, uri) => {
       } else if (/\b(?:until|til|to)\b/i.test(vdate)) {
         start = moment();
         end = date.isValid() ? moment(date) : moment(timerange.end, 'HH:mm');
-      } else {
+      } else if (vdate) {
         start = date.isValid() ? moment(date) : moment(timerange.start, 'HH:mm');
 
         wh = _.find(workhours, { weekday: start.weekday() }) || { Timeranges: [] };
@@ -98,6 +100,9 @@ export default (bot, uri) => {
         }
 
         end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
+      } else { // simplest case, no input
+        start = moment();
+        end = moment(timerange.end, 'HH:mm');
       }
 
       if (command === 'out') {
