@@ -2,25 +2,34 @@ import 'sugar';
 import moment from 'moment';
 import _ from 'lodash';
 
-export default (bot, string, base = moment(), separators = /\b(?:to|-|until|till)\b/i) => { // eslint-disable-line
+const SEPARATORS = /\b(?:to|-|until|till|for)\b/i;
+const KEYWORDS = /\b(?:from|since)\b/gi;
+export default (bot, string, base = moment(), separators = SEPARATORS) => { // eslint-disable-line
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
-  string = string.replace(/\b(?:from|since|for)\b/gi, '');
+  string = string.replace(KEYWORDS, '');
   if (separators.test(string)) {
+    const separator = separators.exec(string)[0];
     const [from, to] = string.split(separators);
+    const dates = {
+      from: moment(parse(from.trim())),
+      to: moment(parse(to.trim()))
+    };
 
-    const mfrom = moment(parse(from.trim()));
-    const mto = moment(parse(to.trim()));
+    if (separator === 'for') {
+      if (!dates.from.isValid()) dates.from = moment();
+      dates.to = dates.from.clone().add(dates.to.diff(moment()));
+    }
 
-    if (mto < mfrom) {
-      const days = mfrom.dayOfYear() - mto.dayOfYear();
-      mto.add(days, 'days');
+    if (dates.from > dates.to) {
+      const days = dates.from.dayOfYear() - dates.to.dayOfYear();
+      dates.to.add(days, 'days');
     }
 
     return {
-      from: mfrom,
-      to: mto,
+      from: dates.from,
+      to: dates.to,
       range: true
     };
   }

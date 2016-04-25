@@ -15,7 +15,8 @@ export default (bot, uri) => {
     const [username, vdate] = message.match;
     const employee = await findEmployee(uri, bot, message, username);
 
-    const date = parseDate(bot, vdate).isValid() ? parseDate(bot, vdate) : moment();
+    const d = parseDate(bot, vdate);
+    const date = d.isValid() ? d : moment();
 
     const workhours = await get(`employee/${employee.id}/workhours`, {
       weekday: date.weekday(),
@@ -46,8 +47,11 @@ export default (bot, uri) => {
       return;
     }
 
-    const start = computed.Timeranges[0].start;
-    const end = computed.Timeranges[computed.Timeranges.length - 1].end;
+    const tr = computed.Timeranges.find(timerange =>
+      moment(timerange.start, 'HH:mm').isSameOrAfter(date)
+    );
+    const start = tr.start;
+    const end = tr.end;
 
     message.reply(t('available.range', { start: `*${start}*`, end: `*${end}*` }), {
       websocket: false,

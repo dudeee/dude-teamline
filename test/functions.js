@@ -359,8 +359,8 @@ describe('functions', function functions() {
 
       const modifications = [{
         type: 'add',
-        start: moment().weekday(0).hours(20).minutes(0).seconds(0),
-        end: moment().weekday(0).hours(21).minutes(0).seconds(0)
+        start: moment('20:00', 'HH:mm').weekday(0),
+        end: moment('21:00', 'HH:mm').weekday(0)
       }];
 
       const calculated = workhoursModifications(bot, workhours, modifications);
@@ -398,8 +398,8 @@ describe('functions', function functions() {
 
       const modifications = [{
         type: 'sub',
-        start: moment().weekday(0).hours(9).minutes(0).seconds(0),
-        end: moment().weekday(0).hours(16).minutes(0).seconds(0)
+        start: moment('9:00', 'HH:mm').weekday(0),
+        end: moment('16:00', 'HH:mm').weekday(0)
       }];
 
 
@@ -416,6 +416,46 @@ describe('functions', function functions() {
       expect(second.end).to.equal('18:00');
     });
 
+    // TODO: There is still a case when we apply an `out` on top of an `in` that doesn't work
+    it('should not get confused with multiple add/sub modifications', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const modifications = [{
+        type: 'add',
+        start: moment('19:00', 'HH:mm').weekday(0),
+        end: moment('20:00', 'HH:mm').weekday(0)
+      }, {
+        type: 'sub',
+        start: moment('9:00', 'HH:mm').weekday(0),
+        end: moment('11:00', 'HH:mm').weekday(0)
+      }];
+
+      // expected:
+      // 8:30 to 9:00
+      // 11:00 to 18:00
+      // 19:00 to 20:00
+
+      const [calculated] = workhoursModifications(bot, workhours, modifications);
+
+      expect(calculated.Timeranges.length).to.equal(3);
+      const [first, second, third] = calculated.Timeranges;
+
+      expect(first.start).to.equal('8:30');
+      expect(first.end).to.equal('09:00');
+
+      expect(second.start).to.equal('11:00');
+      expect(second.end).to.equal('18:00');
+
+      expect(third.start).to.equal('19:00');
+      expect(third.end).to.equal('20:00');
+    });
+
     after(cleanup);
   });
 
@@ -426,10 +466,24 @@ describe('functions', function functions() {
       expect(d).to.equal(date);
     });
 
-    it('should strip down keywords from|until|for|till', () => {
+    it('should strip down keywords from|until|till', () => {
       const d = moment().add(2, 'hours').toString();
-      const date = parseDate(bot, 'for 2 hours').toString();
+      const date = parseDate(bot, 'from 2 hours').toString();
       expect(d).to.equal(date);
+    });
+
+    it('should take the first part separated by `for` as base, and next part as duration', () => {
+      const tomorrow = moment().add(1, 'day').hours(0).minutes(0).seconds(0).milliseconds(0);
+      const first = tomorrow.toString();
+      const second = tomorrow.add(1, 'hour').toString();
+      const range = parseDate(bot, 'tomorrow for 1 hour');
+      expect(range.range).to.be.ok;
+
+      const from = range.from.toString();
+      const to = range.to.toString();
+
+      expect(first).to.equal(from);
+      expect(second).to.equal(to);
     });
 
     it('should return a range if the string is split using to|-|until|till', () => {
