@@ -29,8 +29,7 @@ export default (bot, uri) => {
 
     let weekday;
     if (date && date.range) {
-      if (date.from.isValid()) weekday = date.from;
-      else weekday = date.to;
+      weekday = date.from.isValid() ? date.from : date.to;
     } else if (date.isValid()) {
       weekday = date;
     } else {
