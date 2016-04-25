@@ -1095,4 +1095,4 @@ describe('schedules', function functions() {
   after(cleanup);
 });
 
-const almostEqual = (d1, d2) => expect(moment(d1).diff(d2, 'seconds')).to.be.lt(2);
+const almostEqual = (d1, d2) => expect(Math.abs(moment(d1).diff(d2, 'seconds'))).to.be.lt(2);

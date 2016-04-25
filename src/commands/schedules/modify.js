@@ -43,7 +43,11 @@ export default (bot, uri) => {
     if (command === 'in') {
       let start;
       let end;
-      if (date.range && !date.from.isValid()) {
+      if (date.range && !date.from.isValid() && /\b(?:for)\b/i.test(vdate)) {
+        start = moment(timerange.end, 'HH:mm');
+        end = date.to.isValid() ? start.clone().add(date.to.diff(moment()))
+                                : moment(timerange.end, 'HH:mm');
+      } else if (date.range && !date.from.isValid()) {
         start = moment(timerange.end, 'HH:mm');
         end = date.to.isValid() ? moment(date.to) : moment(timerange.end, 'HH:mm');
       } else if (date.range) {

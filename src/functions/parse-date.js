@@ -18,8 +18,11 @@ export default (bot, string, base = moment(), separators = SEPARATORS) => { // e
     };
 
     if (separator === 'for') {
-      if (!dates.from.isValid()) dates.from = moment();
-      dates.to = dates.from.clone().add(dates.to.diff(moment()));
+      if (!dates.from.isValid()) {
+        dates.to = moment().add(dates.to.diff(moment()));
+      } else {
+        dates.to = dates.from.clone().add(dates.to.diff(moment()));
+      }
     }
 
     if (dates.from > dates.to) {

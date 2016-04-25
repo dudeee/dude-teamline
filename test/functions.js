@@ -473,17 +473,16 @@ describe('functions', function functions() {
     });
 
     it('should take the first part separated by `for` as base, and next part as duration', () => {
-      const tomorrow = moment().add(1, 'day').hours(0).minutes(0).seconds(0).milliseconds(0);
-      const first = tomorrow.toString();
-      const second = tomorrow.add(1, 'hour').toString();
+      const first = moment().add(1, 'day').hours(0).minutes(0).seconds(0).milliseconds(0);
+      const second = first.clone().add(1, 'hour');
       const range = parseDate(bot, 'tomorrow for 1 hour');
       expect(range.range).to.be.ok;
 
-      const from = range.from.toString();
-      const to = range.to.toString();
+      const from = range.from;
+      const to = range.to;
 
-      expect(first).to.equal(from);
-      expect(second).to.equal(to);
+      almostEqual(first, from);
+      almostEqual(second, to);
     });
 
     it('should return a range if the string is split using to|-|until|till', () => {
@@ -656,3 +655,5 @@ describe('functions', function functions() {
     _.set(bot.config, 'teamline.schedules.notification.mentionTeams', false);
   });
 });
+
+const almostEqual = (d1, d2) => expect(Math.abs(moment(d1).diff(d2, 'seconds'))).to.be.lt(2);
