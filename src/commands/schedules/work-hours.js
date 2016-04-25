@@ -8,9 +8,6 @@ import parseDate from '../../functions/parse-date';
 const DAY_COLORS = ['#687fe0', '#86e453', '#eb5d7a', '#34bae4', '#757f8c', '#ecf76e', '#ac58e0'];
 export default (bot, uri) => {
   const { get, post, del } = request(bot, uri);
-  const breakTimes = (_.get(bot.config, 'teamline.breaks') || []).map(time =>
-    ({ start: moment(time.start, 'HH:mm'), end: moment(time.end, 'HH:mm') })
-  );
 
   moment.relativeTimeThreshold('m', 60);
   moment.relativeTimeThreshold('h', Infinity);
@@ -159,29 +156,12 @@ export default (bot, uri) => {
         const start = moment(y.start, 'HH:mm');
         const end = moment(y.end, 'HH:mm');
 
-        const breaks = breakTimes.reduce((g, h) => {
-          if (start.isSameOrBefore(h.start) && end.isSameOrAfter(h.start) &&
-              start.isSameOrBefore(h.end) && end.isSameOrAfter(h.end)) {
-            return g + Math.abs(h.end.diff(h.start, 'minutes', true));
-          }
-
-          return g;
-        }, 0);
-
         const diff = end.diff(start, 'minutes', true);
-        return {
-          total: x.total + Math.abs(diff),
-          calculated: x.calculated + Math.abs(diff) - breaks,
-          breaks: x.breaks + breaks
-        };
-      }, { total: 0, calculated: 0, breaks: 0 });
+        return x + Math.abs(diff);
+      }, 0);
 
-      return {
-        total: a.total + innersum.total,
-        calculated: a.calculated + innersum.calculated,
-        breaks: a.breaks + innersum.breaks
-      };
-    }, { total: 0, calculated: 0, breaks: 0 });
+      return a + innersum;
+    }, 0);
 
     const list = sorted.map(({ weekday, Timeranges, modified }) => {
       const day = moment().weekday(weekday).format('dddd');
@@ -211,15 +191,8 @@ export default (bot, uri) => {
     };
 
     const summary = {
-      title: 'Summary',
-      fields: [{
-        title: 'Total',
-        value: textify(sum.total),
-        short: true
-      }, {
-        title: 'Calculated',
-        value: textify(sum.calculated)
-      }]
+      title: 'Total',
+      text: textify(sum)
     };
 
     list.push(summary);

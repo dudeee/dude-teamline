@@ -25,14 +25,28 @@ export default (bot, uri) => {
       include: 'Timerange'
     });
 
-    const wh = _.find(workhours, { weekday: moment().weekday() }) || { Timeranges: [] };
-    const timerange = wh.Timeranges[wh.Timeranges.length - 1];
     const date = parseDate(bot, vdate);
+
+    let weekday;
+    if (date && date.range) {
+      weekday = date.from.isValid() ? date.from : date.to;
+    } else if (date.isValid()) {
+      weekday = date;
+    } else {
+      weekday = moment();
+    }
+
+    let wh = _.find(workhours, { weekday: weekday.weekday() }) || { Timeranges: [] };
+    let timerange = wh.Timeranges[wh.Timeranges.length - 1];
 
     if (command === 'in') {
       let start;
       let end;
-      if (date.range && !date.from.isValid()) {
+      if (date.range && !date.from.isValid() && /\b(?:for)\b/i.test(vdate)) {
+        start = moment(timerange.end, 'HH:mm');
+        end = date.to.isValid() ? start.clone().add(date.to.diff(moment()))
+                                : moment(timerange.end, 'HH:mm');
+      } else if (date.range && !date.from.isValid()) {
         start = moment(timerange.end, 'HH:mm');
         end = date.to.isValid() ? moment(date.to) : moment(timerange.end, 'HH:mm');
       } else if (date.range) {
@@ -43,8 +57,6 @@ export default (bot, uri) => {
         const duration = moment(date).diff(moment());
         end = date.isValid() ? start.clone().add(duration) : null;
       }
-      end.milliseconds(0);
-      start.milliseconds(0);
 
       await post(`employee/${employee.id}/schedulemodification`, {
         type: 'add',
@@ -63,21 +75,30 @@ export default (bot, uri) => {
     } else {
       let start;
       let end;
-      if (!date.range && /from|since/i.test(vdate)) {
+      if (!date.range && /\b(?:from|since)\b/i.test(vdate)) {
         start = date.isValid() ? moment(date) : moment();
-        end = moment(timerange.end, 'HH:mm');
+        end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
       } else if (date.range && !date.from.isValid()) {
-        start = moment();
         end = date.to.isValid() ? moment(date.to) : moment(timerange.end, 'HH:mm');
+        start = moment().dayOfYear(end.dayOfYear());
       } else if (date.range) {
         start = moment(date.from);
         end = moment(date.to);
-      } else {
+      } else if (/\b(?:until|til|to)\b/i.test(vdate)) {
         start = moment();
         end = date.isValid() ? moment(date) : moment(timerange.end, 'HH:mm');
+      } else {
+        start = date.isValid() ? moment(date) : moment(timerange.start, 'HH:mm');
+
+        wh = _.find(workhours, { weekday: start.weekday() }) || { Timeranges: [] };
+        timerange = wh.Timeranges[wh.Timeranges.length - 1];
+        if (!timerange) {
+          message.reply(`You don't have a working hour on ${start.format('DD MMMM')}.`);
+          return;
+        }
+
+        end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
       }
-      end.milliseconds(0);
-      start.milliseconds(0);
 
       if (command === 'out') {
         const b = moment(wh.Timeranges[0].start, 'HH:mm');
@@ -118,8 +139,6 @@ export default (bot, uri) => {
 
         const tend = moment(timerange.end, 'HH:mm');
         const shiftEnd = tend.clone().add(moment(end).diff(start));
-        tend.milliseconds(0);
-        shiftEnd.milliseconds(0);
         const inModification = {
           type: 'add',
           start: tend.toISOString(),
