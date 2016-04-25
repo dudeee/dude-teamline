@@ -491,11 +491,25 @@ describe('functions', function functions() {
       const second = moment().add(3, 'hours').toString();
 
       const range = parseDate(bot, 'from 2 hours to 3 hours');
+      expect(range.range).to.be.ok;
 
-      const from = (range.from).toString();
+      const from = range.from.toString();
       const to = (range.to).toString();
 
+      expect(first).to.equal(from);
+      expect(second).to.equal(to);
+    });
+
+    it('should set the first date as base if the second one is smaller than the first', () => {
+      const first = moment().add(1, 'day').hours(0).minutes(0).seconds(0).toString();
+      const second = moment().add(1, 'day').hours(8).minutes(0).seconds(0).toString();
+
+      const range = parseDate(bot, 'tomorrow until 8:00');
       expect(range.range).to.be.ok;
+
+      const from = range.from.toString();
+      const to = range.to.toString();
+
       expect(first).to.equal(from);
       expect(second).to.equal(to);
     });

@@ -22,6 +22,11 @@ export default (bot, string, base = moment(), separators = SEPARATORS) => { // e
       dates.to = dates.from.clone().add(dates.to.diff(moment()));
     }
 
+    if (dates.from > dates.to) {
+      const days = dates.from.dayOfYear() - dates.to.dayOfYear();
+      dates.to.add(days, 'days');
+    }
+
     return {
       from: dates.from,
       to: dates.to,

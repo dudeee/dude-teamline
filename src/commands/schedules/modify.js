@@ -86,12 +86,14 @@ export default (bot, uri) => {
         end = date.isValid() ? moment(date) : moment(timerange.end, 'HH:mm');
       } else {
         start = date.isValid() ? moment(date) : moment(timerange.start, 'HH:mm');
+
         wh = _.find(workhours, { weekday: start.weekday() }) || { Timeranges: [] };
         timerange = wh.Timeranges[wh.Timeranges.length - 1];
         if (!timerange) {
           message.reply(`You don't have a working hour on ${start.format('DD MMMM')}.`);
           return;
         }
+
         end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
       }
 
