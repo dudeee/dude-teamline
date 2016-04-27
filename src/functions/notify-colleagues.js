@@ -22,14 +22,14 @@ export default async (bot, uri, modifications, employee) => {
     const [modification] = modifications;
     const start = moment(modification.start);
     const end = moment(modification.end);
-    const duration = end.clone().hours(0).minutes(0).seconds(0)
-                        .diff(start.clone().hours(0).minutes(0).seconds(0), 'days');
+    const distance = Math.abs(moment('00:00', 'HH:mm')
+                            .diff(start.clone().hours(0).minutes(0).seconds(0), 'days'));
     const formatted = {
       start: start.format('DD MMMM, HH:mm'),
       end: end.format('DD MMMM, HH:mm')
     };
 
-    if (duration < 7) {
+    if (distance < 7) {
       formatted.start = start.calendar();
       formatted.end = end.calendar();
     }
@@ -53,8 +53,8 @@ export default async (bot, uri, modifications, employee) => {
     const modification = _.find(modifications, { type: 'sub' });
     const start = moment(modification.start);
     const end = moment(modification.end);
-    const duration = end.clone().hours(0).minutes(0).seconds(0)
-                        .diff(start.clone().hours(0).minutes(0).seconds(0), 'days');
+    const distance = Math.abs(moment('00:00', 'HH:mm')
+                            .diff(start.clone().hours(0).minutes(0).seconds(0), 'days'));
 
     const shiftIn = _.find(modifications, { type: 'add' });
     let inStart;
@@ -70,7 +70,7 @@ export default async (bot, uri, modifications, employee) => {
       inEnd: inEnd.format('DD MMMM, HH:mm')
     };
 
-    if (duration < 7) {
+    if (distance < 7) {
       formatted.start = start.calendar();
       formatted.end = end.calendar();
       formatted.inStart = inStart.calendar();
