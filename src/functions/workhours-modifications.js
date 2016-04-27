@@ -60,15 +60,17 @@ export default (bot, workhours, modifications) => {
       moment(a.start, 'HH:mm').diff(moment(b.start, 'HH:mm'))
     );
 
-    wh.Timeranges.forEach(timerange => {
+    for (let i = 0; i < wh.Timeranges.length; i++) {
+      const timerange = wh.Timeranges[i];
       const mergable = wh.Timeranges.findIndex(a =>
-        moment(a.end, 'HH:mm').isSame(moment(timerange.start, 'HH:mm'))
+        moment(a.start, 'HH:mm').isSame(moment(timerange.end, 'HH:mm'))
       );
       if (mergable > -1) {
-        timerange.start = wh.Timeranges[mergable].start;
+        i--;
+        timerange.end = wh.Timeranges[mergable].end;
         wh.Timeranges.splice(mergable, 1);
       }
-    });
+    }
   });
 
   return final;

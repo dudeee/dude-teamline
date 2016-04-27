@@ -190,6 +190,11 @@ describe('schedules', function functions() {
         response.json(teamline.users[0]);
         next();
       });
+
+      app.get('/employee/:id/schedulemodifications/accepted', (request, response, next) => {
+        response.json([]);
+        next();
+      });
     });
 
     describe('out', () => {
@@ -430,6 +435,44 @@ describe('schedules', function functions() {
 
           bot.inject('message', {
             text: `schedules out for 2 hours`,
+            mention: true,
+            user: bot.users[0].id
+          });
+        });
+
+        it('should set a `sub` modifications from now for the specified duration (no `for`)', done => { //eslint-disable-line
+          app.get('/employee/:id/workhours', (request, response, next) => {
+            response.json([{
+              weekday: moment().weekday(),
+              Timeranges: [{
+                start: moment().format('HH:mm'),
+                end: moment().add(2, 'hours').format('HH:mm')
+              }]
+            }]);
+
+            next();
+          });
+
+          app.post('/employee/:id/schedulemodification', (request, response, next) => {
+            response.json({
+              id: 'workhour_id',
+              ...request.body
+            });
+
+            expect(request.body.type).to.equal('sub');
+            const start = moment();
+            const end = moment().add(2, 'hours');
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
+
+            done();
+            next();
+
+            app._router.stack.length -= 2;
+          });
+
+          bot.inject('message', {
+            text: `schedules out 2 hours`,
             mention: true,
             user: bot.users[0].id
           });
