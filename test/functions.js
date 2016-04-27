@@ -469,6 +469,10 @@ describe('functions', function functions() {
         type: 'add',
         start: moment('18:00', 'HH:mm').weekday(0),
         end: moment('21:00', 'HH:mm').weekday(0)
+      }, {
+        type: 'add',
+        start: moment('21:00', 'HH:mm').weekday(0),
+        end: moment('21:10', 'HH:mm').weekday(0)
       }];
 
       const [calculated] = workhoursModifications(bot, workhours, modifications);
@@ -478,7 +482,7 @@ describe('functions', function functions() {
 
       const [timerange] = calculated.Timeranges;
       expect(timerange.start).to.equal('8:30');
-      expect(timerange.end).to.equal('21:00');
+      expect(timerange.end).to.equal('21:10');
     });
 
     after(cleanup);
@@ -554,12 +558,12 @@ describe('functions', function functions() {
       expect(r).to.equal(false);
     });
 
-    it('should not send any message in case of `add` modifications', async () => {
-      const modification = { type: 'add' };
-      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-      expect(r).to.equal(false);
-    });
-
+    // it('should not send any message in case of `add` modifications', async () => {
+    //   const modification = { type: 'add' };
+    //   const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+    //   expect(r).to.equal(false);
+    // });
+    //
     /* eslint-disable */
     // it('should not send any message if the duration is less than a day and it\'s not for today' , async () => {
     //   const start = moment().add(1, 'day');
@@ -574,7 +578,7 @@ describe('functions', function functions() {
     // });
     /* eslint-enable */
 
-    it('should notify if the modification starts today', async done => {
+    it('should notify out modifications', async done => {
       const start = moment();
       const end = moment().add(2, 'days');
 
@@ -604,12 +608,12 @@ describe('functions', function functions() {
       expect(r).to.equal(true);
     });
 
-    it('should notify if the modification duration is more than 1 day', async done => {
-      const start = moment().add(1, 'day');
-      const end = moment().add(3, 'days');
+    it('should notify in modifications', async done => {
+      const start = moment();
+      const end = moment().add(2, 'days');
 
       app.get('/chat.postMessage', (request, response, next) => {
-        const text = bot.t('teamline.schedules.notification.out', {
+        const text = bot.t('teamline.schedules.notification.in', {
           user: `@${teamline.users[0].username}`,
           start: `*${start.format('DD MMMM, HH:mm')}*`,
           end: `*${end.format('DD MMMM, HH:mm')}*`,
@@ -620,12 +624,13 @@ describe('functions', function functions() {
         expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
 
         app._router.stack.length -= 1;
+
         done();
         next();
       });
 
       const modification = {
-        type: 'sub',
+        type: 'add',
         start, end
       };
 

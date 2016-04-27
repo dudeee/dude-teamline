@@ -1,5 +1,6 @@
 import findEmployee from '../../functions/find-employee';
 import notifyColleagues from '../../functions/notify-colleagues';
+import workhoursModifications from '../../functions/workhours-modifications';
 import parseDate from '../../functions/parse-date';
 import request from '../../functions/request';
 import moment from 'moment';
@@ -24,9 +25,11 @@ export default (bot, uri) => {
     const reason = lines[1] || null;
 
     const employee = await findEmployee(uri, bot, message);
-    const workhours = await get(`employee/${employee.id}/workhours`, {
+    const whs = await get(`employee/${employee.id}/workhours`, {
       include: 'Timerange'
     });
+    const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`);
+    const workhours = workhoursModifications(bot, whs, modifications);
 
     const date = parseDate(bot, vdate);
 
@@ -61,20 +64,25 @@ export default (bot, uri) => {
         end = date.isValid() ? start.clone().add(duration) : null;
       }
 
-      await post(`employee/${employee.id}/schedulemodification`, {
+      const modification = {
         type: 'add',
         start: start.toISOString(),
         end: end.toISOString(),
         reason,
         status: 'accepted'
-      });
+      };
+
+      await post(`employee/${employee.id}/schedulemodification`, modification);
 
       const formatted = {
         start: start.format('DD MMMM, HH:mm'),
         end: end.format('DD MMMM, HH:mm')
       };
+
       message.reply(`Okay, I see that you are going to be available from `
                    + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
+
+      notifyColleagues(bot, uri, [modification], employee);
     } else if (command === 'out') {
       let start;
       let end;
@@ -93,14 +101,21 @@ export default (bot, uri) => {
       } else if (vdate) {
         start = date.isValid() ? moment(date) : moment(timerange.start, 'HH:mm');
 
-        wh = _.find(workhours, { weekday: start.weekday() }) || { Timeranges: [] };
-        timerange = wh.Timeranges[wh.Timeranges.length - 1];
-        if (!timerange) {
-          message.reply(`You don't have a working hour on ${start.format('DD MMMM')}.`);
-          return;
-        }
+        const startOfDay = moment('00:00', 'HH:mm').dayOfYear(start.dayOfYear());
 
-        end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
+        if (Math.abs(start.diff(startOfDay)) > 1) { // not a specific day
+          start = moment();
+          end = moment(date);
+        } else {
+          wh = _.find(workhours, { weekday: start.weekday() }) || { Timeranges: [] };
+          timerange = wh.Timeranges[wh.Timeranges.length - 1];
+          if (!timerange) {
+            message.reply(`You don't have a working hour on ${start.format('DD MMMM')}.`);
+            return;
+          }
+
+          end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
+        }
       } else { // simplest case, no input
         start = moment();
         end = moment(timerange.end, 'HH:mm');
