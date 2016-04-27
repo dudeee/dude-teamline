@@ -26,9 +26,9 @@
         "not": "He won't be available %date%."
       },
       "notification": {
-        "out": "*[out]* %user% won't be available from %start% until %end%.\n%teams%\n%reason%",
-        "in": "*[in]* %user% will be available from %start% until %end%.\n%teams%\n%reason%",
-        "shift": "*[shift]* %user% won't be available from %outStart% until %outEnd%, but he will be available from %inStart% until %inEnd% instead.\n%teams%\n%reason%"
+        "out": "*[out]* I won't be available from %start% until %end%.\n%teams%\n%reason%",
+        "in": "*[in]* I will be available from %start% until %end%.\n%teams%\n%reason%",
+        "shift": "*[shift]* I won't be available from %outStart% until %outEnd%, but I will be available from %inStart% until %inEnd% instead.\n%teams%\n%reason%"
       }
     }
   }

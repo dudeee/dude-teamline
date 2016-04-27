@@ -7,7 +7,7 @@
     "test": "grunt babel:test && mocha test --compilers js:babel/polyfill -w",
     "test:single": "istanbul cover -x test-build _mocha -- test-build --compilers js:babel/polyfill",
     "test:file": "mocha --compilers js:babel/register,js:babel/polyfill",
-    "check-coverage": "istanbul check-coverage --statements 85 --branches 70 --functions 85 --lines 85",
+    "check-coverage": "istanbul check-coverage --statements 85 --branches 60 --functions 85 --lines 85",
     "report-coverage": "cat ./coverage/lcov.info | codecov",
     "lint": "eslint src test"
   },
