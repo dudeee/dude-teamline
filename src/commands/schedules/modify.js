@@ -13,7 +13,8 @@ export default (bot, uri) => {
   moment.locale('en');
 
   bot.command('^schedules? <char> [string]', async message => { //eslint-disable-line
-    const [command] = message.match;
+    let [command] = message.match;
+    command = command.toLowerCase();
     const line = message.preformatted.split('\n')[0];
     const vdate = line.slice(line.indexOf(command) + command.length + 1).trim();
 

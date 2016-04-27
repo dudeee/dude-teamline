@@ -13,8 +13,8 @@ export default (bot, string, base = moment(), separators = SEPARATORS) => { // e
     const separator = separators.exec(string)[0];
     const [from, to] = string.split(separators);
     const dates = {
-      from: moment(parse(from.trim())),
-      to: moment(parse(to.trim()))
+      from: moment(parse(from.trim())).add(1),
+      to: moment(parse(to.trim())).add(1)
     };
 
     if (separator === 'for') {
@@ -35,7 +35,7 @@ export default (bot, string, base = moment(), separators = SEPARATORS) => { // e
     };
   }
 
-  const b = moment(base);
+  const b = moment(base).add(1);
   const diff = b.diff(moment());
 
   return moment(parse(string)).add(diff, 'ms');
