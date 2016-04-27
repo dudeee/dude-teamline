@@ -199,7 +199,7 @@ describe('schedules', function functions() {
             response.json([{
               weekday: moment().weekday(),
               Timeranges: [{
-                start: '8:00',
+                start: moment().subtract(1, 'hour').format('HH:mm'),
                 end: '18:00'
               }]
             }]);
@@ -322,7 +322,7 @@ describe('schedules', function functions() {
             response.json([{
               weekday: moment().weekday(),
               Timeranges: [{
-                start: '8:00',
+                start: moment().subtract(1, 'hour').format('HH:mm'),
                 end: '18:00'
               }]
             }]);
@@ -887,6 +887,57 @@ describe('schedules', function functions() {
           });
         });
 
+        it('should set a `sub` modifications from now for the specified duration and `add` the duration to end of working hour', done => { //eslint-disable-line
+          app.get('/employee/:id/workhours', (request, response, next) => {
+            response.json([{
+              weekday: moment().weekday(),
+              Timeranges: [{
+                start: '8:00',
+                end: '18:00'
+              }]
+            }]);
+
+            next();
+          });
+
+          const expected = [{
+            type: 'sub',
+            start: moment().toISOString(),
+            end: moment().add(2, 'hours').toISOString()
+          }, {
+            type: 'add',
+            start: moment('18:00', 'HH:mm').toISOString(),
+            end: moment('20:00', 'HH:mm').toISOString()
+          }];
+          let i = 0;
+
+          app.post('/employee/:id/schedulemodification', (request, response, next) => {
+            response.json({
+              id: 'workhour_id',
+              ...request.body
+            });
+
+            expect(request.body.type).to.equal(expected[i].type);
+            almostEqual(request.body.start, expected[i].start);
+            almostEqual(request.body.end, expected[i].end);
+
+            if (i === 1) {
+              done();
+              next();
+
+              app._router.stack.length -= 2;
+            }
+
+            i++;
+          });
+
+          bot.inject('message', {
+            text: `schedules shift 2 hours`,
+            mention: true,
+            user: bot.users[0].id
+          });
+        });
+
         it('should set a `sub` modifications from specified date for the specified duration and `add` the duration to end of working hour', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
@@ -955,6 +1006,42 @@ describe('schedules', function functions() {
 
         app.delete('/schedulemodification/:id', (request, response, next) => {
           expect(request.params.id).to.equal('last_modification');
+
+          next();
+          done();
+          app._router.stack.length -= 2;
+        });
+
+
+        bot.inject('message', {
+          text: 'schedules undo',
+          mention: true,
+          user: bot.users[0].id
+        });
+      });
+
+      it('should remove the last 2 modifications submitted in case of `shift`', done => {
+        const start = moment();
+        const end = moment().add(1, 'hour');
+
+        app.get('/employee/:id/schedulemodifications', (request, response, next) => {
+          response.json([{}, {
+            id: 'other_modification',
+            start, end,
+            shift: true
+          }, {
+            id: 'last_modification',
+            start, end,
+            shift: true
+          }]);
+
+          next();
+        });
+
+        const expected = ['last_modification', 'other_modification'];
+        let i = 0;
+        app.delete('/schedulemodification/:id', (request, response, next) => {
+          expect(request.params.id).to.equal(expected[i++]);
 
           next();
           done();
