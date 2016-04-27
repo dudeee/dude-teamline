@@ -13,13 +13,11 @@ export default (bot, uri) => {
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
-  bot.command('^schedules? <char> [string]', async message => { //eslint-disable-line
+  bot.command('^(schedules)? <in|out|shift> [string]', async message => { //eslint-disable-line
     let [command] = message.match;
     command = command.toLowerCase();
     const line = message.preformatted.split('\n')[0];
     const vdate = line.slice(line.indexOf(command) + command.length + 1).trim();
-
-    if (!(['in', 'out', 'shift'].includes(command))) return;
 
     const lines = message.preformatted.split('\n');
     const reason = lines[1] || null;
