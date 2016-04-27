@@ -199,7 +199,7 @@ describe('schedules', function functions() {
             response.json([{
               weekday: moment().weekday(),
               Timeranges: [{
-                start: '8:00',
+                start: moment().subtract(1, 'hour').format('HH:mm'),
                 end: '18:00'
               }]
             }]);
@@ -322,7 +322,7 @@ describe('schedules', function functions() {
             response.json([{
               weekday: moment().weekday(),
               Timeranges: [{
-                start: '8:00',
+                start: moment().subtract(1, 'hour').format('HH:mm'),
                 end: '18:00'
               }]
             }]);
