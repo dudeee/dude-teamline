@@ -74,7 +74,7 @@ export default (bot, uri) => {
       };
       message.reply(`Okay, I see that you are going to be available from `
                    + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
-    } else {
+    } else if (command === 'out') {
       let start;
       let end;
       if (!date.range && /\b(?:from|since)\b/i.test(vdate)) {
@@ -105,69 +105,88 @@ export default (bot, uri) => {
         end = moment(timerange.end, 'HH:mm');
       }
 
-      if (command === 'out') {
-        const b = moment(wh.Timeranges[0].start, 'HH:mm');
-        const beginning = start.clone().hours(b.hours()).minutes(b.minutes());
-        start = moment.max(start, beginning);
-        const e = moment(timerange.end, 'HH:mm');
-        const finish = end.clone().hours(e.hours()).minutes(e.minutes());
-        end = moment.min(end, finish);
+      const b = moment(wh.Timeranges[0].start, 'HH:mm');
+      const beginning = start.clone().hours(b.hours()).minutes(b.minutes());
+      start = moment.max(start, beginning);
+      const e = moment(timerange.end, 'HH:mm');
+      const finish = end.clone().hours(e.hours()).minutes(e.minutes());
+      end = moment.min(end, finish);
 
-        const modification = {
-          type: 'sub',
-          start: start.toISOString(),
-          end: end.toISOString(),
-          reason,
-          status: 'accepted'
-        };
+      const modification = {
+        type: 'sub',
+        start: start.toISOString(),
+        end: end.toISOString(),
+        reason,
+        status: 'accepted'
+      };
 
-        await post(`employee/${employee.id}/schedulemodification`, modification);
+      await post(`employee/${employee.id}/schedulemodification`, modification);
 
-        const formatted = {
-          start: moment(start).format('DD MMMM, HH:mm'),
-          end: moment(end).format('DD MMMM, HH:mm')
-        };
-        message.reply(`Okay, I see that you are not going to be available from `
-                     + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
+      const formatted = {
+        start: moment(start).format('DD MMMM, HH:mm'),
+        end: moment(end).format('DD MMMM, HH:mm')
+      };
+      message.reply(`Okay, I see that you are not going to be available from `
+                   + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
 
-        notifyColleagues(bot, uri, [modification], employee);
-      } else if (command === 'shift') {
-        const outModification = {
-          type: 'sub',
-          start: start.toISOString(),
-          end: end.toISOString(),
-          reason,
-          status: 'accepted'
-        };
-
-        await post(`employee/${employee.id}/schedulemodification`, outModification);
-
-        const tend = moment(timerange.end, 'HH:mm');
-        const shiftEnd = tend.clone().add(moment(end).diff(start));
-        const inModification = {
-          type: 'add',
-          start: tend.toISOString(),
-          end: shiftEnd.toISOString(),
-          reason,
-          status: 'accepted'
-        };
-        await post(`employee/${employee.id}/schedulemodification`, inModification);
-
-        const unavailable = {
-          start: start.format('DD MMMM, HH:mm'),
-          end: end.format('DD MMMM, HH:mm')
-        };
-        const available = {
-          start: tend.format('DD MMMM, HH:mm'),
-          end: shiftEnd.format('DD MMMM, HH:mm')
-        };
-
-        message.reply(`Okay, I see that you are not going to be available from `
-                     + `*${unavailable.start}* until *${unavailable.end}*, but you will be available ` // eslint-disable-line
-                     + `from *${available.start}* until *${available.end}*. :thumbsup:`);
-
-        notifyColleagues(bot, uri, [inModification, outModification], employee);
+      notifyColleagues(bot, uri, [modification], employee);
+    } else if (command === 'shift') {
+      let start;
+      let end;
+      if (!date.range && /\b(?:from|since)\b/i.test(vdate)) {
+        start = date.isValid() ? moment(date) : moment();
+        end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
+      } else if (date.range && !date.from.isValid()) {
+        end = date.to.isValid() ? moment(date.to) : moment(timerange.end, 'HH:mm');
+        start = moment().dayOfYear(end.dayOfYear());
+      } else if (date.range) {
+        start = moment(date.from);
+        end = moment(date.to);
+      } else if (/\b(?:until|til|to)\b/i.test(vdate)) {
+        start = moment();
+        end = date.isValid() ? moment(date) : moment(timerange.end, 'HH:mm');
+      } else {
+        start = moment();
+        end = date;
       }
+
+      const outModification = {
+        type: 'sub',
+        start: start.toISOString(),
+        end: end.toISOString(),
+        reason,
+        shift: true,
+        status: 'accepted'
+      };
+
+      await post(`employee/${employee.id}/schedulemodification`, outModification);
+
+      const tend = moment(timerange.end, 'HH:mm');
+      const shiftEnd = tend.clone().add(moment(end).diff(start));
+      const inModification = {
+        type: 'add',
+        start: tend.toISOString(),
+        end: shiftEnd.toISOString(),
+        reason,
+        shift: true,
+        status: 'accepted'
+      };
+      await post(`employee/${employee.id}/schedulemodification`, inModification);
+
+      const unavailable = {
+        start: start.format('DD MMMM, HH:mm'),
+        end: end.format('DD MMMM, HH:mm')
+      };
+      const available = {
+        start: tend.format('DD MMMM, HH:mm'),
+        end: shiftEnd.format('DD MMMM, HH:mm')
+      };
+
+      message.reply(`Okay, I see that you are not going to be available from `
+                   + `*${unavailable.start}* until *${unavailable.end}*, but you will be available ` // eslint-disable-line
+                   + `from *${available.start}* until *${available.end}*. :thumbsup:`);
+
+      notifyColleagues(bot, uri, [inModification, outModification], employee);
     }
   });
 
@@ -176,10 +195,18 @@ export default (bot, uri) => {
     const employee = await findEmployee(uri, bot, message);
     const list = await get(`employee/${employee.id}/schedulemodifications`);
     const last = list[list.length - 1];
-    const modification = await del(`schedulemodification/${last.id}`);
+    const modifications = [await del(`schedulemodification/${last.id}`)]; // eslint-disable-line
+    if (last.shift) {
+      const other = list[list.length - 2];
+      modifications.push(await del(`schedulemodification/${other.id}`));
+    }
 
-    const start = moment(modification.start).format('DD MMMM, HH:mm');
-    const end = moment(modification.end).format('DD MMMM, HH:mm');
+    modifications.forEach(modification => {
+      const start = moment(modification.start).format('DD MMMM, HH:mm');
+      const end = moment(modification.end).format('DD MMMM, HH:mm');
+
+      message.reply(`Removed modification from *${start}* until *${end}*.`);
+    });
 
     const channel = _.get(bot.config, 'teamline.schedules.notification.channel') || 'schedules';
 
@@ -193,6 +220,5 @@ export default (bot, uri) => {
     if (msg) {
       await bot.deleteMessage(channel, msg.ts);
     }
-    message.reply(`Removed modification from *${start}* until *${end}*.`);
   });
 };
