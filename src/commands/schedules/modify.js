@@ -217,7 +217,6 @@ export default (bot, uri) => {
   });
 
   bot.command('^schedules? undo', async message => {
-    // const [id] = message.match;
     const employee = await findEmployee(uri, bot, message);
     const list = await get(`employee/${employee.id}/schedulemodifications`);
     const last = list[list.length - 1];

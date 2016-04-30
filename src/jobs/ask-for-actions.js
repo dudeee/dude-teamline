@@ -6,15 +6,20 @@ import _ from 'lodash';
 
 export default async (bot, uri) => {
   const { get } = request(bot, uri);
+  moment.updateLocale('en', _.get(bot.config, 'moment') || {});
+  moment.locale('en');
 
-  try {
-    await bot.pocket.model('TeamlineNotified');
-  } catch (e) {
-    bot.pocket.model('TeamlineNotified', { id: Number, expireAt: { type: Date, expires: 0 } });
-  }
+  let list;
 
   const job = bot.schedule.scheduleJob('0 * * * * * *', async () => {
     bot.log.verbose('[teamline] ask-for-actions');
+    try {
+      list = (await bot.pocket.get('teamline.notified')) || [];
+    } catch (e) {
+      await bot.pocket.put('teamline.notified', []);
+      list = [];
+    }
+
     const stats = { sent: 0, skipped: 0 };
     const employees = await get('employees');
 
@@ -25,8 +30,15 @@ export default async (bot, uri) => {
         stats.skipped++;
         continue;
       }
-      const notified = await bot.pocket.find('TeamlineNotified', { id: emp.id }).exec();
-      if (notified.length) {
+
+      let notified = _.find(list, { id: emp.id });
+      if (notified && moment(notified.expireAt).isSameOrBefore(moment())) {
+        list.splice(list.indexOf(notified), 1);
+        await bot.pocket.put('teamline.notified', list);
+        notified = false;
+      }
+
+      if (notified) {
         stats.skipped++;
         continue;
       }
@@ -60,16 +72,16 @@ export default async (bot, uri) => {
                  + (d.minutes() - schedule.start.minutes());
       const delay = _.get(bot.config, 'teamline.actions.ask.delay') || 30;
       if (diff >= delay) {
-        await bot.sendMessage(user.name, 'Hey! What are you going to do today? 😁');
-        const RATE_LIMIT = 1000;
-        await wait(RATE_LIMIT);
-
-
         const expireAt = moment().add(1, 'day')
                             .hours(schedule.start.hours())
                             .minutes(schedule.start.minutes() - 1);
 
-        bot.pocket.save('TeamlineNotified', { id: emp.id, expireAt });
+        list.push({ id: emp.id, expireAt: expireAt.toISOString() });
+        await bot.pocket.put('teamline.notified', list);
+
+        await bot.sendMessage(user.name, 'Hey! What are you going to do today? :grin:');
+        const RATE_LIMIT = 1000;
+        await wait(RATE_LIMIT);
         stats.sent++;
       } else {
         stats.skipped++;

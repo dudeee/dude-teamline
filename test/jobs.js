@@ -38,10 +38,7 @@ describe('ask-for-actions', function functions() {
     before(async () => {
       _.set(bot.config, 'teamline.actions.ask.delay', 5);
       job = await askForActions(bot, uri);
-    });
-
-    beforeEach(async () => {
-      await bot.pocket.remove('TeamlineNotified', { id: teamline.users[0].id }).exec();
+      await bot.pocket.del('teamline.notified');
     });
 
     it('should work well in case of everything being valid', done => {
@@ -86,7 +83,8 @@ describe('ask-for-actions', function functions() {
         const msg = JSON.parse(message);
         expect(msg.channel).to.equal('D123456');
 
-        const notified = await bot.pocket.find('TeamlineNotified', { id: user.id }).exec();
+        const list = await bot.pocket.get('teamline.notified');
+        const notified = _.find(list, { id: user.id });
 
         expect(notified).to.be.ok;
         app._router.stack.length -= 4;
@@ -99,7 +97,10 @@ describe('ask-for-actions', function functions() {
 
     it('should not send a message if there is a TeamlineNotified record of user', async () => {
       const user = teamline.users[0];
-      bot.pocket.save('TeamlineNotified', { id: user.id });
+      await bot.pocket.put('teamline.notified', [{
+        id: user.id,
+        expireAt: moment().add(1, 'day')
+      }]);
 
       const r = await job.job();
       expect(r.skipped).to.equal(slack.users.length);

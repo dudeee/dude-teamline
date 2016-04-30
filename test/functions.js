@@ -577,8 +577,8 @@ describe('functions', function functions() {
       app.get('/chat.postMessage', (request, response, next) => {
         const text = bot.t('teamline.schedules.notification.out', {
           user: `@${teamline.users[0].username}`,
-          start: `*${start.format('DD MMMM, HH:mm')}*`,
-          end: `*${end.format('DD MMMM, HH:mm')}*`,
+          start: start.calendar(),
+          end: end.calendar(),
           teams: '@test'
         });
         expect(request.query.text).to.equal(text);
@@ -607,8 +607,8 @@ describe('functions', function functions() {
       app.get('/chat.postMessage', (request, response, next) => {
         const text = bot.t('teamline.schedules.notification.in', {
           user: `@${teamline.users[0].username}`,
-          start: `*${start.format('DD MMMM, HH:mm')}*`,
-          end: `*${end.format('DD MMMM, HH:mm')}*`,
+          start: start.calendar(),
+          end: end.calendar(),
           teams: '@test'
         });
         expect(request.query.text).to.equal(text);
@@ -640,14 +640,14 @@ describe('functions', function functions() {
       const expected = [
         bot.t('teamline.schedules.notification.out', {
           user: `@${teamline.users[0].username}`,
-          start: start.format('DD MMMM, HH:mm'),
-          end: end.format('DD MMMM, HH:mm'),
+          start: start.calendar(),
+          end: end.calendar(),
           teams: '@test'
         }),
         bot.t('teamline.schedules.notification.in', {
           user: `@${teamline.users[0].username}`,
-          start: inStart.format('DD MMMM, HH:mm'),
-          end: inEnd.format('DD MMMM, HH:mm'),
+          start: inStart.calendar(),
+          end: inEnd.calendar(),
           teams: '@test'
         })
       ];
