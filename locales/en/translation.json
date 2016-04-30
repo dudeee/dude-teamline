@@ -26,11 +26,11 @@
         "not": "He won't be available %date%."
       },
       "notification": {
-        "out": ":clock4: I *won't be available* from `%start%` until `%end%` %date%.\n%teams%\n_%reason%_",
-        "in": ":clock4: I *will be available* from `%start%` until `%end%` %date%.\n%teams%\n_%reason%_",
-        "leave": ":door: I will *leave* the office `%date%`\n%teams%\n_%reason%_",
-        "arrive": ":runner: I will *arrive* at the office `%date%`\n%teams%\n_%reason%_",
-        "absent": ":zzz: I will be *absent* `%date%`\n%teams%\n_%reason%_"
+        "out": ":clock4: I *won't be available* from `%start%` until `%end%` %date%.\n%teams%\n%reason%",
+        "in": ":clock4: I *will be available* from `%start%` until `%end%` %date%.\n%teams%\n%reason%",
+        "leave": ":door: I will *leave* the office `%date%`\n%teams%\n%reason%",
+        "arrive": ":runner: I will *arrive* at the office `%date%`\n%teams%\n%reason%",
+        "absent": ":zzz: I will be *absent* `%date%`\n%teams%\n%reason%"
       }
     }
   }
