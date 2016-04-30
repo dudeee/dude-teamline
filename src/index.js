@@ -95,6 +95,8 @@ Sometimes you want to make a change to your current week's schedule, maybe you a
 for a vacation, maybe you want to work some extra time, or maybe you want to swap two days!
 You can specify a reason for these modifications on the second line of your message. (\`shift+enter\`)
 
+You can omit the \`schedule\` keyword from commands, so \`out\` is equivalent to \`schedule out\`.
+
 *In*:
 You can add a timerange to your schedule this way:
 \`schedule in [timerange]\`
@@ -122,6 +124,17 @@ It's the equivalent of issuing two commands: \`schedules out for 2 hours\` \`sch
 
 *Undo*:
 You can also undo your changes using \`schedules undo\`.
+
+*Notify*:
+You can choose whether you get notified about someone's modifications or not.
+To watch someone's modifications:
+\`schedules notify @someone\` – get a notification whenever @someone has a schedule modification
+
+To view your list:
+\`schedules notify\` – view your notify list
+
+To unwatch someone (undo \`notify\`):
+\`schedules !notify @someone\` – do not get a notification from @someone anymore
 `);
 
 bot.help('available', 'See when someone is available in one day',
