@@ -545,7 +545,7 @@ describe('functions', function functions() {
 
   describe('notify-colleagues', () => {
     before(() => {
-      _.set(bot.config, 'teamline.schedules.notification.mentionTeams', true);
+      _.set(bot.config, 'teamline.schedules.notification.notify', false);
       app.get('/employee/:id/teams/open', (request, response, next) => {
         response.json([{
           name: 'test'
@@ -578,8 +578,7 @@ describe('functions', function functions() {
         const text = bot.t('teamline.schedules.notification.out', {
           user: `@${teamline.users[0].username}`,
           start: start.calendar(),
-          end: end.calendar(),
-          teams: '@test'
+          end: end.calendar()
         });
         expect(request.query.text).to.equal(text);
         expect(request.query.username).to.equal(teamline.users[0].username);
@@ -608,8 +607,7 @@ describe('functions', function functions() {
         const text = bot.t('teamline.schedules.notification.in', {
           user: `@${teamline.users[0].username}`,
           start: start.calendar(),
-          end: end.calendar(),
-          teams: '@test'
+          end: end.calendar()
         });
         expect(request.query.text).to.equal(text);
         expect(request.query.username).to.equal(teamline.users[0].username);
@@ -642,13 +640,11 @@ describe('functions', function functions() {
           user: `@${teamline.users[0].username}`,
           start: start.calendar(),
           end: end.calendar(),
-          teams: '@test'
         }),
         bot.t('teamline.schedules.notification.in', {
           user: `@${teamline.users[0].username}`,
           start: inStart.calendar(),
           end: inEnd.calendar(),
-          teams: '@test'
         })
       ];
       app.get('/chat.postMessage', (request, response, next) => {
@@ -685,7 +681,6 @@ describe('functions', function functions() {
           date: start.calendar(moment(), {
             someElse: 'at HH:mm, dddd D MMMM'
           }),
-          teams: '@test'
         });
         expect(request.query.text).to.equal(text);
         expect(request.query.username).to.equal(teamline.users[0].username);
@@ -716,7 +711,6 @@ describe('functions', function functions() {
           date: end.calendar(moment(), {
             someElse: 'at HH:mm, dddd D MMMM'
           }),
-          teams: '@test'
         });
         expect(request.query.text).to.equal(text);
         expect(request.query.username).to.equal(teamline.users[0].username);
@@ -752,7 +746,6 @@ describe('functions', function functions() {
             lastWeek: '[Last] dddd',
             sameElse: 'dddd D MMMM'
           }),
-          teams: '@test'
         });
         expect(request.query.text).to.equal(text);
         expect(request.query.username).to.equal(teamline.users[0].username);

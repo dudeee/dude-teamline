@@ -20,7 +20,7 @@ export default async (uri, bot, message, user, exclude = []) => {
       if (!user) {
         message.reply('You are not a registered employee');
       } else {
-        message.reply(`Couldn't find user *${username}*! :thinking_face:`);
+        message.reply(bot.t('teamline.user.notfound', { username }));
       }
 
       throw new Error(`User ${username} not found.`);

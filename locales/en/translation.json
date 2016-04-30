@@ -1,5 +1,8 @@
 {
   "teamline": {
+    "user": {
+      "notfound": "Could not find user *%username%*."
+    },
     "actions": {
       "define": {
         "success": "Submitted your actions successfuly!",
@@ -26,11 +29,18 @@
         "not": "He won't be available %date%."
       },
       "notification": {
-        "out": ":clock4: I *won't be available* from `%start%` until `%end%` %date%.\n%teams%\n%reason%",
-        "in": ":clock4: I *will be available* from `%start%` until `%end%` %date%.\n%teams%\n%reason%",
-        "leave": ":door: I will *leave* the office `%date%`\n%teams%\n%reason%",
-        "arrive": ":runner: I will *arrive* at the office `%date%`\n%teams%\n%reason%",
-        "absent": ":zzz: I will be *absent* `%date%`\n%teams%\n%reason%"
+        "out": ":clock4: I *won't be available* from `%start%` until `%end%` %date%.\n%names%\n%reason%",
+        "in": ":clock4: I *will be available* from `%start%` until `%end%` %date%.\n%names%\n%reason%",
+        "leave": ":door: I will *leave* the office `%date%`\n%names%\n%reason%",
+        "arrive": ":runner: I will *arrive* at the office `%date%`\n%names%\n%reason%",
+        "absent": ":zzz: I will be *absent* `%date%`\n%names%\n%reason%"
+      },
+      "notify": {
+        "list": "Your notify list: %list%.",
+        "duplicate": "You already have %username% in your notify list!",
+        "add": "Added %username% to your notify list.",
+        "remove": "Removed %username% from your notify list.",
+        "notfound": "You don't have %username% in your notify list!"
       }
     }
   }

@@ -3,6 +3,7 @@ import { teamline } from './fixtures';
 import initialize from './initialize';
 import cleanup from './cleanup';
 import moment from 'moment';
+import _ from 'lodash';
 
 const LONG_DELAY = 10000;
 
@@ -1194,6 +1195,180 @@ describe('schedules', function functions() {
 
     after(cleanup);
   });
+
+  describe('notify', () => {
+    before(async () => {
+      app.get('/employee', (request, response, next) => {
+        const user = _.find(teamline.users, { username: request.query.username });
+        response.json(user);
+        next();
+      });
+
+      await bot.pocket.del(`schedules.notify.${bot.users[0].name}`);
+    });
+
+    it('should add username to notify list if it\'s valid', done => {
+      socket.on('message', async message => {
+        const msg = JSON.parse(message);
+
+        const username = bot.users[1].name;
+        const text = bot.t('teamline.schedules.notify.add', { username });
+        expect(msg.text).to.equal(text);
+
+        const list = await bot.pocket.get(`schedules.notify.${bot.users[0].name}`);
+        expect(list).to.include(bot.users[1].name);
+
+        done();
+        socket._events.message.length -= 1;
+        await bot.pocket.del(`schedules.notify.${bot.users[0].name}`);
+      });
+
+      bot.inject('message', {
+        text: `schedule notify ${bot.users[1].name}`,
+        mention: true,
+        user: bot.users[0].id
+      });
+    });
+
+    it('should throw an error if username is not valid', done => {
+      socket.on('message', async message => {
+        const msg = JSON.parse(message);
+
+        const text = bot.t('teamline.user.notfound', { username: 'blablabla' });
+        expect(msg.text).to.equal(text);
+
+        done();
+        socket._events.message.length -= 1;
+      });
+
+      bot.inject('message', {
+        text: `schedule notify blablabla`,
+        mention: true,
+        user: bot.users[0].id
+      });
+    });
+
+    it('should not add username to notify list if it\'s a duplicate', async done => {
+      await bot.pocket.put(`schedules.notify.${bot.users[0].name}`, [bot.users[1].name]);
+
+      socket.on('message', async message => {
+        const msg = JSON.parse(message);
+
+        const username = bot.users[1].name;
+        const text = bot.t('teamline.schedules.notify.duplicate', { username });
+        expect(msg.text).to.equal(text);
+
+        done();
+        socket._events.message.length -= 1;
+      });
+
+      bot.inject('message', {
+        text: `schedule notify ${bot.users[1].name}`,
+        mention: true,
+        user: bot.users[0].id
+      });
+    });
+
+    it('should list users in notify list if no argument is given', async done => {
+      await bot.pocket.put(`schedules.notify.${bot.users[0].name}`, [bot.users[1].name]);
+
+      socket.on('message', async message => {
+        const msg = JSON.parse(message);
+
+        const list = await bot.pocket.get(`schedules.notify.${bot.users[0].name}`);
+        const text = bot.t('teamline.schedules.notify.list', { list: list.join(', ') });
+        expect(msg.text).to.equal(text);
+
+        done();
+        socket._events.message.length -= 1;
+      });
+
+      bot.inject('message', {
+        text: `schedule notify`,
+        mention: true,
+        user: bot.users[0].id
+      });
+    });
+
+    after(cleanup);
+  });
+
+  describe('!notify', () => {
+    before(async () => {
+      app.get('/employee', (request, response, next) => {
+        const user = _.find(teamline.users, { username: request.query.username });
+        response.json(user);
+        next();
+      });
+
+      await bot.pocket.del(`schedules.notify.${bot.users[0].name}`);
+    });
+
+    it('should remove username from notify list if it\'s valid', async done => {
+      await bot.pocket.put(`schedules.notify.${bot.users[0].name}`, [bot.users[1].name]);
+
+      socket.on('message', async message => {
+        const msg = JSON.parse(message);
+
+        const username = bot.users[1].name;
+        const text = bot.t('teamline.schedules.notify.remove', { username });
+        expect(msg.text).to.equal(text);
+
+        const list = await bot.pocket.get(`schedules.notify.${bot.users[0].name}`);
+        expect(list).to.not.include(bot.users[1].name);
+
+        done();
+        socket._events.message.length -= 1;
+        await bot.pocket.del(`schedules.notify.${bot.users[0].name}`);
+      });
+
+      bot.inject('message', {
+        text: `schedule !notify ${bot.users[1].name}`,
+        mention: true,
+        user: bot.users[0].id
+      });
+    });
+
+    it('should throw an error if username is not valid', done => {
+      socket.on('message', async message => {
+        const msg = JSON.parse(message);
+
+        const text = bot.t('teamline.user.notfound', { username: 'blablabla' });
+        expect(msg.text).to.equal(text);
+
+        done();
+        socket._events.message.length -= 1;
+      });
+
+      bot.inject('message', {
+        text: `schedule !notify blablabla`,
+        mention: true,
+        user: bot.users[0].id
+      });
+    });
+
+    it('should not remove username from notify list if it doesn\'t exist in list', async done => {
+      socket.on('message', async message => {
+        const msg = JSON.parse(message);
+
+        const username = bot.users[1].name;
+        const text = bot.t('teamline.schedules.notify.notfound', { username });
+        expect(msg.text).to.equal(text);
+
+        done();
+        socket._events.message.length -= 1;
+      });
+
+      bot.inject('message', {
+        text: `schedule !notify ${bot.users[1].name}`,
+        mention: true,
+        user: bot.users[0].id
+      });
+    });
+
+    after(cleanup);
+  });
+
 
   describe('available', () => {
     before(() => {

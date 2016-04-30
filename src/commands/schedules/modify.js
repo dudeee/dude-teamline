@@ -12,6 +12,7 @@ export default (bot, uri) => {
   moment.relativeTimeThreshold('h', Infinity);
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
+  const t = (key, ...args) => bot.t(`teamline.schedules.${key}`, ...args);
 
   bot.command('^(schedules?)? <in|out|shift> [string]', async message => { //eslint-disable-line
     let [command] = message.match;
@@ -245,6 +246,67 @@ export default (bot, uri) => {
     if (msg) {
       await bot.deleteMessage(channel, msg.ts);
     }
+  });
+
+  bot.command('^schedules? notify [char]', async message => {
+    const [username] = message.match;
+
+    const employee = await findEmployee(uri, bot, message);
+
+    let list;
+    try {
+      list = await bot.pocket.get(`schedules.notify.${employee.username}`);
+    } catch (e) {
+      await bot.pocket.put(`schedules.notify.${employee.username}`, []);
+      list = [];
+    }
+
+    if (!username) {
+      message.reply(t('notify.list', { list: list.join(', ') }));
+      return;
+    }
+
+    if (list.indexOf(username) > -1) {
+      message.reply(t('notify.duplicate', { username }));
+      return;
+    }
+
+    // will throw an error and bail out if username doesn't exist
+    await findEmployee(uri, bot, message, username);
+
+    list.push(username);
+    list = _.uniq(list);
+    await bot.pocket.put(`schedules.notify.${employee.username}`, list);
+
+    message.reply(t('notify.add', { username }));
+  });
+
+  bot.command('^schedules? !notify [char]', async message => {
+    const [username] = message.match;
+
+    const employee = await findEmployee(uri, bot, message);
+
+    // will throw an error and bail out if username doesn't exist
+    await findEmployee(uri, bot, message, username);
+
+    let list;
+    try {
+      list = await bot.pocket.get(`schedules.notify.${employee.username}`);
+    } catch (e) {
+      await bot.pocket.put(`schedules.notify.${employee.username}`, []);
+      list = [];
+    }
+
+    if (list.indexOf(username) > -1) {
+      list.splice(list.indexOf(username), 1);
+      list = _.uniq(list);
+      await bot.pocket.put(`schedules.notify.${employee.username}`, list);
+
+      message.reply(t('notify.remove', { username }));
+      return;
+    }
+
+    message.reply(t('notify.notfound', { username }));
   });
 };
 

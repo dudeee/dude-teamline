@@ -5,15 +5,20 @@ import request from './request';
 export default async (bot, uri, modifications, employee) => {
   if (!modifications.length) return false;
 
-  const channel = _.get(bot.config, 'teamline.schedules.notification.channel') || 'schedules';
-  const enableTeams = _.get(bot.config, 'teamline.schedules.notification.mentionTeams') || false;
+  const channel = _.get(bot.config, 'teamline.schedules.notification.channel', 'schedules');
+  const enableNotification = _.get(bot.config, 'teamline.schedules.notification.notify', true);
   const { get } = await request(bot, uri);
 
-  const teams = await get(`employee/${employee.id}/teams/open`);
+  let notify;
+  try {
+    notify = await bot.pocket.get(`schedules.notify.${employee.username}`);
+  } catch (e) {
+    notify = [];
+  }
   const workhours = await get(`employee/${employee.id}/workhours`, {
     include: ['Timerange']
   });
-  const names = teams.map(team => `@${team.name.replace(/\s/, '').toLowerCase()}`).join(' ');
+  const names = enableNotification ? notify.map(a => `@${a}`).join(', ') : '';
 
   modifications.forEach(send);
 
@@ -47,7 +52,7 @@ export default async (bot, uri, modifications, employee) => {
       start: formatted.start,
       end: formatted.end,
       date: formatted.date,
-      teams: enableTeams ? names : [],
+      names,
       reason: modification.reason
     };
     let messageType = type;
@@ -61,7 +66,7 @@ export default async (bot, uri, modifications, employee) => {
         date: start.calendar(moment(), {
           someElse: 'at HH:mm, dddd D MMMM'
         }),
-        teams: enableTeams ? names : [],
+        names,
         reason: modification.reason
       };
     }
@@ -72,7 +77,7 @@ export default async (bot, uri, modifications, employee) => {
         date: end.calendar(moment(), {
           someElse: 'at HH:mm, dddd D MMMM'
         }),
-        teams: enableTeams ? names : [],
+        names,
         reason: modification.reason
       };
     }
@@ -88,7 +93,7 @@ export default async (bot, uri, modifications, employee) => {
           lastWeek: '[Last] dddd',
           sameElse: 'dddd D MMMM'
         }),
-        teams: enableTeams ? names : [],
+        names,
         reason: modification.reason
       };
     }

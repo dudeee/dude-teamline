@@ -87,7 +87,8 @@ export default (bot, uri) => {
       }
     }
 
-    const exclude = ['in', 'out', 'modifications', 'shift', 'undo', 'set', 'unset'];
+    const exclude = ['in', 'out', 'shift', 'undo',
+                     'set', 'unset', 'notify', '!notify'];
     if (exclude.includes(username)) return;
     const employee = await findEmployee(uri, bot, message, username, exclude);
 
