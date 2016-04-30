@@ -47,9 +47,7 @@ export default (bot, uri) => {
       return;
     }
 
-    const tr = computed.Timeranges.find(timerange =>
-      moment(timerange.start, 'HH:mm').isSameOrAfter(date)
-    );
+    const tr = next(computed.Timeranges, date);
     const start = tr.start;
     const end = tr.end;
 
@@ -59,3 +57,15 @@ export default (bot, uri) => {
     });
   });
 };
+
+const next = (timeranges, target) =>
+  timeranges.reduce((a, b) => {
+    const diff = moment(b.end, 'HH:mm').dayOfYear(target.dayOfYear()).diff(target);
+    if (diff < 0) return a;
+
+    if (!a || diff < a.diff) {
+      b.diff = diff;
+      return b;
+    }
+    return a;
+  }, null);
