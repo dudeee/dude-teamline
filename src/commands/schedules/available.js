@@ -47,7 +47,12 @@ export default (bot, uri) => {
       return;
     }
 
-    const tr = next(computed.Timeranges, date);
+    const tr = next(computed.Timeranges, date) || nearest(computed.Timeranges, date);
+
+    if (!tr) {
+      message.reply(t('available.not', { date: vdate || 'now until tomorrow' }));
+    }
+
     const start = tr.start;
     const end = tr.end;
 
@@ -62,6 +67,17 @@ const next = (timeranges, target) =>
   timeranges.reduce((a, b) => {
     const diff = moment(b.end, 'HH:mm').dayOfYear(target.dayOfYear()).diff(target);
     if (diff < 0) return a;
+
+    if (!a || diff < a.diff) {
+      b.diff = diff;
+      return b;
+    }
+    return a;
+  }, null);
+
+const nearest = (timeranges, target) =>
+  timeranges.reduce((a, b) => {
+    const diff = Math.abs(moment(b.end, 'HH:mm').dayOfYear(target.dayOfYear()).diff(target));
 
     if (!a || diff < a.diff) {
       b.diff = diff;
