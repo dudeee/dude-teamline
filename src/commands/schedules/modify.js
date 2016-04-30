@@ -13,7 +13,7 @@ export default (bot, uri) => {
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
-  bot.command('^(schedules)? <in|out|shift> [string]', async message => { //eslint-disable-line
+  bot.command('^(schedules?)? <in|out|shift> [string]', async message => { //eslint-disable-line
     let [command] = message.match;
     command = command.toLowerCase();
     const line = message.preformatted.split('\n')[0];
@@ -41,7 +41,7 @@ export default (bot, uri) => {
     }
 
     let wh = _.find(workhours, { weekday: weekday.weekday() }) || { Timeranges: [] };
-    let timerange = wh.Timeranges[wh.Timeranges.length - 1];
+    let timerange = nearest(wh.Timeranges, weekday);
 
     if (command === 'in') {
       let start;
@@ -57,9 +57,16 @@ export default (bot, uri) => {
         start = moment(date.from);
         end = moment(date.to);
       } else {
-        start = moment(timerange.end, 'HH:mm');
-        const duration = moment(date).diff(moment());
-        end = date.isValid() ? start.clone().add(duration) : null;
+        const bet = between(wh.Timeranges, weekday);
+        if (!bet) {
+          start = moment();
+          const n = next(wh.Timeranges, weekday);
+          end = moment(n.start, 'HH:mm').dayOfYear(date.dayOfYear());
+        } else {
+          start = moment(timerange.end, 'HH:mm');
+          const duration = moment(date).diff(moment());
+          end = date.isValid() ? start.clone().add(duration) : null;
+        }
       }
 
       const modification = {
@@ -82,6 +89,11 @@ export default (bot, uri) => {
 
       notifyColleagues(bot, uri, [modification], employee);
     } else if (command === 'out') {
+      if (!timerange) {
+        message.reply(`You don't have a working hour on *${weekday.format('dddd')}*.`);
+        return;
+      }
+
       let start;
       let end;
       if (!date.range && /\b(?:from|since)\b/i.test(vdate)) {
@@ -200,7 +212,7 @@ export default (bot, uri) => {
                    + `*${unavailable.start}* until *${unavailable.end}*, but you will be available ` // eslint-disable-line
                    + `from *${available.start}* until *${available.end}*. :thumbsup:`);
 
-      notifyColleagues(bot, uri, [inModification, outModification], employee);
+      notifyColleagues(bot, uri, [outModification, inModification], employee);
     }
   });
 
@@ -236,3 +248,30 @@ export default (bot, uri) => {
     }
   });
 };
+
+const nearest = (timeranges, target) =>
+  timeranges.reduce((a, b) => {
+    const diff = moment(b.end, 'HH:mm').dayOfYear(target.dayOfYear()).diff(target);
+
+    if (!a || diff < a.diff) {
+      b.diff = diff;
+      return b;
+    }
+  }, null);
+
+const between = (timeranges, target) =>
+  timeranges.find(a =>
+    moment(a.start, 'HH:mm').isSameOrBefore(target) &&
+    moment(a.end, 'HH:mm').isSameOrAfter(target)
+  );
+
+const next = (timeranges, target) =>
+  timeranges.reduce((a, b) => {
+    const diff = moment(b.end, 'HH:mm').dayOfYear(target.dayOfYear()).diff(target);
+    if (diff < 0) return a;
+
+    if (!a || diff < a.diff) {
+      b.diff = diff;
+      return b;
+    }
+  }, null);

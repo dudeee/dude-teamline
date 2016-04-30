@@ -715,6 +715,46 @@ describe('schedules', function functions() {
           });
         });
       });
+
+      context('simple', () => {
+        it('should create an `add` modification from now until start of next timerange if the working hour has not started yet', done => { // eslint-disable-line
+          const start = moment().add(1, 'hour').seconds(0);
+          const end = moment().add(2, 'hour').seconds(0);
+          app.get('/employee/:id/workhours', (request, response, next) => {
+            response.json([{
+              weekday: moment().weekday(),
+              Timeranges: [{
+                start: start.format('HH:mm'),
+                end: end.format('HH:mm')
+              }]
+            }]);
+
+            next();
+          });
+
+          app.post('/employee/:id/schedulemodification', (request, response, next) => {
+            response.json({
+              id: 'workhour_id',
+              ...request.body
+            });
+
+            expect(request.body.type).to.equal('add');
+            almostEqual(request.body.start, moment());
+            almostEqual(request.body.end, start);
+
+            done();
+            next();
+
+            app._router.stack.length -= 2;
+          });
+
+          bot.inject('message', {
+            text: `schedules in`,
+            mention: true,
+            user: bot.users[0].id
+          });
+        });
+      });
     });
 
     describe('shift', () => {

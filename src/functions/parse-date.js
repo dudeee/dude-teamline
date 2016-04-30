@@ -3,7 +3,7 @@ import moment from 'moment';
 import _ from 'lodash';
 
 const SEPARATORS = /\b(?:to|-|until|till|for)\b/i;
-const KEYWORDS = /\b(?:from|since)\b/gi;
+const KEYWORDS = /\b(?:from|since|at)\b/gi;
 export default (bot, string, base = moment(), separators = SEPARATORS) => { // eslint-disable-line
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');

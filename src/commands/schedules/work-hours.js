@@ -76,6 +76,7 @@ export default (bot, uri) => {
   bot.command('^schedules? [char] [string]$', async message => {
     const [username, vdate] = message.match;
     const date = vdate ? parseDate(bot, vdate) || moment().weekday(0) : moment().weekday(0);
+    date.subtract(1, 'day');
 
     if (vdate && vdate.includes('week')) {
       if (date.range) {

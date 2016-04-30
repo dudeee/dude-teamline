@@ -10,82 +10,90 @@ export default async (bot, uri, modifications, employee) => {
   const { get } = await request(bot, uri);
 
   const teams = await get(`employee/${employee.id}/teams/open`);
+  const workhours = await get(`employee/${employee.id}/workhours`, {
+    include: ['Timerange']
+  });
   const names = teams.map(team => `@${team.name.replace(/\s/, '').toLowerCase()}`).join(' ');
 
-  if (modifications.length === 1) {
-    single();
-  } else {
-    shift();
-  }
+  modifications.forEach(send);
 
-  function single() {
-    const [modification] = modifications;
-    const start = moment(modification.start);
-    const end = moment(modification.end);
-    const distance = Math.abs(moment('00:00', 'HH:mm')
-                            .diff(start.clone().hours(0).minutes(0).seconds(0), 'days'));
-    const formatted = {
-      start: start.format('DD MMMM, HH:mm'),
-      end: end.format('DD MMMM, HH:mm')
-    };
-
-    if (distance < 7) {
-      formatted.start = start.calendar();
-      formatted.end = end.calendar();
-    }
-
+  function send(modification) {
     const type = modification.type === 'sub' ? 'out' : 'in';
-    const text = bot.t(`teamline.schedules.notification.${type}`, {
-      user: `${employee.username}`,
-      start: `*${formatted.start}*`,
-      end: `*${formatted.end}*`,
-      teams: enableTeams ? names : [],
-      reason: modification.reason
-    });
-
-    bot.sendAsUser(employee.username, channel, text, {
-      websocket: false,
-      parse: 'full'
-    });
-  }
-
-  function shift() {
-    const modification = _.find(modifications, { type: 'sub' });
     const start = moment(modification.start);
     const end = moment(modification.end);
     const distance = Math.abs(moment('00:00', 'HH:mm')
                             .diff(start.clone().hours(0).minutes(0).seconds(0), 'days'));
-
-    const shiftIn = _.find(modifications, { type: 'add' });
-    let inStart;
-    let inEnd;
-    if (shiftIn) {
-      inStart = moment(shiftIn.start);
-      inEnd = moment(shiftIn.end);
-    }
     const formatted = {
-      start: start.format('DD MMMM, HH:mm'),
-      end: end.format('DD MMMM, HH:mm'),
-      inStart: inStart.format('DD MMMM, HH:mm'),
-      inEnd: inEnd.format('DD MMMM, HH:mm')
+      start: start.format('HH:mm'),
+      end: end.format('HH:mm'),
+      date: start.format('dddd D MMMM')
     };
 
     if (distance < 7) {
       formatted.start = start.calendar();
       formatted.end = end.calendar();
-      formatted.inStart = inStart.calendar();
-      formatted.inEnd = inEnd.calendar();
+      formatted.date = '';
     }
 
-    const text = bot.t('teamline.schedules.notification.shift', {
-      user: `${employee.username}`,
-      outStart: `*${formatted.start}*`,
-      outEnd: `*${formatted.end}*`,
-      inStart: `*${formatted.inStart}*`,
-      inEnd: `*${formatted.inEnd}*`,
+    const workhour = _.find(workhours, { weekday: start.weekday() });
+    const first = workhour.Timeranges[0];
+    const last = workhour.Timeranges[workhour.Timeranges.length - 1];
+    const timerange = {
+      start: moment(first.start, 'HH:mm').dayOfYear(start.dayOfYear()),
+      end: moment(last.end, 'HH:mm').dayOfYear(end.dayOfYear())
+    };
+
+    let message = {
+      start: formatted.start,
+      end: formatted.end,
+      date: formatted.date,
       teams: enableTeams ? names : [],
       reason: modification.reason
-    });
+    };
+    let messageType = type;
+
+    const startDiff = Math.abs(start.diff(timerange.start, 'minutes'));
+    const endDiff = Math.abs(end.diff(timerange.end, 'minutes'));
+
+    if (endDiff < 5) {
+      messageType = 'leave';
+      message = {
+        date: start.calendar(moment(), {
+          someElse: 'at HH:mm, dddd D MMMM'
+        }),
+        teams: enableTeams ? names : [],
+        reason: modification.reason
+      };
+    }
+
+    if (startDiff < 30) {
+      messageType = 'arrive';
+      message = {
+        date: end.calendar(moment(), {
+          someElse: 'at HH:mm, dddd D MMMM'
+        }),
+        teams: enableTeams ? names : [],
+        reason: modification.reason
+      };
+    }
+
+    if (startDiff < 1 && endDiff < 1) {
+      messageType = 'absent';
+      message = {
+        date: start.calendar(null, {
+          sameDay: '[Today]',
+          nextDay: '[Tomorrow]',
+          nextWeek: 'dddd',
+          lastDay: '[Yesterday]',
+          lastWeek: '[Last] dddd',
+          sameElse: 'dddd D MMMM'
+        }),
+        teams: enableTeams ? names : [],
+        reason: modification.reason
+      };
+    }
+
+    const text = bot.t(`teamline.schedules.notification.${messageType}`, message);
 
     bot.sendAsUser(employee.username, channel, text, {
       websocket: false,

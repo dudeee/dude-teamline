@@ -552,35 +552,27 @@ describe('functions', function functions() {
         }]);
         next();
       });
+
+      app.get('/employee/:id/workhours', (request, response, next) => {
+        response.json([{
+          weekday: 0,
+          Timeranges: [{
+            start: '8:00',
+            end: '18:00'
+          }]
+        }]);
+
+        next();
+      });
     });
     it('should not send any message in case of no modifications', async () => {
       const r = await notifyColleagues(bot, uri, [], teamline.users[0]);
       expect(r).to.equal(false);
     });
 
-    // it('should not send any message in case of `add` modifications', async () => {
-    //   const modification = { type: 'add' };
-    //   const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-    //   expect(r).to.equal(false);
-    // });
-    //
-    /* eslint-disable */
-    // it('should not send any message if the duration is less than a day and it\'s not for today' , async () => {
-    //   const start = moment().add(1, 'day');
-    //   const end = moment().add(1, 'day').add(1, 'hour');
-    //   const modification = {
-    //     type: 'sub',
-    //     start, end
-    //   };
-    //
-    //   const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-    //   expect(r).to.equal(false);
-    // });
-    /* eslint-enable */
-
     it('should notify out modifications', async done => {
-      const start = moment();
-      const end = moment().add(2, 'days');
+      const start = moment('8:30', 'HH:mm').weekday(0);
+      const end = moment('9:00', 'HH:mm').weekday(0);
 
       app.get('/chat.postMessage', (request, response, next) => {
         const text = bot.t('teamline.schedules.notification.out', {
@@ -609,8 +601,8 @@ describe('functions', function functions() {
     });
 
     it('should notify in modifications', async done => {
-      const start = moment();
-      const end = moment().add(2, 'days');
+      const start = moment('18:30', 'HH:mm').weekday(0);
+      const end = moment('19:00', 'HH:mm').weekday(0);
 
       app.get('/chat.postMessage', (request, response, next) => {
         const text = bot.t('teamline.schedules.notification.in', {
@@ -639,20 +631,28 @@ describe('functions', function functions() {
     });
 
     it('should give information on both `in` and `out` when using `shift`', async done => {
-      const start = moment().add(1, 'day');
-      const end = moment().add(3, 'days');
-      const inStart = moment().add(4, 'days');
-      const inEnd = moment().add(4, 'days').add(5, 'hours');
+      const start = moment('8:30', 'HH:mm').weekday(0);
+      const end = moment('9:00', 'HH:mm').weekday(0);
+      const inStart = moment('18:00', 'HH:mm').weekday(0);
+      const inEnd = moment('18:30', 'HH:mm').weekday(0);
 
-      app.get('/chat.postMessage', (request, response, next) => {
-        const text = bot.t('teamline.schedules.notification.shift', {
+      let i = 0;
+      const expected = [
+        bot.t('teamline.schedules.notification.out', {
           user: `@${teamline.users[0].username}`,
-          outStart: `*${start.format('DD MMMM, HH:mm')}*`,
-          outEnd: `*${end.format('DD MMMM, HH:mm')}*`,
-          inStart: `*${inStart.format('DD MMMM, HH:mm')}*`,
-          inEnd: `*${inEnd.format('DD MMMM, HH:mm')}*`,
+          start: start.format('DD MMMM, HH:mm'),
+          end: end.format('DD MMMM, HH:mm'),
           teams: '@test'
-        });
+        }),
+        bot.t('teamline.schedules.notification.in', {
+          user: `@${teamline.users[0].username}`,
+          start: inStart.format('DD MMMM, HH:mm'),
+          end: inEnd.format('DD MMMM, HH:mm'),
+          teams: '@test'
+        })
+      ];
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = expected[i++];
         expect(request.query.text).to.equal(text);
         expect(request.query.username).to.equal(teamline.users[0].username);
         expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
@@ -672,6 +672,104 @@ describe('functions', function functions() {
       }];
 
       const r = await notifyColleagues(bot, uri, modifications, teamline.users[0]);
+      expect(r).to.equal(true);
+    });
+
+    it('should notify `leave` if the `out` extends to end of working hour', async done => {
+      const start = moment('15:30', 'HH:mm').weekday(0);
+      const end = moment('18:00', 'HH:mm').weekday(0);
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.leave', {
+          user: `@${teamline.users[0].username}`,
+          date: start.calendar(moment(), {
+            someElse: 'at HH:mm, dddd D MMMM'
+          }),
+          teams: '@test'
+        });
+        expect(request.query.text).to.equal(text);
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
+
+        app._router.stack.length -= 1;
+
+        done();
+        next();
+      });
+
+      const modification = {
+        type: 'sub',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(true);
+    });
+
+    it('should notify `arrive` if the `out` starts from beginning of working hour', async done => {
+      const start = moment('8:00', 'HH:mm').weekday(0);
+      const end = moment('9:00', 'HH:mm').weekday(0);
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.arrive', {
+          user: `@${teamline.users[0].username}`,
+          date: end.calendar(moment(), {
+            someElse: 'at HH:mm, dddd D MMMM'
+          }),
+          teams: '@test'
+        });
+        expect(request.query.text).to.equal(text);
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
+
+        app._router.stack.length -= 1;
+
+        done();
+        next();
+      });
+
+      const modification = {
+        type: 'sub',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(true);
+    });
+
+    it('should notify `absent` if the `out` for a whole day', async done => {
+      const start = moment('8:00', 'HH:mm').weekday(0);
+      const end = moment('18:00', 'HH:mm').weekday(0);
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.absent', {
+          user: `@${teamline.users[0].username}`,
+          date: start.calendar(null, {
+            sameDay: '[Today]',
+            nextDay: '[Tomorrow]',
+            nextWeek: 'dddd',
+            lastDay: '[Yesterday]',
+            lastWeek: '[Last] dddd',
+            sameElse: 'dddd D MMMM'
+          }),
+          teams: '@test'
+        });
+        expect(request.query.text).to.equal(text);
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
+
+        app._router.stack.length -= 1;
+
+        done();
+        next();
+      });
+
+      const modification = {
+        type: 'sub',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
       expect(r).to.equal(true);
     });
 
