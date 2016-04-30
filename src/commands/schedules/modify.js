@@ -90,7 +90,7 @@ export default (bot, uri) => {
       notifyColleagues(bot, uri, [modification], employee);
     } else if (command === 'out') {
       if (!timerange) {
-        message.reply(`You don't have a working hour on *${weekday.format('dddd')}*.`);
+        message.reply(`You don't have a working hour on *${weekday.format('dddd HH:mm')}*.`);
         return;
       }
 
@@ -250,12 +250,13 @@ export default (bot, uri) => {
 
 const nearest = (timeranges, target) =>
   timeranges.reduce((a, b) => {
-    const diff = moment(b.end, 'HH:mm').dayOfYear(target.dayOfYear()).diff(target);
+    const diff = Math.abs(moment(b.end, 'HH:mm').dayOfYear(target.dayOfYear()).diff(target));
 
     if (!a || diff < a.diff) {
       b.diff = diff;
       return b;
     }
+    return a;
   }, null);
 
 const between = (timeranges, target) =>
@@ -273,4 +274,5 @@ const next = (timeranges, target) =>
       b.diff = diff;
       return b;
     }
+    return a;
   }, null);
