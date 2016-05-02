@@ -42,7 +42,7 @@ export default (bot, uri) => {
     }
 
     let wh = _.find(workhours, { weekday: weekday.weekday() }) || { Timeranges: [] };
-    let timerange = nearest(wh.Timeranges, weekday);
+    let timerange = between(wh.Timeranges, weekday) || nearest(wh.Timeranges, weekday);
 
     if (command === 'in') {
       let start;
@@ -132,7 +132,7 @@ export default (bot, uri) => {
         end = moment(timerange.end, 'HH:mm');
       }
 
-      const b = moment(wh.Timeranges[0].start, 'HH:mm');
+      const b = moment(timerange.start, 'HH:mm');
       const beginning = start.clone().hours(b.hours()).minutes(b.minutes());
       start = moment.max(start, beginning);
       const e = moment(timerange.end, 'HH:mm');
@@ -323,8 +323,8 @@ const nearest = (timeranges, target) =>
 
 const between = (timeranges, target) =>
   timeranges.find(a =>
-    moment(a.start, 'HH:mm').isSameOrBefore(target) &&
-    moment(a.end, 'HH:mm').isSameOrAfter(target)
+    moment(a.start, 'HH:mm').dayOfYear(target.dayOfYear()).isSameOrBefore(target) &&
+    moment(a.end, 'HH:mm').dayOfYear(target.dayOfYear()).isSameOrAfter(target)
   );
 
 const next = (timeranges, target) =>

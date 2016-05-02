@@ -369,6 +369,9 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
+                end: '11:00',
+              }, {
+                start: '15:00',
                 end: '18:00'
               }]
             }]);
@@ -383,8 +386,8 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal('sub');
-            const start = moment('11:00', 'HH:mm');
-            const end = moment('12:00', 'HH:mm');
+            const start = moment('15:00', 'HH:mm');
+            const end = moment('15:15', 'HH:mm');
             almostEqual(request.body.start, start);
             almostEqual(request.body.end, end);
 
@@ -395,7 +398,48 @@ describe('schedules', function functions() {
           });
 
           bot.inject('message', {
-            text: `schedules out from 11:00 to 12:00`,
+            text: `schedules out 15:00 to 15:15`,
+            mention: true,
+            user: bot.users[0].id
+          });
+        });
+
+        it('should set a `sub` modifications in the specified range in specified day', done => { //eslint-disable-line
+          app.get('/employee/:id/workhours', (request, response, next) => {
+            response.json([{
+              weekday: moment().add(1, 'day').weekday(),
+              Timeranges: [{
+                start: '8:00',
+                end: '11:00',
+              }, {
+                start: '15:00',
+                end: '18:00'
+              }]
+            }]);
+
+            next();
+          });
+
+          app.post('/employee/:id/schedulemodification', (request, response, next) => {
+            response.json({
+              id: 'workhour_id',
+              ...request.body
+            });
+
+            expect(request.body.type).to.equal('sub');
+            const start = moment('15:00', 'HH:mm').add(1, 'day');
+            const end = moment('15:15', 'HH:mm').add(1, 'day');
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
+
+            done();
+            next();
+
+            app._router.stack.length -= 2;
+          });
+
+          bot.inject('message', {
+            text: `schedules out ${moment().add(1, 'day').format('dddd')} 15:00 to 15:15`,
             mention: true,
             user: bot.users[0].id
           });
