@@ -23,13 +23,6 @@ export default (bot, uri) => {
     const lines = message.preformatted.split('\n');
     const reason = lines[1] || null;
 
-    const employee = await findEmployee(uri, bot, message);
-    const whs = await get(`employee/${employee.id}/workhours`, {
-      include: 'Timerange'
-    });
-    const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`);
-    const workhours = workhoursModifications(bot, whs, modifications);
-
     const date = parseDate(bot, vdate);
 
     let weekday;
@@ -40,6 +33,21 @@ export default (bot, uri) => {
     } else {
       weekday = moment();
     }
+
+    const employee = await findEmployee(uri, bot, message);
+    const whs = await get(`employee/${employee.id}/workhours`, {
+      include: 'Timerange'
+    });
+    const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
+      start: {
+        $gte: weekday.toISOString()
+      },
+      end: {
+        $lte: weekday.clone().add(1, 'week').toISOString()
+      }
+    });
+
+    const workhours = workhoursModifications(bot, whs, modifications);
 
     let wh = _.find(workhours, { weekday: weekday.weekday() }) || { Timeranges: [] };
     let timerange = between(wh.Timeranges, weekday) || nearest(wh.Timeranges, weekday);
