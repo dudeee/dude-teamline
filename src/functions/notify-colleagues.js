@@ -60,7 +60,7 @@ export default async (bot, uri, modifications, employee) => {
     const startDiff = Math.abs(start.diff(timerange.start, 'minutes'));
     const endDiff = Math.abs(end.diff(timerange.end, 'minutes'));
 
-    if (endDiff < 5) {
+    if (endDiff < 5 && type === 'out') {
       messageType = 'leave';
       message = {
         date: start.calendar(moment(), {
@@ -71,7 +71,7 @@ export default async (bot, uri, modifications, employee) => {
       };
     }
 
-    if (startDiff < 30) {
+    if (startDiff < 30 && type === 'out') {
       messageType = 'arrive';
       message = {
         date: end.calendar(moment(), {
@@ -82,7 +82,7 @@ export default async (bot, uri, modifications, employee) => {
       };
     }
 
-    if (startDiff < 1 && endDiff < 1) {
+    if (startDiff < 1 && endDiff < 1 && type === 'out') {
       messageType = 'absent';
       message = {
         date: start.calendar(null, {
