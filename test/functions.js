@@ -517,6 +517,34 @@ describe('functions', function functions() {
       expect(timerange.end).to.equal('18:00');
     });
 
+    it('should not mark a workhour as modified if modications don\'t actually change anything', () => { // eslint-disable-line
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const modifications = [{
+        type: 'add',
+        start: moment('7:00', 'HH:mm').weekday(0),
+        end: moment('8:30', 'HH:mm').weekday(0)
+      }, {
+        type: 'sub',
+        start: moment('7:00', 'HH:mm').weekday(0),
+        end: moment('8:30', 'HH:mm').weekday(0)
+      }];
+
+      const [calculated] = workhoursModifications(bot, workhours, modifications);
+      expect(calculated.Timeranges.length).to.equal(1);
+      expect(calculated.modified).to.equal(false);
+
+      const [timerange] = calculated.Timeranges;
+      expect(timerange.start).to.equal('8:30');
+      expect(timerange.end).to.equal('18:00');
+    });
+
     after(cleanup);
   });
 

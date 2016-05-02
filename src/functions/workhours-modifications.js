@@ -5,7 +5,7 @@ export default (bot, workhours, modifications) => {
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
-  const final = workhours.slice(0);
+  const final = _.cloneDeep(workhours);
   modifications.forEach(item => {
     if (item.type === 'add') {
       const Timeranges = [{
@@ -69,6 +69,14 @@ export default (bot, workhours, modifications) => {
         wh.Timeranges.splice(mergable, 1);
       }
     }
+  });
+
+  final.forEach(wh => {
+    const timeranges = wh.Timeranges.map(a => _.pick(a, 'start', 'end'));
+    const original = _.find(workhours, { weekday: wh.weekday });
+    const originalTs = original.Timeranges.map(a => _.pick(a, 'start', 'end'));
+
+    if (_.isEqual(timeranges, originalTs)) wh.modified = false;
   });
 
   return final;
