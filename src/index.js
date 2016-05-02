@@ -135,6 +135,16 @@ To view your list:
 
 To unwatch someone (undo \`notify\`):
 \`schedules !notify @someone\` – do not get a notification from @someone anymore
+
+*Admin commands*:
+These commands can only be run by admins:
+
+\`\`\`
+schedules set @someone
+Wednesday > 8:30 to 15:00, 16:00 to 18:00
+\`\`\`
+
+\`schedules unset @someone Wednesday\`
 `);
 
 bot.help('available', 'See when someone is available in one day',
