@@ -485,6 +485,38 @@ describe('functions', function functions() {
       expect(timerange.end).to.equal('21:10');
     });
 
+    it('should apply modifications on top of each other, in order', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const modifications = [{
+        type: 'add',
+        start: moment('7:00', 'HH:mm').weekday(0),
+        end: moment('8:30', 'HH:mm').weekday(0)
+      }, {
+        type: 'sub',
+        start: moment('7:00', 'HH:mm').weekday(0),
+        end: moment('8:30', 'HH:mm').weekday(0)
+      }, {
+        type: 'add',
+        start: moment('7:00', 'HH:mm').weekday(0),
+        end: moment('8:30', 'HH:mm').weekday(0)
+      }];
+
+      const [calculated] = workhoursModifications(bot, workhours, modifications);
+      expect(calculated.Timeranges.length).to.equal(1);
+      expect(calculated.modified).to.equal(true);
+
+      const [timerange] = calculated.Timeranges;
+      expect(timerange.start).to.equal('07:00');
+      expect(timerange.end).to.equal('18:00');
+    });
+
     after(cleanup);
   });
 

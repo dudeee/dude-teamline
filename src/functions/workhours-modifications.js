@@ -5,54 +5,52 @@ export default (bot, workhours, modifications) => {
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
-  const addmodifications = modifications.filter(h => h.type === 'add').map(item => {
-    const Timeranges = [{
-      start: moment(item.start).format('HH:mm'),
-      end: moment(item.end).format('HH:mm'),
-    }];
+  const final = workhours.slice(0);
+  modifications.forEach(item => {
+    if (item.type === 'add') {
+      const Timeranges = [{
+        start: moment(item.start).format('HH:mm'),
+        end: moment(item.end).format('HH:mm'),
+      }];
 
-    const s = moment(item.start);
-    const weekday = s.weekday();
-    const wh = workhours.find(a => a.weekday === weekday);
-    if (wh) {
-      wh.modified = true;
-      wh.Timeranges = wh.Timeranges.concat(Timeranges);
-      return null;
-    }
-
-    return { weekday, Timeranges, modified: true };
-  }).filter(a => a);
-
-  modifications
-    .filter(h => h.type === 'sub')
-    .forEach(time => {
-      const s = moment(time.start);
-      const e = moment(time.end);
-
-      const wh = workhours.find(a => a.weekday === s.weekday());
+      const s = moment(item.start);
+      const weekday = s.weekday();
+      const wh = final.find(a => a.weekday === weekday);
       if (wh) {
         wh.modified = true;
-        wh.Timeranges.forEach(item => {
-          const iS = moment(item.start, 'HH:mm').weekday(wh.weekday);
-          const iE = moment(item.end, 'HH:mm').weekday(wh.weekday);
+        wh.Timeranges = wh.Timeranges.concat(Timeranges);
+        return;
+      }
+
+      final.push({ weekday, Timeranges, modified: true });
+    } else {
+      const s = moment(item.start);
+      const e = moment(item.end);
+
+      const wh = final.find(a => a.weekday === s.weekday());
+      if (wh) {
+        wh.modified = true;
+        wh.Timeranges.forEach(time => {
+          const iS = moment(time.start, 'HH:mm').weekday(wh.weekday);
+          const iE = moment(time.end, 'HH:mm').weekday(wh.weekday);
 
           if (s.isSameOrAfter(iS) && e.isSameOrBefore(iE)) {
             if (Math.abs(e.diff(iE), 'minutes')) {
               wh.Timeranges.push({
                 start: e.format('HH:mm'),
-                end: item.end
+                end: time.end
               });
             }
 
-            item.end = s.format('HH:mm');
+            time.end = s.format('HH:mm');
           }
 
-          return item;
+          return time;
         });
       }
-    });
+    }
+  });
 
-  const final = workhours.concat(addmodifications);
   final.forEach(wh => {
     wh.Timeranges = wh.Timeranges.filter(({ start, end }) =>
       !moment(start, 'HH:mm').isSame(moment(end, 'HH:mm'))
