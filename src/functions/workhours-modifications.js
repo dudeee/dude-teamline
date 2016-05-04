@@ -78,7 +78,8 @@ export default (bot, workhours, modifications) => {
     for (let i = 0; i < wh.Timeranges.length; i++) {
       const timerange = wh.Timeranges[i];
       const mergable = wh.Timeranges.findIndex(a =>
-        moment(a.start, 'HH:mm').isSame(moment(timerange.end, 'HH:mm'))
+        moment(a.start, 'HH:mm').isSameOrBefore(moment(timerange.end, 'HH:mm')) &&
+        moment(a.end, 'HH:mm').isAfter(moment(timerange.end, 'HH:mm'))
       );
       if (mergable > -1) {
         i--;

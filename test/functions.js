@@ -471,7 +471,7 @@ describe('functions', function functions() {
         end: moment('21:00', 'HH:mm').weekday(0)
       }, {
         type: 'add',
-        start: moment('21:00', 'HH:mm').weekday(0),
+        start: moment('20:00', 'HH:mm').weekday(0),
         end: moment('21:10', 'HH:mm').weekday(0)
       }];
 
