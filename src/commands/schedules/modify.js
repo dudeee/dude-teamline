@@ -246,6 +246,7 @@ export default (bot, uri) => {
     const list = await get(`employee/${employee.id}/schedulemodifications`);
 
     let items;
+    let shift = false;
     if (date.isValid()) {
       date.hours(0).minutes(0);
       items = list.filter(a =>
@@ -254,6 +255,10 @@ export default (bot, uri) => {
       );
     } else {
       items = [list[list.length - 1]];
+      if (items[0].shift) {
+        shift = true;
+        items.push(list[list.length - 2]);
+      }
     }
 
     if (!items.length) {
@@ -261,11 +266,7 @@ export default (bot, uri) => {
       return;
     }
 
-    const modifications = items.map(async a => await del(`schedulemodification/${a.id}`));
-    if (items.lenght === 1 && items[items.length - 1].shift) {
-      const other = list[list.length - 2];
-      modifications.push(await del(`schedulemodification/${other.id}`));
-    }
+    items.map(async a => await del(`schedulemodification/${a.id}`));
 
     items.forEach(modification => {
       const start = moment(modification.start).format('DD MMMM, HH:mm');
@@ -278,13 +279,19 @@ export default (bot, uri) => {
 
     const history = await bot.call('channels.history', {
       channel: bot.find(channel).id,
-      oldest: moment().hours(0).minutes(0).seconds(0).unix()
+      oldest: moment().hours(0).minutes(0).seconds(0).unix(),
     });
 
-    const msg = _.find(history.messages, { username: employee.username });
+    if (date.isValid()) {
+      return;
+    }
 
-    if (msg) {
-      await bot.deleteMessage(channel, msg.ts);
+    const messages = _.filter(history.messages, { username: employee.username });
+
+    if (messages.length) {
+      await Promise.all(messages.slice(0, shift ? 2 : 1).map(msg =>
+        bot.deleteMessage(channel, msg.ts)
+      ));
     }
   });
 
