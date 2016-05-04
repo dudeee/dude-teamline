@@ -33,6 +33,7 @@ export default (bot, uri) => {
     } else {
       weekday = moment();
     }
+    const day = weekday.clone().hours(0).minutes(0).seconds(0).milliseconds(0);
 
     const employee = await findEmployee(uri, bot, message);
     const whs = await get(`employee/${employee.id}/workhours`, {
@@ -40,10 +41,10 @@ export default (bot, uri) => {
     });
     const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
       start: {
-        $gte: weekday.toISOString()
+        $gte: day.toISOString()
       },
       end: {
-        $lte: weekday.clone().add(1, 'week').toISOString()
+        $lte: day.clone().add(1, 'week').toISOString()
       }
     });
 

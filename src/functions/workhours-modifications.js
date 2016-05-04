@@ -6,7 +6,9 @@ export default (bot, workhours, modifications) => {
   moment.locale('en');
 
   const final = _.cloneDeep(workhours);
-  modifications.forEach(item => {
+  modifications.filter(item =>
+    moment(item.end).isAfter(item.start)
+  ).forEach(item => {
     if (item.type === 'add') {
       const Timeranges = [{
         start: moment(item.start).format('H:mm'),
