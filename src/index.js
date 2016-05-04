@@ -123,7 +123,10 @@ The example above could be done like this: \`schedules shift for 2 hours\`
 It's the equivalent of issuing two commands: \`schedules out for 2 hours\` \`schedules in for 2 hours\`
 
 *Undo*:
-You can also undo your changes using \`schedules undo\` or \`sch undo\`.
+You can also undo your last change using \`schedules undo\` or \`sch undo\`.
+You can also clear your modifications of a certain day by adding the date to command:
+\`sch undo tomorrow\` – will clear all modifications applied to tomorrow
+\`sch undo 29 March\` – clear all modifications of 29 March
 
 *Notify*:
 You can choose whether you get notified about someone's modifications or not.
