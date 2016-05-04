@@ -545,6 +545,50 @@ describe('functions', function functions() {
       expect(timerange.end).to.equal('18:00');
     });
 
+    it('should merge `in` modification with workhours', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const cases = [{
+        modifications: [{
+          type: 'add',
+          start: moment('7:00', 'HH:mm').weekday(0),
+          end: moment('19:00', 'HH:mm').weekday(0)
+        }],
+        expected: ['07:00', '19:00']
+      }, {
+        modifications: [{
+          type: 'add',
+          start: moment('7:00', 'HH:mm').weekday(0),
+          end: moment('15:00', 'HH:mm').weekday(0)
+        }],
+        expected: ['07:00', '18:00']
+      }, {
+        modifications: [{
+          type: 'add',
+          start: moment('15:00', 'HH:mm').weekday(0),
+          end: moment('19:00', 'HH:mm').weekday(0)
+        }],
+        expected: ['8:30', '19:00']
+      }];
+
+      cases.forEach(c => {
+        const [calculated] = workhoursModifications(bot, workhours, c.modifications);
+        expect(calculated.Timeranges.length).to.equal(1);
+        expect(calculated.modified).to.equal(true);
+
+        const [timerange] = calculated.Timeranges;
+        const [start, end] = c.expected;
+        expect(timerange.start).to.equal(start);
+        expect(timerange.end).to.equal(end);
+      });
+    });
+
     after(cleanup);
   });
 

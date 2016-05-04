@@ -14,11 +14,28 @@ export default (bot, workhours, modifications) => {
       }];
 
       const s = moment(item.start);
+      const e = moment(item.end);
       const weekday = s.weekday();
       const wh = final.find(a => a.weekday === weekday);
       if (wh) {
         wh.modified = true;
-        wh.Timeranges = wh.Timeranges.concat(Timeranges);
+        let merged = false;
+        wh.Timeranges.forEach(time => {
+          const iS = moment(time.start, 'HH:mm').weekday(weekday);
+          const iE = moment(time.end, 'HH:mm').weekday(weekday);
+
+          if (s.isBefore(iS) && e.isAfter(iS)) {
+            time.start = s.format('HH:mm');
+            merged = true;
+          }
+          if (e.isAfter(iE) && s.isBefore(iE)) {
+            time.end = e.format('HH:mm');
+            merged = true;
+          }
+        });
+        if (!merged) {
+          wh.Timeranges = wh.Timeranges.concat(Timeranges);
+        }
         return;
       }
 
