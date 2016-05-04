@@ -410,7 +410,7 @@ describe('functions', function functions() {
 
       const [first, second] = calculated[0].Timeranges;
       expect(first.start).to.equal('8:30');
-      expect(first.end).to.equal('09:00');
+      expect(first.end).to.equal('9:00');
 
       expect(second.start).to.equal('16:00');
       expect(second.end).to.equal('18:00');
@@ -447,7 +447,7 @@ describe('functions', function functions() {
       const [first, second, third] = calculated.Timeranges;
 
       expect(first.start).to.equal('8:30');
-      expect(first.end).to.equal('09:00');
+      expect(first.end).to.equal('9:00');
 
       expect(second.start).to.equal('11:00');
       expect(second.end).to.equal('18:00');
@@ -513,7 +513,7 @@ describe('functions', function functions() {
       expect(calculated.modified).to.equal(true);
 
       const [timerange] = calculated.Timeranges;
-      expect(timerange.start).to.equal('07:00');
+      expect(timerange.start).to.equal('7:00');
       expect(timerange.end).to.equal('18:00');
     });
 
@@ -545,6 +545,61 @@ describe('functions', function functions() {
       expect(timerange.end).to.equal('18:00');
     });
 
+    it('should work with ranges of multiple days', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }, {
+        weekday: 1,
+        Timeranges: [{
+          start: '8:30',
+          end: '12:00'
+        }, {
+          start: '15:00',
+          end: '18:00'
+        }]
+      }, {
+        weekday: 2,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const cases = [{
+        modifications: [{
+          start: moment('9:00', 'HH:mm').weekday(0),
+          end: moment('16:00', 'HH:mm').weekday(2)
+        }],
+        expected: [{ start: '8:30', end: '9:00' }, null, { start: '16:00', end: '18:00' }]
+      }, {
+        modifications: [{
+          start: moment('7:00', 'HH:mm').weekday(0),
+          end: moment('10:00', 'HH:mm').weekday(3)
+        }],
+        expected: [null, null, null]
+      }];
+
+      cases.forEach(c => {
+        const final = workhoursModifications(bot, workhours, c.modifications);
+        final.forEach((calculated, index) => {
+          const expected = c.expected[index];
+          expect(calculated.Timeranges.length).to.equal(expected ? 1 : 0);
+          expect(calculated.modified).to.equal(true);
+
+          if (expected) {
+            const [timerange] = calculated.Timeranges;
+            const { start, end } = expected;
+            expect(timerange.start).to.equal(start);
+            expect(timerange.end).to.equal(end);
+          }
+        });
+      });
+    });
+
     it('should merge `in` modification with workhours', () => {
       const workhours = [{
         weekday: 0,
@@ -560,14 +615,14 @@ describe('functions', function functions() {
           start: moment('7:00', 'HH:mm').weekday(0),
           end: moment('19:00', 'HH:mm').weekday(0)
         }],
-        expected: ['07:00', '19:00']
+        expected: ['7:00', '19:00']
       }, {
         modifications: [{
           type: 'add',
           start: moment('7:00', 'HH:mm').weekday(0),
           end: moment('15:00', 'HH:mm').weekday(0)
         }],
-        expected: ['07:00', '18:00']
+        expected: ['7:00', '18:00']
       }, {
         modifications: [{
           type: 'add',

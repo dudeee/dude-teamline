@@ -9,8 +9,8 @@ export default (bot, workhours, modifications) => {
   modifications.forEach(item => {
     if (item.type === 'add') {
       const Timeranges = [{
-        start: moment(item.start).format('HH:mm'),
-        end: moment(item.end).format('HH:mm'),
+        start: moment(item.start).format('H:mm'),
+        end: moment(item.end).format('H:mm'),
       }];
 
       const s = moment(item.start);
@@ -18,18 +18,18 @@ export default (bot, workhours, modifications) => {
       const weekday = s.weekday();
       const wh = final.find(a => a.weekday === weekday);
       if (wh) {
-        wh.modified = true;
         let merged = false;
+        wh.modified = true;
         wh.Timeranges.forEach(time => {
           const iS = moment(time.start, 'HH:mm').weekday(weekday);
           const iE = moment(time.end, 'HH:mm').weekday(weekday);
 
           if (s.isBefore(iS) && e.isAfter(iS)) {
-            time.start = s.format('HH:mm');
+            time.start = s.format('H:mm');
             merged = true;
           }
           if (e.isAfter(iE) && s.isBefore(iE)) {
-            time.end = e.format('HH:mm');
+            time.end = e.format('H:mm');
             merged = true;
           }
         });
@@ -44,25 +44,43 @@ export default (bot, workhours, modifications) => {
       const s = moment(item.start);
       const e = moment(item.end);
 
-      const wh = final.find(a => a.weekday === s.weekday());
-      if (wh) {
-        wh.modified = true;
-        wh.Timeranges.forEach(time => {
-          const iS = moment(time.start, 'HH:mm').weekday(wh.weekday);
-          const iE = moment(time.end, 'HH:mm').weekday(wh.weekday);
+      const whs = final.filter(a => a.weekday >= s.weekday() && a.weekday <= e.weekday());
+      if (whs.length) {
+        whs.forEach(wh => {
+          for (let i = 0; i < wh.Timeranges.length; i++) {
+            const time = wh.Timeranges[i];
+            const iS = moment(time.start, 'HH:mm').weekday(wh.weekday);
+            const iE = moment(time.end, 'HH:mm').weekday(wh.weekday);
 
-          if (s.isSameOrAfter(iS) && e.isSameOrBefore(iE)) {
-            if (Math.abs(e.diff(iE), 'minutes')) {
-              wh.Timeranges.push({
-                start: e.format('HH:mm'),
-                end: time.end
-              });
+            if (s.isSameOrBefore(iS) && e.isSameOrAfter(iE)) {
+              wh.Timeranges.splice(i, 1);
+              i--;
+              wh.modified = true;
+              continue;
             }
 
-            time.end = s.format('HH:mm');
-          }
+            if (s.isSameOrAfter(iS) && e.isSameOrBefore(iE)) {
+              if (Math.abs(e.diff(iE), 'minutes')) {
+                wh.Timeranges.push({
+                  start: e.format('H:mm'),
+                  end: time.end
+                });
+              }
 
-          return time;
+              time.end = s.format('H:mm');
+              wh.modified = true;
+            }
+
+            if (s.isSameOrBefore(iS) && e.isSameOrAfter(iS)) {
+              time.start = e.format('H:mm');
+              wh.modified = true;
+            }
+
+            if (s.isSameOrBefore(iE) && e.isSameOrAfter(iE)) {
+              time.end = s.format('H:mm');
+              wh.modified = true;
+            }
+          }
         });
       }
     }
@@ -94,7 +112,13 @@ export default (bot, workhours, modifications) => {
     const original = _.find(workhours, { weekday: wh.weekday });
     const originalTs = original.Timeranges.map(a => _.pick(a, 'start', 'end'));
 
-    if (_.isEqual(timeranges, originalTs)) wh.modified = false;
+    const eq = originalTs.every((a, i) => {
+      const target = timeranges[i];
+      return target &&
+             moment(a.start, 'HH:mm').isSame(moment(target.start, 'HH:mm')) &&
+             moment(a.end, 'HH:mm').isSame(moment(target.end, 'HH:mm'));
+    });
+    if (eq && timeranges.length === originalTs.length) wh.modified = false;
   });
 
   return final;

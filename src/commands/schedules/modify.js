@@ -98,10 +98,10 @@ export default (bot, uri) => {
 
       notifyColleagues(bot, uri, [modification], employee);
     } else if (command === 'out') {
-      if (!timerange) {
-        message.reply(`You don't have a working hour on *${weekday.format('dddd HH:mm')}*.`);
-        return;
-      }
+      // if (!timerange) {
+      //   message.reply(`You don't have a working hour on *${weekday.format('dddd HH:mm')}*.`);
+      //   return;
+      // }
 
       let start;
       let end;
@@ -109,8 +109,8 @@ export default (bot, uri) => {
         start = date.isValid() ? moment(date) : moment();
         end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
       } else if (date.range && !date.from.isValid()) {
+        start = moment();
         end = date.to.isValid() ? moment(date.to) : moment(timerange.end, 'HH:mm');
-        start = moment().dayOfYear(end.dayOfYear());
       } else if (date.range) {
         start = moment(date.from);
         end = moment(date.to);
@@ -140,12 +140,14 @@ export default (bot, uri) => {
         end = moment(timerange.end, 'HH:mm');
       }
 
-      const b = moment(timerange.start, 'HH:mm');
-      const beginning = start.clone().hours(b.hours()).minutes(b.minutes());
-      start = moment.max(start, beginning);
-      const e = moment(timerange.end, 'HH:mm');
-      const finish = end.clone().hours(e.hours()).minutes(e.minutes());
-      end = moment.min(end, finish);
+      if (timerange) {
+        const b = moment(timerange.start, 'HH:mm');
+        const beginning = start.clone().hours(b.hours()).minutes(b.minutes());
+        start = moment.max(start, beginning);
+        const e = moment(timerange.end, 'HH:mm');
+        const finish = end.clone().hours(e.hours()).minutes(e.minutes());
+        end = moment.min(end, finish);
+      }
 
       const modification = {
         type: 'sub',
