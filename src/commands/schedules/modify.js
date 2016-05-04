@@ -14,7 +14,7 @@ export default (bot, uri) => {
   moment.locale('en');
   const t = (key, ...args) => bot.t(`teamline.schedules.${key}`, ...args);
 
-  bot.command('^(schedules?)? <in|out|shift> [string]', async message => { //eslint-disable-line
+  bot.command('^(schedules?|sch)? <in|out|shift> [string]', async message => { //eslint-disable-line
     let [command] = message.match;
     command = command.toLowerCase();
     const line = message.preformatted.split('\n')[0];
@@ -225,7 +225,7 @@ export default (bot, uri) => {
     }
   });
 
-  bot.command('^(schedules?)? undo [string]', async message => {
+  bot.command('^(schedules?|sch)? undo [string]', async message => {
     const [vdate] = message.match;
     const date = parseDate(bot, vdate);
     const employee = await findEmployee(uri, bot, message);
@@ -274,7 +274,7 @@ export default (bot, uri) => {
     }
   });
 
-  bot.command('^schedules? notify [char]', async message => {
+  bot.command('^(schedules?|sch) notify [char]', async message => {
     const [username] = message.match;
 
     const employee = await findEmployee(uri, bot, message);
@@ -307,7 +307,7 @@ export default (bot, uri) => {
     message.reply(t('notify.add', { username }));
   });
 
-  bot.command('^schedules? !notify [char]', async message => {
+  bot.command('^(schedules?|sch) !notify [char]', async message => {
     const [username] = message.match;
 
     const employee = await findEmployee(uri, bot, message);

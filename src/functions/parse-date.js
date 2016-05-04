@@ -42,7 +42,7 @@ export default (bot, string, base = moment(), separators = SEPARATORS) => { // e
     };
   }
 
-  const b = moment(base).add(1);
+  const b = moment(base);
   const diff = b.diff(moment());
 
   return moment(parse(string)).add(diff, 'ms').add(1);

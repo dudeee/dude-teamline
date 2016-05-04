@@ -15,7 +15,7 @@ export default (bot, uri) => {
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
-  bot.command('^(schedules?) set [char] [string] > [string]', async message => {
+  bot.command('^(schedules?|sch) set [char] [string] > [string]', async message => {
     const [username] = message.match;
 
     let employees = [];
@@ -73,7 +73,7 @@ export default (bot, uri) => {
     });
   }, { permissions: ['human-resource', 'admin'] });
 
-  bot.command('^(schedules?) [char] [string]$', async message => {
+  bot.command('^(schedules?|sch) [char] [string]$', async message => {
     const [username, vdate] = message.match;
     const date = vdate ? parseDate(bot, vdate) || moment().weekday(0) : moment().weekday(0);
     if (date.range) {
@@ -117,7 +117,7 @@ export default (bot, uri) => {
     message.reply(`${name} weekly schedule:`, { attachments, websocket: false });
   });
 
-  bot.command('^(schedules?) unset [char] [word]', async message => {
+  bot.command('^(schedules?|sch) unset [char] [word]', async message => {
     let [username, day] = message.match;
     if (!day) {
       day = username;
