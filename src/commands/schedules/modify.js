@@ -14,7 +14,7 @@ export default (bot, uri) => {
   moment.locale('en');
   const t = (key, ...args) => bot.t(`teamline.schedules.${key}`, ...args);
 
-  bot.command('^(sch|schedules?)? <in|out|shift> [string]', async message => { //eslint-disable-line
+  bot.command('^(schedules?)? <in|out|shift> [string]', async message => { //eslint-disable-line
     let [command] = message.match;
     command = command.toLowerCase();
     const line = message.preformatted.split('\n')[0];
@@ -225,12 +225,30 @@ export default (bot, uri) => {
     }
   });
 
-  bot.command('^(sch|schedules?)? undo', async message => {
+  bot.command('^(schedules?)? undo [string]', async message => {
+    const [vdate] = message.match;
+    const date = parseDate(bot, vdate);
     const employee = await findEmployee(uri, bot, message);
     const list = await get(`employee/${employee.id}/schedulemodifications`);
-    const last = list[list.length - 1];
-    const modifications = [await del(`schedulemodification/${last.id}`)]; // eslint-disable-line
-    if (last.shift) {
+
+    let items;
+    if (date.isValid()) {
+      date.hours(0).minutes(0);
+      items = list.filter(a =>
+        moment(a.start).isSameOrAfter(date) &&
+        moment(a.end).isSameOrBefore(date.clone().add(1, 'day'))
+      );
+    } else {
+      items = [list[list.length - 1]];
+    }
+
+    if (!items.length) {
+      message.reply(`No modifications found on ${date.format('dddd, DD MMMM')}.`);
+      return;
+    }
+
+    const modifications = items.map(async a => await del(`schedulemodification/${a.id}`));
+    if (items.lenght === 1 && items[items.length - 1].shift) {
       const other = list[list.length - 2];
       modifications.push(await del(`schedulemodification/${other.id}`));
     }
