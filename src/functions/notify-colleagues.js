@@ -28,7 +28,6 @@ export default async (bot, uri, modifications, employee) => {
     const end = moment(modification.end);
     const distance = Math.abs(moment('00:00', 'HH:mm')
                             .diff(start.clone().hours(0).minutes(0).seconds(0), 'days'));
-    // const duration = Math.abs(start.diff(end, 'days'));
 
     const formatted = {
       start: start.format('HH:mm'),

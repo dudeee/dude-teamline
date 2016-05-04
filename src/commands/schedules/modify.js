@@ -173,7 +173,14 @@ export default (bot, uri) => {
         end = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
       } else if (date.range && !date.from.isValid()) {
         end = date.to.isValid() ? moment(date.to) : moment(timerange.end, 'HH:mm');
-        start = moment().dayOfYear(end.dayOfYear());
+
+        if (between(wh.Timeranges, moment())) {
+          start = moment().dayOfYear(end.dayOfYear());
+        } else {
+          start = moment(timerange.start, 'HH:mm');
+
+          end.add(start.diff(moment())).add(1, 'minute');
+        }
       } else if (date.range) {
         start = moment(date.from);
         end = moment(date.to);
@@ -181,8 +188,13 @@ export default (bot, uri) => {
         start = moment();
         end = date.isValid() ? moment(date) : moment(timerange.end, 'HH:mm');
       } else {
-        start = moment();
-        end = date;
+        if (between(wh.Timeranges, moment())) {
+          start = moment();
+          end = date;
+        } else {
+          start = moment(timerange.start, 'HH:mm');
+          end = date.add(start.diff(moment())).add(1, 'minute');
+        }
       }
 
       const outModification = {

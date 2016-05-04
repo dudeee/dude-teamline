@@ -862,23 +862,22 @@ describe('schedules', function functions() {
             response.json([{
               weekday: moment().weekday(),
               Timeranges: [{
-                start: '8:00',
-                end: '18:00'
+                start: moment().add(1, 'hour').format('HH:mm'),
+                end: moment().add(5, 'hour').format('HH:mm')
               }]
             }]);
 
             next();
           });
 
-          const duration = moment('12:00', 'HH:mm').diff(moment());
           const expected = [{
             type: 'sub',
-            start: moment().toISOString(),
-            end: moment('12:00', 'HH:mm').toISOString()
+            start: moment().add(1, 'hour'),
+            end: moment().add(3, 'hour')
           }, {
             type: 'add',
-            start: moment('18:00', 'HH:mm').toISOString(),
-            end: moment('18:00', 'HH:mm').add(duration).toISOString()
+            start: moment().add(5, 'hour'),
+            end: moment().add(7, 'hour')
           }];
           let i = 0;
 
@@ -889,6 +888,7 @@ describe('schedules', function functions() {
             });
 
             expect(request.body.type).to.equal(expected[i].type);
+
             almostEqual(request.body.start, expected[i].start);
             almostEqual(request.body.end, expected[i].end);
 
@@ -903,7 +903,7 @@ describe('schedules', function functions() {
           });
 
           bot.inject('message', {
-            text: `schedules shift to 12:00`,
+            text: `schedules shift to ${moment().add(2, 'hour').format('HH:mm')}`,
             mention: true,
             user: bot.users[0].id
           });
@@ -964,13 +964,13 @@ describe('schedules', function functions() {
       });
 
       context('duration', () => {
-        it('should set a `sub` modifications from now for the specified duration and `add` the duration to end of working hour', done => { //eslint-disable-line
+        it('should set a `sub` modifications from now for the specified duration and `add` the duration to end of working hour (before schedule)', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
               weekday: moment().weekday(),
               Timeranges: [{
-                start: '8:00',
-                end: '18:00'
+                start: moment().add(1, 'hour').format('HH:mm'),
+                end: moment().add(5, 'hour').format('HH:mm')
               }]
             }]);
 
@@ -979,12 +979,12 @@ describe('schedules', function functions() {
 
           const expected = [{
             type: 'sub',
-            start: moment().toISOString(),
-            end: moment().add(2, 'hours').toISOString()
+            start: moment().add(1, 'hour'),
+            end: moment().add(3, 'hour')
           }, {
             type: 'add',
-            start: moment('18:00', 'HH:mm').toISOString(),
-            end: moment('20:00', 'HH:mm').toISOString()
+            start: moment().add(5, 'hour'),
+            end: moment().add(7, 'hour')
           }];
           let i = 0;
 
@@ -1015,13 +1015,13 @@ describe('schedules', function functions() {
           });
         });
 
-        it('should set a `sub` modifications from now for the specified duration and `add` the duration to end of working hour', done => { //eslint-disable-line
+        it('should set a `sub` modifications from now for the specified duration and `add` the duration to end of working hour (in schedule)', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
             response.json([{
               weekday: moment().weekday(),
               Timeranges: [{
-                start: '8:00',
-                end: '18:00'
+                start: moment().subtract(1, 'hour').format('HH:mm'),
+                end: moment().add(3, 'hour').format('HH:mm')
               }]
             }]);
 
@@ -1030,12 +1030,12 @@ describe('schedules', function functions() {
 
           const expected = [{
             type: 'sub',
-            start: moment().toISOString(),
-            end: moment().add(2, 'hours').toISOString()
+            start: moment(),
+            end: moment().add(2, 'hours')
           }, {
             type: 'add',
-            start: moment('18:00', 'HH:mm').toISOString(),
-            end: moment('20:00', 'HH:mm').toISOString()
+            start: moment().add(3, 'hour'),
+            end: moment().add(5, 'hour')
           }];
           let i = 0;
 
@@ -1575,4 +1575,4 @@ describe('schedules', function functions() {
   after(cleanup);
 });
 
-const almostEqual = (d1, d2) => expect(Math.abs(moment(d1).diff(d2, 'seconds'))).to.be.lt(2);
+const almostEqual = (d1, d2) => expect(Math.abs(moment(d1).diff(d2, 'seconds'))).to.be.lt(60);
