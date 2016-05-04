@@ -816,6 +816,36 @@ describe('functions', function functions() {
       expect(r).to.equal(true);
     });
 
+    it('should notify `leave` if the `in` starts from end of working hour', async done => {
+      const start = moment('18:00', 'HH:mm').weekday(0);
+      const end = moment('19:30', 'HH:mm').weekday(0);
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.leave', {
+          user: `@${teamline.users[0].username}`,
+          date: end.calendar(moment(), {
+            someElse: 'at HH:mm, dddd D MMMM'
+          }),
+        });
+        expect(request.query.text).to.equal(text);
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
+
+        app._router.stack.length -= 1;
+
+        done();
+        next();
+      });
+
+      const modification = {
+        type: 'add',
+        start, end
+      };
+
+      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+      expect(r).to.equal(true);
+    });
+
     it('should notify `arrive` if the `out` starts from beginning of working hour', async done => {
       const start = moment('8:00', 'HH:mm').weekday(0);
       const end = moment('9:00', 'HH:mm').weekday(0);

@@ -28,6 +28,8 @@ export default async (bot, uri, modifications, employee) => {
     const end = moment(modification.end);
     const distance = Math.abs(moment('00:00', 'HH:mm')
                             .diff(start.clone().hours(0).minutes(0).seconds(0), 'days'));
+    // const duration = Math.abs(start.diff(end, 'days'));
+
     const formatted = {
       start: start.format('HH:mm'),
       end: end.format('HH:mm'),
@@ -59,6 +61,18 @@ export default async (bot, uri, modifications, employee) => {
 
     const startDiff = Math.abs(start.diff(timerange.start, 'minutes'));
     const endDiff = Math.abs(end.diff(timerange.end, 'minutes'));
+    const startEndDiff = Math.abs(start.diff(timerange.end, 'minutes'));
+
+    if (startEndDiff < 5 && type === 'in') {
+      messageType = 'leave';
+      message = {
+        date: end.calendar(moment(), {
+          someElse: 'at HH:mm, dddd D MMMM'
+        }),
+        names,
+        reason: modification.reason
+      };
+    }
 
     if (endDiff < 5 && type === 'out') {
       messageType = 'leave';
