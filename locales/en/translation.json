@@ -37,6 +37,7 @@
       },
       "notify": {
         "list": "Your notify list: %list%.",
+        "empty": "Your notify list is empty",
         "duplicate": "You already have %username% in your notify list!",
         "add": "Added %username% to your notify list.",
         "remove": "Removed %username% from your notify list.",

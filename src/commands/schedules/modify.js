@@ -288,7 +288,11 @@ export default (bot, uri) => {
     }
 
     if (!username) {
-      message.reply(t('notify.list', { list: list.join(', ') }));
+      if (list.length) {
+        message.reply(t('notify.list', { list: list.join(', ') }));
+      } else {
+        message.reply(t('notify.empty'));
+      }
       return;
     }
 

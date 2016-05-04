@@ -1365,6 +1365,25 @@ describe('schedules', function functions() {
       });
     });
 
+    it('should indicate the notify list is empty', async done => {
+      await bot.pocket.del(`schedules.notify.${bot.users[0].name}`);
+      socket.on('message', async message => {
+        const msg = JSON.parse(message);
+
+        const text = bot.t('teamline.schedules.notify.empty');
+        expect(msg.text).to.equal(text);
+
+        done();
+        socket._events.message.length -= 1;
+      });
+
+      bot.inject('message', {
+        text: `schedule notify`,
+        mention: true,
+        user: bot.users[0].id
+      });
+    });
+
     after(cleanup);
   });
 
