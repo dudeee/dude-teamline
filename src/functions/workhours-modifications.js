@@ -69,16 +69,19 @@ export default (bot, workhours, modifications) => {
 
               time.end = s.format('H:mm');
               wh.modified = true;
+              continue;
             }
 
             if (s.isSameOrBefore(iS) && e.isSameOrAfter(iS)) {
               time.start = e.format('H:mm');
               wh.modified = true;
+              continue;
             }
 
             if (s.isSameOrBefore(iE) && e.isSameOrAfter(iE)) {
               time.end = s.format('H:mm');
               wh.modified = true;
+              continue;
             }
           }
         });
