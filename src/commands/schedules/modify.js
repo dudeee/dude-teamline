@@ -14,7 +14,7 @@ export default (bot, uri) => {
   moment.locale('en');
   const t = (key, ...args) => bot.t(`teamline.schedules.${key}`, ...args);
 
-  bot.command('^(schedules?)? <in|out|shift> [string]', async message => { //eslint-disable-line
+  bot.command('^(sch|schedules?)? <in|out|shift> [string]', async message => { //eslint-disable-line
     let [command] = message.match;
     command = command.toLowerCase();
     const line = message.preformatted.split('\n')[0];
@@ -225,7 +225,7 @@ export default (bot, uri) => {
     }
   });
 
-  bot.command('^schedules? undo', async message => {
+  bot.command('^(sch|schedules?)? undo', async message => {
     const employee = await findEmployee(uri, bot, message);
     const list = await get(`employee/${employee.id}/schedulemodifications`);
     const last = list[list.length - 1];

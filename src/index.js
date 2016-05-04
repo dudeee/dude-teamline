@@ -95,22 +95,22 @@ Sometimes you want to make a change to your current week's schedule, maybe you a
 for a vacation, maybe you want to work some extra time, or maybe you want to swap two days!
 You can specify a reason for these modifications on the second line of your message. (\`shift+enter\`)
 
-You can omit the \`schedule\` keyword from commands, so \`out\` is equivalent to \`schedule out\`.
+You can omit the \`schedule\` keyword or replace it with \`sch\` in commands, so \`out\` is equivalent to \`schedule out\`.
 
 *In*:
 You can add a timerange to your schedule this way:
 \`schedule in [timerange]\`
-\`schedules in for 2 hours\` – Assumes you will be available 2 extra hours at the end of your working hour
+\`in for 2 hours\` – Assumes you will be available 2 extra hours at the end of your working hour
 So, if your normal working hour is until 18:00, it's assumed that you will stay until 20:00
-\`schedules in 19:00 to 20:00\` – Also accepts specific ranges
-\`schedules in tomorrow 8:00 to tomorrow 18:00\`
+\`in 19:00 to 20:00\` – Also accepts specific ranges
+\`in tomorrow 8:00 to tomorrow 18:00\`
 
 *Out*:
 You can subtract a timerange from your weekly schedule like so:
 \`schedules out [timerange]\`
-\`schedules out for 2 hours\` – Assumes you won't be available for the next 2 hours (from now for 2 hours)
-\`schedules out until 16:00\` – Assumes you won't be available from now until 16:00
-\`schedules out tomorrow 8:30 to tomorrow 15:00\` – Also accepts specific ranges
+\`out for 2 hours\` – Assumes you won't be available for the next 2 hours (from now for 2 hours)
+\`out until 16:00\` – Assumes you won't be available from now until 16:00
+\`out tomorrow 8:30 to tomorrow 15:00\` – Also accepts specific ranges
 
 *Shift*:
 Sometimes you won't be available for some time today, but you want to stay at office for some extra hour.
@@ -123,7 +123,7 @@ The example above could be done like this: \`schedules shift for 2 hours\`
 It's the equivalent of issuing two commands: \`schedules out for 2 hours\` \`schedules in for 2 hours\`
 
 *Undo*:
-You can also undo your changes using \`schedules undo\`.
+You can also undo your changes using \`schedules undo\` or \`sch undo\`.
 
 *Notify*:
 You can choose whether you get notified about someone's modifications or not.
