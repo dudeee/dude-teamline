@@ -601,6 +601,17 @@ describe('functions', function functions() {
       expect(first).to.equal(from);
       expect(second).to.equal(to);
     });
+
+    it('should add 12 hours to second date if it\'s smaller than first one', () => {
+      const first = moment().hours(13).minutes(0).seconds(0);
+      const second = moment().hours(13).minutes(15).seconds(0);
+
+      const range = parseDate(bot, '1pm to 1:15');
+      expect(range.range).to.be.ok;
+
+      almostEqual(first, range.from);
+      almostEqual(second, range.to);
+    });
   });
 
   describe('notify-colleagues', () => {

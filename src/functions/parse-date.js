@@ -28,6 +28,13 @@ export default (bot, string, base = moment(), separators = SEPARATORS) => { // e
       dates.to.add(days, 'days');
     }
 
+    // if they are not days apart, then probably there is a mistake
+    // in AM/PM of dates, e.g. `1pm to 1:15`, the second date is
+    // treated as `AM`
+    if (dates.from > dates.to && dates.from.hour() > 12 && dates.to.hour() <= 12) {
+      dates.to.add(12, 'hours');
+    }
+
     return {
       from: dates.from,
       to: dates.to,
