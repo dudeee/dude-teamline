@@ -253,7 +253,7 @@ export default (bot, uri) => {
       modifications.push(await del(`schedulemodification/${other.id}`));
     }
 
-    modifications.forEach(modification => {
+    items.forEach(modification => {
       const start = moment(modification.start).format('DD MMMM, HH:mm');
       const end = moment(modification.end).format('DD MMMM, HH:mm');
 
