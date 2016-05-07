@@ -100,8 +100,7 @@ export default (bot, uri) => {
         end: end.format('DD MMMM, HH:mm')
       };
 
-      message.reply(`Okay, I see that you are going to be available from `
-                   + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
+      message.reply(t('modify.in', formatted));
 
       notifyColleagues(bot, uri, [m], employee);
     } else if (command === 'out') {
@@ -175,8 +174,7 @@ export default (bot, uri) => {
         start: moment(start).format('DD MMMM, HH:mm'),
         end: moment(end).format('DD MMMM, HH:mm')
       };
-      message.reply(`Okay, I see that you are not going to be available from `
-                   + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
+      message.reply(t('modify.out', formatted));
 
       notifyColleagues(bot, uri, [m], employee);
     } else if (command === 'shift') {
@@ -257,9 +255,7 @@ export default (bot, uri) => {
         end: shiftEnd.format('DD MMMM, HH:mm')
       };
 
-      message.reply(`Okay, I see that you are not going to be available from `
-                   + `*${unavailable.start}* until *${unavailable.end}*, but you will be available ` // eslint-disable-line
-                   + `from *${available.start}* until *${available.end}*. :thumbsup:`);
+      message.reply(t('modify.shift', { available, unavailable }));
 
       notifyColleagues(bot, uri, [mo, mi], employee);
     }

@@ -44,7 +44,10 @@
         "notfound": "You don't have %username% in your notify list!"
       },
       "modify": {
-        "date_not_understood": "Sorry, but I could not understand the date *%date%*.\nYou might want to take a look at `help schedules`."
+        "date_not_understood": "Sorry, but I could not understand the date *%date%*.\nYou might want to take a look at `help schedules`.",
+        "in": "Okay, I see that you are going to be available from *%start%* until *%end%*. :thumbsup:",
+        "out": "Okay, I see that you are not going to be available from *%start%* until *%end%*. :thumbsup:",
+        "shift": "Okay, I see that you are not going to be available from *%unavailable.start%* until *%unavailable.end%*, but you will be available from *%available.start%* until *%available.end%*. :thumbsup:"
       }
     }
   }
