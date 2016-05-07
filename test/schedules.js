@@ -439,7 +439,7 @@ describe('schedules', function functions() {
           });
 
           bot.inject('message', {
-            text: `schedules out ${moment().add(1, 'day').format('dddd')} 15:00 to 15:15`,
+            text: `schedules out tomorrow 15:00 to 15:15`,
             mention: true,
             user: bot.users[0].id
           });
@@ -1215,9 +1215,12 @@ describe('schedules', function functions() {
         });
       });
 
-      it('should remove the last message from user in channel', done => {
+      it('should remove correct message from the channel', async done => {
         const start = moment();
         const end = moment().add(1, 'hour');
+
+        const list = [{ modification: 'last_modification', message: '123' }];
+        await bot.pocket.put('teamline.schedules.notify.messages', list);
 
         app.get('/employee/:id/schedulemodifications', (request, response, next) => {
           response.json([{}, {
@@ -1234,26 +1237,8 @@ describe('schedules', function functions() {
           next();
         });
 
-        app.get('/channels.history', (request, response, next) => {
-          response.json({
-            ok: true,
-            messages: [
-              {
-                ts: 'new',
-                username: bot.users[0].name
-              },
-              {
-                ts: 'old',
-                username: bot.users[0].name
-              }
-            ]
-          });
-
-          next();
-        });
-
         app.get('/chat.delete', (request, response, next) => {
-          expect(request.query.ts).to.equal('new');
+          expect(request.query.ts).to.equal('123');
 
           next();
           done();

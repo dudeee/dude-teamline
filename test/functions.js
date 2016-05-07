@@ -649,15 +649,15 @@ describe('functions', function functions() {
 
   describe('parse-date', () => {
     it('should add `in` to the string in case it\'s missing', () => {
-      const d = moment().add(2, 'hours').toString();
-      const date = parseDate(bot, '2 hours').toString();
-      expect(d).to.equal(date);
+      const d = moment().add(2, 'hours');
+      const date = parseDate(bot, '2 hours');
+      almostEqual(d, date);
     });
 
     it('should strip down keywords from|until|till', () => {
-      const d = moment().add(2, 'hours').toString();
-      const date = parseDate(bot, 'from 2 hours').toString();
-      expect(d).to.equal(date);
+      const d = moment().add(2, 'hours');
+      const date = parseDate(bot, 'from 2 hours');
+      almostEqual(d, date);
     });
 
     it('should take the first part separated by `for` as base, and next part as duration', () => {
@@ -765,8 +765,7 @@ describe('functions', function functions() {
         start, end
       };
 
-      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-      expect(r).to.equal(true);
+      await notifyColleagues(bot, uri, [modification], teamline.users[0]);
     });
 
     it('should notify in modifications', async done => {
@@ -794,8 +793,7 @@ describe('functions', function functions() {
         start, end
       };
 
-      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-      expect(r).to.equal(true);
+      await notifyColleagues(bot, uri, [modification], teamline.users[0]);
     });
 
     it('should give information on both `in` and `out` when using `shift`', async done => {
@@ -837,8 +835,7 @@ describe('functions', function functions() {
         end: inEnd
       }];
 
-      const r = await notifyColleagues(bot, uri, modifications, teamline.users[0]);
-      expect(r).to.equal(true);
+      await notifyColleagues(bot, uri, modifications, teamline.users[0]);
     });
 
     it('should notify `leave` if the `out` extends to end of working hour', async done => {
@@ -867,8 +864,7 @@ describe('functions', function functions() {
         start, end
       };
 
-      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-      expect(r).to.equal(true);
+      await notifyColleagues(bot, uri, [modification], teamline.users[0]);
     });
 
     it('should notify `leave` if the `in` starts from end of working hour', async done => {
@@ -897,8 +893,7 @@ describe('functions', function functions() {
         start, end
       };
 
-      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-      expect(r).to.equal(true);
+      await notifyColleagues(bot, uri, [modification], teamline.users[0]);
     });
 
     it('should notify `arrive` if the `out` starts from beginning of working hour', async done => {
@@ -927,8 +922,7 @@ describe('functions', function functions() {
         start, end
       };
 
-      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-      expect(r).to.equal(true);
+      await notifyColleagues(bot, uri, [modification], teamline.users[0]);
     });
 
     it('should notify `absent` if the `out` for a whole day', async done => {
@@ -962,8 +956,50 @@ describe('functions', function functions() {
         start, end
       };
 
-      const r = await notifyColleagues(bot, uri, [modification], teamline.users[0]);
-      expect(r).to.equal(true);
+      await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+    });
+
+    it('should save the modification, message pair for undoing', async () => {
+      const start = moment('8:00', 'HH:mm').weekday(0);
+      const end = moment('18:00', 'HH:mm').weekday(0);
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.absent', {
+          user: `@${teamline.users[0].username}`,
+          date: start.calendar(null, {
+            sameDay: '[Today]',
+            nextDay: '[Tomorrow]',
+            nextWeek: 'dddd',
+            lastDay: '[Yesterday]',
+            lastWeek: '[Last] dddd',
+            sameElse: 'dddd D MMMM'
+          }),
+        });
+        expect(request.query.text).to.equal(text);
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
+
+        app._router.stack.length -= 1;
+        response.json({
+          ok: true,
+          ts: '123'
+        });
+
+        next();
+      });
+
+      const modification = {
+        id: '000',
+        type: 'sub',
+        start, end
+      };
+
+      await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+
+      const list = await bot.pocket.get('teamline.schedules.notify.messages');
+      const item = list[list.length - 1];
+      expect(item.message).to.equal('123');
+      expect(item.modification).to.equal('000');
     });
 
     after(cleanup);

@@ -6,6 +6,7 @@ import request from '../../functions/request';
 import moment from 'moment';
 import _ from 'lodash';
 
+const POCKET_KEY = 'teamline.schedules.notify.messages';
 export default (bot, uri) => {
   const { get, post, del } = request(bot, uri);
   moment.relativeTimeThreshold('m', 60);
@@ -87,7 +88,7 @@ export default (bot, uri) => {
         status: 'accepted'
       };
 
-      await post(`employee/${employee.id}/schedulemodification`, modification);
+      const m = await post(`employee/${employee.id}/schedulemodification`, modification);
 
       const formatted = {
         start: start.format('DD MMMM, HH:mm'),
@@ -97,7 +98,7 @@ export default (bot, uri) => {
       message.reply(`Okay, I see that you are going to be available from `
                    + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
 
-      notifyColleagues(bot, uri, [modification], employee);
+      notifyColleagues(bot, uri, [m], employee);
     } else if (command === 'out') {
       // if (!timerange) {
       //   message.reply(`You don't have a working hour on *${weekday.format('dddd HH:mm')}*.`);
@@ -158,7 +159,7 @@ export default (bot, uri) => {
         status: 'accepted'
       };
 
-      await post(`employee/${employee.id}/schedulemodification`, modification);
+      const m = await post(`employee/${employee.id}/schedulemodification`, modification);
 
       const formatted = {
         start: moment(start).format('DD MMMM, HH:mm'),
@@ -167,7 +168,7 @@ export default (bot, uri) => {
       message.reply(`Okay, I see that you are not going to be available from `
                    + `*${formatted.start}* until *${formatted.end}*. :thumbsup:`);
 
-      notifyColleagues(bot, uri, [modification], employee);
+      notifyColleagues(bot, uri, [m], employee);
     } else if (command === 'shift') {
       let start;
       let end;
@@ -209,7 +210,7 @@ export default (bot, uri) => {
         status: 'accepted'
       };
 
-      await post(`employee/${employee.id}/schedulemodification`, outModification);
+      const mo = await post(`employee/${employee.id}/schedulemodification`, outModification);
 
       const tend = moment(timerange.end, 'HH:mm');
       const shiftEnd = tend.clone().add(moment(end).diff(start));
@@ -221,7 +222,7 @@ export default (bot, uri) => {
         shift: true,
         status: 'accepted'
       };
-      await post(`employee/${employee.id}/schedulemodification`, inModification);
+      const mi = await post(`employee/${employee.id}/schedulemodification`, inModification);
 
       const unavailable = {
         start: start.format('DD MMMM, HH:mm'),
@@ -236,7 +237,7 @@ export default (bot, uri) => {
                    + `*${unavailable.start}* until *${unavailable.end}*, but you will be available ` // eslint-disable-line
                    + `from *${available.start}* until *${available.end}*. :thumbsup:`);
 
-      notifyColleagues(bot, uri, [outModification, inModification], employee);
+      notifyColleagues(bot, uri, [mo, mi], employee);
     }
   });
 
@@ -247,7 +248,6 @@ export default (bot, uri) => {
     const list = await get(`employee/${employee.id}/schedulemodifications`);
 
     let items;
-    let shift = false;
     if (date.isValid()) {
       date.hours(0).minutes(0);
       items = list.filter(a =>
@@ -257,7 +257,6 @@ export default (bot, uri) => {
     } else {
       items = [list[list.length - 1]];
       if (items[0].shift) {
-        shift = true;
         items.push(list[list.length - 2]);
       }
     }
@@ -276,24 +275,19 @@ export default (bot, uri) => {
       message.reply(`Removed modification from *${start}* until *${end}*.`);
     });
 
+    let pairs;
+    try {
+      pairs = await bot.pocket.get(POCKET_KEY);
+    } catch (e) {
+      pairs = [];
+    }
+
     const channel = _.get(bot.config, 'teamline.schedules.notification.channel') || 'schedules';
 
-    const history = await bot.call('channels.history', {
-      channel: bot.find(channel).id,
-      oldest: moment().hours(0).minutes(0).seconds(0).unix(),
-    });
-
-    if (date.isValid()) {
-      return;
-    }
-
-    const messages = _.filter(history.messages, { username: employee.username });
-
-    if (messages.length) {
-      await Promise.all(messages.slice(0, shift ? 2 : 1).map(msg =>
-        bot.deleteMessage(channel, msg.ts)
-      ));
-    }
+    await Promise.all(items.map(item => {
+      const p = _.find(pairs, { modification: item.id });
+      return bot.deleteMessage(channel, p.message);
+    }));
   });
 
   bot.command('^(schedules?|sch) notify [char]', async message => {

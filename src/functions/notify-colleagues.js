@@ -2,8 +2,16 @@ import moment from 'moment';
 import _ from 'lodash';
 import request from './request';
 
+const POCKET_KEY = 'teamline.schedules.notify.messages';
 export default async (bot, uri, modifications, employee) => {
   if (!modifications.length) return false;
+
+  let list;
+  try {
+    list = await bot.pocket.get(POCKET_KEY);
+  } catch (e) {
+    list = [];
+  }
 
   const channel = _.get(bot.config, 'teamline.schedules.notification.channel', 'schedules');
   const enableNotification = _.get(bot.config, 'teamline.schedules.notification.notify', true);
@@ -20,9 +28,9 @@ export default async (bot, uri, modifications, employee) => {
   });
   const names = enableNotification ? notify.map(a => `@${a}`).join(', ') : '';
 
-  modifications.forEach(send);
+  return Promise.all(modifications.map(send));
 
-  function send(modification) {
+  async function send(modification) {
     const type = modification.type === 'sub' ? 'out' : 'in';
     const start = moment(modification.start);
     const end = moment(modification.end);
@@ -113,9 +121,14 @@ export default async (bot, uri, modifications, employee) => {
 
     const text = bot.t(`teamline.schedules.notification.${messageType}`, message);
 
-    bot.sendAsUser(employee.username, channel, text, {
+    const msg = await bot.sendAsUser(employee.username, channel, text, {
       websocket: false,
       parse: 'full'
     });
+
+    list.push({ modification: modification.id, message: msg.ts });
+    await bot.pocket.put(POCKET_KEY, list);
+
+    return msg;
   }
 };
