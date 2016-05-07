@@ -48,6 +48,22 @@
         "in": "Okay, I see that you are going to be available from *%start%* until *%end%*. :thumbsup:",
         "out": "Okay, I see that you are not going to be available from *%start%* until *%end%*. :thumbsup:",
         "shift": "Okay, I see that you are not going to be available from *%unavailable.start%* until *%unavailable.end%*, but you will be available from *%available.start%* until *%available.end%*. :thumbsup:"
+      },
+      "undo": {
+        "not_found": "No modifications found on %date%.",
+        "removed": "Removed modification from *%start%* until *%end%*."
+      },
+      "workhours": {
+        "success": "Set working hours successfuly.",
+        "clear": "Cleared your working hours.",
+        "clear_day": "Cleared your working hour on *%date%*.",
+        "clear_all_day": "Cleared everyone's working hour on *%date%*.",
+        "list_head": "%name% weekly schedule:",
+        "not_set": "You have not set your working hours yet.",
+        "not_available": "Not available",
+        "from": "From",
+        "to": "To",
+        "total": "Total"
       }
     }
   }

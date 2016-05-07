@@ -15,6 +15,8 @@ export default (bot, uri) => {
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
+  const t = (key, ...args) => bot.t(`teamline.schedules.${key}`, ...args);
+
   bot.command('^(schedules?|sch) set [char] [string] > [string]', async message => {
     const [username] = message.match;
 
@@ -57,17 +59,17 @@ export default (bot, uri) => {
     }
 
     if (!employee) {
-      return message.reply('Set working hours successfuly.');
+      return message.reply(t('workhours.success'));
     }
 
     const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
 
     if (!result.length) {
-      return message.reply('You have not set your working hours yet.');
+      return message.reply(t('workhours.clear'));
     }
 
     const name = username === 'myself' ? 'Your' : `${employee.firstname}'s`;
-    message.reply(`${name} working hours are as follows:`, {
+    message.reply(t('workhours.list_head', { name }), {
       attachments: printHours(result),
       websocket: false
     });
@@ -108,14 +110,14 @@ export default (bot, uri) => {
     });
 
     if (!result.length && !modifications.length) {
-      message.reply('You have not set your working hours yet.');
+      message.reply(t('workhours.not_set'));
       return;
     }
 
     const name = username ? `${employee.firstname}'s` : 'Your';
     const final = workhoursModifications(bot, result, modifications);
     const attachments = printHours(final);
-    message.reply(`${name} weekly schedule:`, { attachments, websocket: false });
+    message.reply(t('workhours.list_head', { name }), { attachments, websocket: false });
   });
 
   bot.command('^(schedules?|sch) unset [char] [word]', async message => {
@@ -129,14 +131,14 @@ export default (bot, uri) => {
 
     if (['everyone', 'all'].includes(username)) {
       await del('workhours', { weekday: date.weekday() });
-      return message.reply(`Cleared everyone's schedule for *${date.format('dddd')}*.`);
+      return message.reply(t('workhours.clear_all_day', { date: date.format('dddd') }));
     }
 
     const employee = await findEmployee(uri, bot, message, username);
 
     await del(`employee/${employee.id}/workhours`, { weekday: date.weekday() });
 
-    message.reply(`Cleared your schedule for *${date.format('dddd')}*.`);
+    return message.reply(t('workhours.clear_day', { date: date.format('dddd') }));
   }, { permissions: ['human-resource', 'admin'] });
 
   const parseWorkhoursList = string =>
@@ -177,18 +179,18 @@ export default (bot, uri) => {
       return {
         title: (modified ? ':pencil2: ' : '') + day,
         color: DAY_COLORS[weekday],
-        fields: Timeranges.reduce((a, t) =>
+        fields: Timeranges.reduce((a, tr) =>
           a.concat([{
-            title: 'From',
-            value: moment(t.start, 'HH:mm').format('HH:mm'),
+            title: t('workhours.from'),
+            value: moment(tr.start, 'HH:mm').format('HH:mm'),
             short: true
           }, {
-            title: 'To',
-            value: moment(t.end, 'HH:mm').format('HH:mm'),
+            title: t('workhours.to'),
+            value: moment(tr.end, 'HH:mm').format('HH:mm'),
             short: true
           }])
         , []),
-        text: Timeranges.length ? '' : 'Not available'
+        text: Timeranges.length ? '' : t('workhours.not_available')
       };
     });
 
@@ -199,7 +201,7 @@ export default (bot, uri) => {
     };
 
     const summary = {
-      title: 'Total',
+      title: t('workhours.total'),
       text: textify(sum)
     };
 

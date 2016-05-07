@@ -282,7 +282,7 @@ export default (bot, uri) => {
     }
 
     if (!items.length) {
-      message.reply(`No modifications found on ${date.format('dddd, DD MMMM')}.`);
+      message.reply(t('undo.not_found', { date: date.format('dddd, DD MMMM') }));
       return;
     }
 
@@ -292,7 +292,7 @@ export default (bot, uri) => {
       const start = moment(modification.start).format('DD MMMM, HH:mm');
       const end = moment(modification.end).format('DD MMMM, HH:mm');
 
-      message.reply(`Removed modification from *${start}* until *${end}*.`);
+      message.reply(t('undo.removed', { start, end }));
     });
 
     let pairs;
