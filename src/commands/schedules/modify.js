@@ -201,6 +201,15 @@ export default (bot, uri) => {
         }
       }
 
+      if (timerange) {
+        const b = moment(timerange.start, 'HH:mm');
+        const beginning = start.clone().hours(b.hours()).minutes(b.minutes());
+        start = moment.max(start, beginning);
+        const e = moment(timerange.end, 'HH:mm');
+        const finish = end.clone().hours(e.hours()).minutes(e.minutes());
+        end = moment.min(end, finish);
+      }
+
       const outModification = {
         type: 'sub',
         start: start.toISOString(),

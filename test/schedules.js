@@ -1117,6 +1117,54 @@ describe('schedules', function functions() {
           });
         });
       });
+
+      it('should limit the daterange to workhour\'s boundaries', done => {
+        app.get('/employee/:id/workhours', (request, response, next) => {
+          response.json([{
+            weekday: moment().weekday(),
+            Timeranges: [{
+              start: '8:00',
+              end: '18:00'
+            }]
+          }]);
+
+          next();
+        });
+
+        const expected = [{
+          start: moment('8:00', 'HH:mm'),
+          end: moment('18:00', 'HH:mm')
+        }, {
+          start: moment('18:00', 'HH:mm'),
+          end: moment('4:00', 'HH:mm').add(1, 'day')
+        }];
+
+        let i = 0;
+
+        app.post('/employee/:id/schedulemodification', (request, response, next) => {
+          response.json({
+            id: 'workhour_id',
+            ...request.body
+          });
+
+          const { start, end } = expected[i++];
+          expect(request.body.type).to.equal('sub');
+          almostEqual(request.body.start, start);
+          almostEqual(request.body.end, end);
+
+          done();
+          next();
+
+          app._router.stack.length -= 2;
+        });
+
+
+        bot.inject('message', {
+          text: 'schedules shift from 1:00 to 23:00',
+          mention: true,
+          user: bot.users[0].id
+        });
+      });
     });
 
     describe('undo', () => {
