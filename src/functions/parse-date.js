@@ -4,6 +4,8 @@ import _ from 'lodash';
 
 const SEPARATORS = /\b(?:to|-|until|till|for)\b/i;
 const KEYWORDS = /\b(?:from|since|at)\b/gi;
+const SYMBOLS = /\.,'"/gi;
+
 export default (bot, string, base = moment(), separators = SEPARATORS) => { // eslint-disable-line
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
@@ -48,5 +50,10 @@ export default (bot, string, base = moment(), separators = SEPARATORS) => { // e
   return moment(parse(string)).add(diff, 'ms').add(1);
 };
 
-const parse = string =>
-  (Date.create(string).isValid() ? Date.create(string) : Date.create(`in ${string}`));
+const parse = (string, retry) => {
+  const date = Date.create(string).isValid() ? Date.create(string) : Date.create(`in ${string}`);
+
+  if (!date.isValid() && !retry) return parse(string.replace(SYMBOLS, ''), true);
+
+  return date;
+};
