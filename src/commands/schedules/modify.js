@@ -80,6 +80,11 @@ export default (bot, uri) => {
         }
       }
 
+      if (!start.isValid() || !end.isValid()) {
+        message.reply(t('modify.date_not_understood', { date: vdate }));
+        return;
+      }
+
       const modification = {
         type: 'add',
         start: start.toISOString(),
@@ -151,6 +156,11 @@ export default (bot, uri) => {
         end = moment.min(end, finish);
       }
 
+      if (!start.isValid() || !end.isValid()) {
+        message.reply(t('modify.date_not_understood', { date: vdate }));
+        return;
+      }
+
       const modification = {
         type: 'sub',
         start: start.toISOString(),
@@ -208,6 +218,11 @@ export default (bot, uri) => {
         const e = moment(timerange.end, 'HH:mm');
         const finish = end.clone().hours(e.hours()).minutes(e.minutes());
         end = moment.min(end, finish);
+      }
+
+      if (!start.isValid() || !end.isValid()) {
+        message.reply(t('modify.date_not_understood', { date: vdate }));
+        return;
       }
 
       const outModification = {
