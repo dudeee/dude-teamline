@@ -35,6 +35,7 @@ export default (bot, uri) => {
 
     if (!computed || !computed.Timeranges.length) {
       message.reply(t('available.not', { date: vdate || 'today' }));
+      return;
     }
 
     const now = computed.Timeranges.some(timerange =>
@@ -51,6 +52,7 @@ export default (bot, uri) => {
 
     if (!tr) {
       message.reply(t('available.not', { date: vdate || 'now until tomorrow' }));
+      return;
     }
 
     const start = tr.start;
