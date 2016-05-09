@@ -1116,6 +1116,57 @@ describe('schedules', function functions() {
             user: bot.users[0].id
           });
         });
+
+        it('should set a `sub` modifications from specified date in past/future for the specified duration and `add` the duration to end of working hour', done => { //eslint-disable-line
+          app.get('/employee/:id/workhours', (request, response, next) => {
+            response.json([{
+              weekday: moment().subtract(1, 'day').weekday(),
+              Timeranges: [{
+                start: '8:00',
+                end: '18:00'
+              }]
+            }]);
+
+            next();
+          });
+
+          const expected = [{
+            type: 'sub',
+            start: moment('12:00', 'HH:mm').subtract(1, 'day').toISOString(),
+            end: moment('14:00', 'HH:mm').subtract(1, 'day').toISOString()
+          }, {
+            type: 'add',
+            start: moment('18:00', 'HH:mm').subtract(1, 'day').toISOString(),
+            end: moment('20:00', 'HH:mm').subtract(1, 'day').toISOString()
+          }];
+          let i = 0;
+
+          app.post('/employee/:id/schedulemodification', (request, response, next) => {
+            response.json({
+              id: 'workhour_id',
+              ...request.body
+            });
+
+            expect(request.body.type).to.equal(expected[i].type);
+            almostEqual(request.body.start, expected[i].start);
+            almostEqual(request.body.end, expected[i].end);
+
+            if (i === 1) {
+              done();
+              next();
+
+              app._router.stack.length -= 2;
+            }
+
+            i++;
+          });
+
+          bot.inject('message', {
+            text: `schedules shift yesterday 12:00 for 2 hours`,
+            mention: true,
+            user: bot.users[0].id
+          });
+        });
       });
 
       it('should limit the daterange to workhour\'s boundaries', done => {

@@ -234,7 +234,7 @@ export default (bot, uri) => {
 
       const mo = await post(`employee/${employee.id}/schedulemodification`, outModification);
 
-      const tend = moment(timerange.end, 'HH:mm');
+      const tend = moment(timerange.end, 'HH:mm').dayOfYear(start.dayOfYear());
       const shiftEnd = tend.clone().add(moment(end).diff(start));
       const inModification = {
         type: 'add',
