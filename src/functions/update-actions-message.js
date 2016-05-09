@@ -14,7 +14,7 @@ export default async (bot, uri, employee) => {
   const allActions = await get(url, { include: ['Project', 'Role'] });
   const list = printList(allActions);
 
-  const history = await bot.call('channels.history', {
+  const history = await bot.api.channels.history({
     channel: bot.find('actions').id,
     oldest: moment().hours(0).minutes(0).seconds(0).unix()
   });

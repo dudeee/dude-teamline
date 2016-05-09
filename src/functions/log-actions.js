@@ -60,7 +60,7 @@ export default async (bot, uri, employee) => {
 
       const text = `${head}\n${list}`;
 
-      const history = await bot.call('channels.history', {
+      const history = await bot.api.channels.history({
         channel: bot.find(name).id,
         oldest: moment().hours(0).minutes(0).seconds(0).unix()
       });
@@ -90,7 +90,7 @@ export default async (bot, uri, employee) => {
         });
 
         if (_.get(bot.config, 'teamline.log.pin')) {
-          await bot.call('pins.add', {
+          await bot.api.pins.add({
             channel,
             timestamp: msg.ts
           });
