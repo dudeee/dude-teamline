@@ -1,5 +1,5 @@
 import express from 'express';
-import bolt from 'slack-bolt';
+import dude from 'dudeee';
 import WebSocket from 'ws';
 import bodyParser from 'body-parser';
 import { slack } from './fixtures';
@@ -14,7 +14,7 @@ export default async function initialize() {
   app.use(bodyParser.urlencoded({ extended: true }));
   const server = app.listen(9091);
 
-  const bot = bolt({
+  const bot = dude({
     log: {
       level: 'silly'
     },
