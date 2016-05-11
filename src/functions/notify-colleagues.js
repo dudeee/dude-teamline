@@ -34,10 +34,10 @@ export default async (bot, uri, modifications, employee) => {
   async function send(modification) {
     const mods = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
       start: {
-        $gte: modification.start.clone().hours(0).minutes(0).seconds(0).toISOString()
+        $gte: moment(modification.start).clone().hours(0).minutes(0).seconds(0).toISOString()
       },
       end: {
-        $lte: modification.end.clone().hours(0).minutes(0).seconds(0).toISOString()
+        $lte: moment(modification.end).clone().hours(0).minutes(0).seconds(0).toISOString()
       }
     });
     const workhours = workhoursModifications(bot, raw, mods);
