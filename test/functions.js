@@ -727,9 +727,19 @@ describe('functions', function functions() {
         response.json([{
           weekday: 0,
           Timeranges: [{
-            start: '8:00',
+            start: '9:00',
             end: '18:00'
           }]
+        }]);
+
+        next();
+      });
+
+      app.get('/employee/:id/schedulemodifications/accepted', (request, response, next) => {
+        response.json([{
+          start: moment('8:00', 'HH:mm').weekday(0).toISOString(),
+          end: moment('9:00', 'HH:mm').weekday(0).toISOString(),
+          type: 'add'
         }]);
 
         next();
@@ -896,7 +906,36 @@ describe('functions', function functions() {
       await notifyColleagues(bot, uri, [modification], teamline.users[0]);
     });
 
-    it('should notify `arrive` if the `out` starts from beginning of working hour', async done => {
+    it('should notify `arrive` if the `in` starts from beginning of working hour', async done => {
+      const start = moment('7:00', 'HH:mm').weekday(0);
+      const end = moment('8:00', 'HH:mm').weekday(0);
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const text = bot.t('teamline.schedules.notification.arrive', {
+          user: `@${teamline.users[0].username}`,
+          date: start.calendar(moment(), {
+            someElse: 'at HH:mm, dddd D MMMM'
+          }),
+        });
+        expect(request.query.text).to.equal(text);
+        expect(request.query.username).to.equal(teamline.users[0].username);
+        expect(request.query.icon_url).to.equal(bot.users[0].profile.image_48);
+
+        app._router.stack.length -= 1;
+
+        done();
+        next();
+      });
+
+      const modification = {
+        type: 'add',
+        start, end
+      };
+
+      await notifyColleagues(bot, uri, [modification], teamline.users[0]);
+    });
+
+    it('should notify `arrive` if the `in` ends in beginning of working hour', async done => {
       const start = moment('8:00', 'HH:mm').weekday(0);
       const end = moment('9:00', 'HH:mm').weekday(0);
 

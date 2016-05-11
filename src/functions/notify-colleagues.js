@@ -1,6 +1,7 @@
 import moment from 'moment';
 import _ from 'lodash';
 import request from './request';
+import workhoursModifications from './workhours-modifications';
 
 const POCKET_KEY = 'teamline.schedules.notify.messages';
 export default async (bot, uri, modifications, employee) => {
@@ -23,7 +24,7 @@ export default async (bot, uri, modifications, employee) => {
   } catch (e) {
     notify = [];
   }
-  const workhours = await get(`employee/${employee.id}/workhours`, {
+  const raw = await get(`employee/${employee.id}/workhours`, {
     include: ['Timerange']
   });
   const names = enableNotification ? notify.map(a => `@${a}`).join(', ') : '';
@@ -31,6 +32,16 @@ export default async (bot, uri, modifications, employee) => {
   return Promise.all(modifications.map(send));
 
   async function send(modification) {
+    const mods = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
+      start: {
+        $gte: modification.start.clone().hours(0).minutes(0).seconds(0).toISOString()
+      },
+      end: {
+        $lte: modification.end.clone().hours(0).minutes(0).seconds(0).toISOString()
+      }
+    });
+    const workhours = workhoursModifications(bot, raw, mods);
+
     const type = modification.type === 'sub' ? 'out' : 'in';
     const start = moment(modification.start);
     const end = moment(modification.end);
@@ -69,11 +80,23 @@ export default async (bot, uri, modifications, employee) => {
     const startDiff = Math.abs(start.diff(timerange.start, 'minutes'));
     const endDiff = Math.abs(end.diff(timerange.end, 'minutes'));
     const startEndDiff = Math.abs(start.diff(timerange.end, 'minutes'));
+    const endStartDiff = Math.abs(end.diff(timerange.start, 'minutes'));
 
     if (startEndDiff < 5 && type === 'in') {
       messageType = 'leave';
       message = {
         date: end.calendar(moment(), {
+          someElse: 'at HH:mm, dddd D MMMM'
+        }),
+        names,
+        reason: modification.reason
+      };
+    }
+
+    if (endStartDiff < 5 && type === 'in') {
+      messageType = 'arrive';
+      message = {
+        date: start.calendar(moment(), {
           someElse: 'at HH:mm, dddd D MMMM'
         }),
         names,
