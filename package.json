@@ -1,6 +1,6 @@
 {
   "name": "dude-teamline",
-  "version": "1.22.48",
+  "version": "1.22.49",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
@@ -39,7 +39,7 @@
     "istanbul": "0.4.2",
     "mocha": "2.4.5",
     "sinon": "1.17.3",
-    "dudeee": "1.17.7",
+    "dudeee": "1.17.9",
     "ws": "1.0.1"
   },
   "dependencies": {
