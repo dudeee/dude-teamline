@@ -20,6 +20,7 @@ export default (bot, workhours, modifications) => {
       const weekday = s.weekday();
       const wh = final.find(a => a.weekday === weekday);
       if (wh) {
+        if (!wh.Timeranges) return;
         let merged = false;
         wh.modified = true;
         wh.Timeranges.forEach(time => {
@@ -49,6 +50,8 @@ export default (bot, workhours, modifications) => {
       const whs = final.filter(a => a.weekday >= s.weekday() && a.weekday <= e.weekday());
       if (whs.length) {
         whs.forEach(wh => {
+          if (!wh.Timeranges) return;
+
           for (let i = 0; i < wh.Timeranges.length; i++) {
             const time = wh.Timeranges[i];
             const iS = moment(time.start, 'HH:mm').weekday(wh.weekday);

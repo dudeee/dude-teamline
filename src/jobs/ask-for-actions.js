@@ -50,10 +50,17 @@ export default async (bot, uri) => {
           continue;
         }
 
-        const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`);
         const rawWorkhours = await get(`employee/${emp.id}/workhours`, {
           weekday: d.weekday(),
           include: 'Timerange'
+        });
+        const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`, {
+          start: {
+            $gte: d.clone().hours(0).minutes(0).seconds(0).toISOString()
+          },
+          end: {
+            $lte: d.clone().hours(0).minutes(0).seconds(0).add(1, 'day').toISOString()
+          }
         });
 
         const [workhours] = workhoursModifications(bot, rawWorkhours, modifications);
