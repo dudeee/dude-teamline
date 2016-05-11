@@ -69,10 +69,14 @@ export default (bot, uri) => {
         end = moment(date.to);
       } else {
         const bet = between(wh.Timeranges, weekday);
-        if (!bet) {
+        const ne = next(wh.Timeranges, weekday);
+        if (!vdate && !bet) {
           start = moment();
           const n = next(wh.Timeranges, weekday);
           end = moment(n.start, 'HH:mm').dayOfYear(date.dayOfYear());
+        } else if (!bet && ne && vdate) {
+          start = date;
+          end = moment(ne.start, 'HH:mm').dayOfYear(date.dayOfYear());
         } else {
           start = moment(timerange.end, 'HH:mm');
           const duration = moment(date).diff(moment());

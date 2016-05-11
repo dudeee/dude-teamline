@@ -603,6 +603,46 @@ describe('schedules', function functions() {
     });
 
     describe('in', () => {
+      context('from', () => {
+        it('should set a `add` modifications from specified time to start of next working hour', done => { //eslint-disable-line
+          app.get('/employee/:id/workhours', (request, response, next) => {
+            response.json([{
+              weekday: moment().weekday(),
+              Timeranges: [{
+                start: '8:00',
+                end: '18:00'
+              }]
+            }]);
+
+            next();
+          });
+
+          app.post('/employee/:id/schedulemodification', (request, response, next) => {
+            response.json({
+              id: 'workhour_id',
+              ...request.body
+            });
+
+            expect(request.body.type).to.equal('add');
+            const start = moment('5:00', 'HH:mm');
+            const end = moment('8:00', 'HH:mm');
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
+
+            done();
+            next();
+
+            app._router.stack.length -= 2;
+          });
+
+          bot.inject('message', {
+            text: `schedules in from 5:00`,
+            mention: true,
+            user: bot.users[0].id
+          });
+        });
+      });
+
       context('to', () => {
         it('should set a `add` modifications from end of working hour to the specified time', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
