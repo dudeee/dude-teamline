@@ -12,83 +12,87 @@ export default async (bot, uri) => {
   let list;
 
   const job = bot.schedule.scheduleJob('0 * * * * * *', async () => {
-    bot.log.verbose('[teamline] ask-for-actions');
     try {
-      list = (await bot.pocket.get('teamline.notified')) || [];
+      bot.log.verbose('[teamline] ask-for-actions');
+      try {
+        list = (await bot.pocket.get('teamline.notified')) || [];
+      } catch (e) {
+        await bot.pocket.put('teamline.notified', []);
+        list = [];
+      }
+
+      const stats = { sent: 0, skipped: 0 };
+      const employees = await get('employees');
+
+      const d = moment();
+      for (const user of bot.users) {
+        const emp = employees.find(a => a.username === user.name);
+        if (!emp) {
+          stats.skipped++;
+          continue;
+        }
+
+        let notified = _.find(list, { id: emp.id });
+        if (notified && moment(notified.expireAt).isSameOrBefore(moment())) {
+          list.splice(list.indexOf(notified), 1);
+          await bot.pocket.put('teamline.notified', list);
+          notified = false;
+        }
+
+        if (notified) {
+          stats.skipped++;
+          continue;
+        }
+
+        const actions = await get(`employee/${emp.id}/actions/today`);
+        if (actions.length) {
+          stats.skipped++;
+          continue;
+        }
+
+        const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`);
+        const rawWorkhours = await get(`employee/${emp.id}/workhours`, {
+          weekday: d.weekday(),
+          include: 'Timerange'
+        });
+
+        const [workhours] = workhoursModifications(bot, rawWorkhours, modifications);
+
+        if (!workhours || !workhours.Timeranges.length) {
+          stats.skipped++;
+          continue;
+        }
+
+        const firstTimerange = workhours.Timeranges[0];
+        const schedule = {
+          start: moment(firstTimerange.start, 'HH:mm'),
+          end: moment(firstTimerange.end, 'HH:mm')
+        };
+
+        const diff = (d.hours() - schedule.start.hours()) * 60
+                   + (d.minutes() - schedule.start.minutes());
+        const delay = _.get(bot.config, 'teamline.actions.ask.delay') || 30;
+        if (diff >= delay) {
+          const expireAt = moment().add(1, 'day')
+                              .hours(schedule.start.hours())
+                              .minutes(schedule.start.minutes() - 1);
+
+          list.push({ id: emp.id, expireAt: expireAt.toISOString() });
+          await bot.pocket.put('teamline.notified', list);
+
+          await bot.sendMessage(user.name, 'Hey! What are you going to do today? :grin:');
+          const RATE_LIMIT = 1000;
+          await wait(RATE_LIMIT);
+          stats.sent++;
+        } else {
+          stats.skipped++;
+        }
+      }
+
+      return stats;
     } catch (e) {
-      await bot.pocket.put('teamline.notified', []);
-      list = [];
+      console.error(e);
     }
-
-    const stats = { sent: 0, skipped: 0 };
-    const employees = await get('employees');
-
-    const d = moment();
-    for (const user of bot.users) {
-      const emp = employees.find(a => a.username === user.name);
-      if (!emp) {
-        stats.skipped++;
-        continue;
-      }
-
-      let notified = _.find(list, { id: emp.id });
-      if (notified && moment(notified.expireAt).isSameOrBefore(moment())) {
-        list.splice(list.indexOf(notified), 1);
-        await bot.pocket.put('teamline.notified', list);
-        notified = false;
-      }
-
-      if (notified) {
-        stats.skipped++;
-        continue;
-      }
-
-      const actions = await get(`employee/${emp.id}/actions/today`);
-      if (actions.length) {
-        stats.skipped++;
-        continue;
-      }
-
-      const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`);
-      const rawWorkhours = await get(`employee/${emp.id}/workhours`, {
-        weekday: d.weekday(),
-        include: 'Timerange'
-      });
-
-      const [workhours] = workhoursModifications(bot, rawWorkhours, modifications);
-
-      if (!workhours || !workhours.Timeranges.length) {
-        stats.skipped++;
-        continue;
-      }
-
-      const firstTimerange = workhours.Timeranges[0];
-      const schedule = {
-        start: moment(firstTimerange.start, 'HH:mm'),
-        end: moment(firstTimerange.end, 'HH:mm')
-      };
-
-      const diff = (d.hours() - schedule.start.hours()) * 60
-                 + (d.minutes() - schedule.start.minutes());
-      const delay = _.get(bot.config, 'teamline.actions.ask.delay') || 30;
-      if (diff >= delay) {
-        const expireAt = moment().add(1, 'day')
-                            .hours(schedule.start.hours())
-                            .minutes(schedule.start.minutes() - 1);
-
-        list.push({ id: emp.id, expireAt: expireAt.toISOString() });
-        await bot.pocket.put('teamline.notified', list);
-
-        await bot.sendMessage(user.name, 'Hey! What are you going to do today? :grin:');
-        const RATE_LIMIT = 1000;
-        await wait(RATE_LIMIT);
-        stats.sent++;
-      } else {
-        stats.skipped++;
-      }
-    }
-
-    return stats;
   });
 
   return job;
