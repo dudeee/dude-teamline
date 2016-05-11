@@ -1,6 +1,6 @@
 {
-  "name": "bolt-teamline",
-  "version": "1.22.46",
+  "name": "dude-teamline",
+  "version": "1.22.47",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     }
   },
   "keywords": [
-    "bolt"
+    "dude"
   ],
   "files": [
     "build",
@@ -39,7 +39,7 @@
     "istanbul": "0.4.2",
     "mocha": "2.4.5",
     "sinon": "1.17.3",
-    "slack-bolt": "1.17.7",
+    "slack-dude": "1.17.7",
     "ws": "1.0.1"
   },
   "dependencies": {
