@@ -644,6 +644,30 @@ describe('functions', function functions() {
       });
     });
 
+    it('should not fail if there is no original workhour on a modification day', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const modifications = [{
+        type: 'add',
+        start: moment('20:00', 'HH:mm').weekday(1),
+        end: moment('21:00', 'HH:mm').weekday(1)
+      }];
+
+      const [first, second] = workhoursModifications(bot, workhours, modifications);
+
+      expect(first.Timeranges.length).to.equal(1);
+      expect(first.modified).to.equal(false);
+
+      expect(second.Timeranges.length).to.equal(1);
+      expect(second.modified).to.equal(true);
+    });
+
     after(cleanup);
   });
 

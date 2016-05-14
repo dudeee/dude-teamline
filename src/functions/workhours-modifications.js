@@ -118,6 +118,9 @@ export default (bot, workhours, modifications) => {
   final.forEach(wh => {
     const timeranges = wh.Timeranges.map(a => _.pick(a, 'start', 'end'));
     const original = _.find(workhours, { weekday: wh.weekday });
+
+    if (!original) return;
+
     const originalTs = original.Timeranges.map(a => _.pick(a, 'start', 'end'));
 
     const eq = originalTs.every((a, i) => {
