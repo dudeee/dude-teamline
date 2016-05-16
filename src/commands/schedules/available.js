@@ -55,8 +55,8 @@ export default (bot, uri) => {
       return;
     }
 
-    const start = tr.start;
-    const end = tr.end;
+    const start = moment(tr.start, 'HH:mm').format('HH:mm');
+    const end = moment(tr.end, 'HH:mm').format('HH:mm');
 
     message.reply(t('available.range', { start: `*${start}*`, end: `*${end}*` }), {
       websocket: false,
