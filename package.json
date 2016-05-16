@@ -1,6 +1,6 @@
 {
   "name": "dude-teamline",
-  "version": "1.22.53",
+  "version": "1.22.54",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "body-parser": "1.15.0",
     "chai": "3.5.0",
     "codecov.io": "0.1.6",
-    "dudeee": "1.18.3",
+    "dudeee": "1.18.7",
     "express": "4.13.4",
     "ghooks": "1.0.3",
     "grunt": "0.4.5",
