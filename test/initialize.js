@@ -3,7 +3,6 @@ import dude from 'dudeee';
 import WebSocket from 'ws';
 import bodyParser from 'body-parser';
 import { slack } from './fixtures';
-import commands from '../build/commands/index';
 
 let instances;
 export default async function initialize() {
@@ -20,7 +19,8 @@ export default async function initialize() {
     },
     teamline: {
       actionsChannel: false,
-      teamsChannels: false
+      teamsChannels: false,
+      uri: 'http://127.0.0.1:9091'
     },
   }, true);
 
@@ -52,7 +52,6 @@ export default async function initialize() {
       instances = {
         server, uri, bot, app, socket, ws
       };
-      commands(bot, uri);
       resolve(instances);
     });
   });

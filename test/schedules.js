@@ -903,7 +903,7 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: moment().add(1, 'hour').format('HH:mm'),
-                end: moment().add(5, 'hour').format('HH:mm')
+                end: moment().add(3, 'hour').format('HH:mm')
               }]
             }]);
 
@@ -913,11 +913,11 @@ describe('schedules', function functions() {
           const expected = [{
             type: 'sub',
             start: moment().add(1, 'hour'),
-            end: moment().add(3, 'hour')
+            end: moment().add(2, 'hour')
           }, {
             type: 'add',
-            start: moment().add(5, 'hour'),
-            end: moment().add(7, 'hour')
+            start: moment().add(3, 'hour'),
+            end: moment().add(4, 'hour')
           }];
           let i = 0;
 
@@ -943,7 +943,7 @@ describe('schedules', function functions() {
           });
 
           bot.inject('message', {
-            text: `schedules shift to ${moment().add(2, 'hour').format('HH:mm')}`,
+            text: `schedules shift to ${moment().add(1, 'hour').format('HH:mm')}`,
             mention: true,
             user: bot.users[0].id
           });

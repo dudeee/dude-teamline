@@ -75,7 +75,7 @@ export default async function sync(bot, uri) {
 
     return stats;
   } catch (e) {
-    bot.log.error('[teamline] syncing slack users failed', e);
+    bot.log.error('[teamline] syncing slack users failed', e, e.stack);
   }
 
   return stats;
