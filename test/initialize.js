@@ -3,6 +3,7 @@ import dude from 'dudeee';
 import WebSocket from 'ws';
 import bodyParser from 'body-parser';
 import { slack } from './fixtures';
+import teamline from '../build/index';
 
 let instances;
 export default async function initialize() {
@@ -48,7 +49,8 @@ export default async function initialize() {
   Object.assign(bot, slack);
 
   return new Promise(resolve => {
-    bot.on('ready', () => {
+    bot.on('ready', async () => {
+      await teamline(bot);
       instances = {
         server, uri, bot, app, socket, ws
       };

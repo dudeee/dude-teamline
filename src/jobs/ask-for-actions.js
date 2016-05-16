@@ -12,6 +12,9 @@ export default async (bot, uri) => {
   let list;
 
   const job = bot.schedule.scheduleJob('0 * * * * * *', async () => {
+    const enabled = _.get(bot.config, 'teamline.ask_for_actions', true);
+    if (!enabled) return null;
+
     try {
       bot.log.verbose('[teamline] ask-for-actions');
       try {
