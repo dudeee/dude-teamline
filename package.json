@@ -1,6 +1,6 @@
 {
   "name": "dude-teamline",
-  "version": "1.22.56",
+  "version": "1.22.57",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {

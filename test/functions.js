@@ -668,6 +668,27 @@ describe('functions', function functions() {
       expect(second.modified).to.equal(true);
     });
 
+    it('should work for modifications in next week', () => {
+      const workhours = [{
+        weekday: 0,
+        Timeranges: [{
+          start: '8:30',
+          end: '18:00'
+        }]
+      }];
+
+      const modifications = [{
+        type: 'sub',
+        start: moment('8:30', 'HH:mm').add(1, 'week').weekday(0),
+        end: moment('18:00', 'HH:mm').add(1, 'week').weekday(0)
+      }];
+
+      const [first] = workhoursModifications(bot, workhours, modifications);
+
+      expect(first.Timeranges.length).to.equal(0);
+      expect(first.modified).to.equal(true);
+    });
+
     after(cleanup);
   });
 

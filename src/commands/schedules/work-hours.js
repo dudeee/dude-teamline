@@ -100,12 +100,15 @@ export default (bot, uri) => {
     const employee = await findEmployee(uri, bot, message, username, exclude);
 
     const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
+    const start = (date.range ? date.from : date).clone().hours(0).minutes(0).seconds(0);
+    const end = (date.range ? date.to : moment(date).add(1, 'week')).hours(0).minutes(0).seconds(0);
+
     const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
       start: {
-        $gt: (date.range ? date.from : date).toISOString()
+        $gte: start.toISOString()
       },
       end: {
-        $lt: (date.range ? date.to : moment(date).add(1, 'week')).toISOString()
+        $lt: end.toISOString()
       }
     });
 

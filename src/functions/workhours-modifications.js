@@ -54,8 +54,8 @@ export default (bot, workhours, modifications) => {
 
           for (let i = 0; i < wh.Timeranges.length; i++) {
             const time = wh.Timeranges[i];
-            const iS = moment(time.start, 'HH:mm').weekday(wh.weekday);
-            const iE = moment(time.end, 'HH:mm').weekday(wh.weekday);
+            const iS = moment(time.start, 'HH:mm').dayOfYear(s.dayOfYear()).weekday(wh.weekday);
+            const iE = moment(time.end, 'HH:mm').dayOfYear(s.dayOfYear()).weekday(wh.weekday);
 
             if (s.isSameOrBefore(iS) && e.isSameOrAfter(iE)) {
               wh.Timeranges.splice(i, 1);
