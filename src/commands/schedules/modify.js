@@ -139,7 +139,7 @@ export default (bot, uri) => {
           wh = _.find(workhours, { weekday: start.weekday() }) || { Timeranges: [] };
           timerange = wh.Timeranges[wh.Timeranges.length - 1];
           if (!timerange) {
-            message.reply(`You don't have a working hour on ${start.format('DD MMMM')}.`);
+            message.reply(t('modify.not_set_day', { date: start.format('DD MMMM') }));
             return;
           }
 

@@ -1,16 +1,17 @@
 {
   "teamline": {
     "user": {
-      "notfound": "Could not find user *%username%*."
+      "not_found": "Could not find user *%username%*.",
+      "not_registered": "User *%username%* is not registered."
     },
     "actions": {
       "define": {
         "success": "Submitted your actions successfuly!",
         "errors": {
-          "duplicate-project": "%model% *%name%* already exists. I assumed you meant to add to the already existing %model%.",
+          "duplicate_project": "%model% *%name%* already exists. I assumed you meant to add to the already existing %model%.",
           "notfound": "%modelName% *%name%* doesn't exist, did you mean to create the %model% using `Team > %newSyntax% > %action%`?",
-          "team-notfound": "Team *%team%* doesn't exist.",
-          "duplicate-action": "Action *%action%* already exists. I assume you accidentaly tried to add a duplicate action."
+          "team_notfound": "Team *%team%* doesn't exist.",
+          "duplicate_action": "Action *%action%* already exists. I assume you accidentaly tried to add a duplicate action."
         }
       },
       "list": {
@@ -20,7 +21,9 @@
         "clear": "Cleared your actions for today.",
         "remove": "Removed action *%action%*"
       },
-      "refresh": "Sent a request to refresh data 🔄"
+      "refresh": "Sent a request to refresh data 🔄",
+      "ask": "Hey! What are you going to do today? :grin:",
+      "today": "Actions for today! :fist:"
     },
     "schedules": {
       "available": {
@@ -47,7 +50,8 @@
         "date_not_understood": "Sorry, but I could not understand the date *%date%*.\nYou might want to take a look at `help schedules`.",
         "in": "Okay, I see that you are going to be available from *%start%* until *%end%*. :thumbsup:",
         "out": "Okay, I see that you are not going to be available from *%start%* until *%end%*. :thumbsup:",
-        "shift": "Okay, I see that you are not going to be available from *%unavailable.start%* until *%unavailable.end%*, but you will be available from *%available.start%* until *%available.end%*. :thumbsup:"
+        "shift": "Okay, I see that you are not going to be available from *%unavailable.start%* until *%unavailable.end%*, but you will be available from *%available.start%* until *%available.end%*. :thumbsup:",
+        "not_set_day": "You don't have a working hour on *%date%*."
       },
       "undo": {
         "not_found": "No modifications found on %date%.",

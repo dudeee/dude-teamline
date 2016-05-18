@@ -1433,7 +1433,7 @@ describe('schedules', function functions() {
       socket.on('message', async message => {
         const msg = JSON.parse(message);
 
-        const text = bot.t('teamline.user.notfound', { username: 'blablabla' });
+        const text = bot.t('teamline.user.not_found', { username: 'blablabla' });
         expect(msg.text).to.equal(text);
 
         done();
@@ -1551,7 +1551,7 @@ describe('schedules', function functions() {
       socket.on('message', async message => {
         const msg = JSON.parse(message);
 
-        const text = bot.t('teamline.user.notfound', { username: 'blablabla' });
+        const text = bot.t('teamline.user.not_found', { username: 'blablabla' });
         expect(msg.text).to.equal(text);
 
         done();

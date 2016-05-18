@@ -90,7 +90,7 @@ export default async (bot, uri) => {
           list.push({ id: emp.id, expireAt: expireAt.toISOString() });
           await bot.pocket.put('teamline.notified', list);
 
-          await bot.sendMessage(user.name, 'Hey! What are you going to do today? :grin:');
+          await bot.sendMessage(user.name, bot.t('teamline.actions.ask'));
           const RATE_LIMIT = 1000;
           await wait(RATE_LIMIT);
           stats.sent++;
@@ -101,7 +101,7 @@ export default async (bot, uri) => {
 
       return stats;
     } catch (e) {
-      console.error(e);
+      bot.log.error('[teamline, ask-for-actions]', e);
     }
   });
 

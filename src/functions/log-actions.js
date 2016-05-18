@@ -12,7 +12,7 @@ export default async (bot, uri, employee) => {
   bot.log.verbose('[teamline] log-actions');
 
   const teams = await get(`employee/${employee.id}/teams`);
-  const head = 'Actions for today! :fist:';
+  const head = bot.t('teamline.actions.today');
 
   for (const team of teams) {
     try {

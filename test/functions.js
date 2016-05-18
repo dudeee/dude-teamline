@@ -163,7 +163,7 @@ describe('functions', function functions() {
     });
 
     it('should update role and project actions', (done) => {
-      const head = 'Actions for today! :fist:';
+      const head = bot.t('teamline.actions.today');
 
       app.get('/channels.history', (request, response, next) => {
         response.json({
@@ -204,7 +204,7 @@ describe('functions', function functions() {
     });
 
     it('should remove message if actions are removed', (done) => {
-      const head = 'Actions for today! :fist:';
+      const head = bot.t('teamline.actions.today');
 
       const backup = _.cloneDeep(teamline.actions);
       teamline.actions.length = 0;
