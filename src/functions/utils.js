@@ -121,7 +121,7 @@ export function fuzzy(string, list, DISTANCE_REQUIRED) {
     distance.push({
       distance: d,
       index: i,
-      length: sentence.length
+      length: sentence.length,
     });
   }
 

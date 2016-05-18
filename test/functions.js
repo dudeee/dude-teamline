@@ -41,7 +41,7 @@ describe('functions', function functions() {
       app.get('/employee', spy);
 
       const message = {
-        user: bot.users[0].id
+        user: bot.users[0].id,
       };
 
       await findEmployee(uri, bot, message, 'me');
@@ -63,7 +63,7 @@ describe('functions', function functions() {
       app.get('/employee', spy);
 
       const message = {
-        user: bot.users[0].id
+        user: bot.users[0].id,
       };
 
       await findEmployee(uri, bot, message, bot.users[1].name);
@@ -75,7 +75,7 @@ describe('functions', function functions() {
 
     it('should throw an error if the username does not exist', async (done) => {
       const message = {
-        user: bot.users[0].id
+        user: bot.users[0].id,
       };
 
       try {
@@ -131,7 +131,7 @@ describe('functions', function functions() {
       app.get('/channels.history', (request, response, next) => {
         response.json({
           ok: true,
-          messages: []
+          messages: [],
         });
 
         next();
@@ -170,8 +170,8 @@ describe('functions', function functions() {
           ok: true,
           messages: [{
             text: head,
-            ts: '123432'
-          }]
+            ts: '123432',
+          }],
         });
 
         next();
@@ -214,8 +214,8 @@ describe('functions', function functions() {
           ok: true,
           messages: [{
             text: head,
-            ts: '123432'
-          }]
+            ts: '123432',
+          }],
         });
 
         next();
@@ -245,7 +245,7 @@ describe('functions', function functions() {
         const actions = _.map(_.filter(teamline.actions, { UserId: user.id }), action => (
           { ...action,
             Project: _.find(teamline.projects, { id: action.ProjectId }),
-            Role: _.find(teamline.roles, { id: action.RoleId })
+            Role: _.find(teamline.roles, { id: action.RoleId }),
           }
         ));
 
@@ -258,7 +258,7 @@ describe('functions', function functions() {
       app.get('/channels.history', (request, response, next) => {
         response.json({
           ok: true,
-          messages: []
+          messages: [],
         });
 
         next();
@@ -289,8 +289,8 @@ describe('functions', function functions() {
           ok: true,
           messages: [{
             text: `${teamline.users[0].firstname} ${teamline.users[0].lastname}`,
-            ts: '123'
-          }]
+            ts: '123',
+          }],
         });
 
         next();
@@ -323,8 +323,8 @@ describe('functions', function functions() {
           ok: true,
           messages: [{
             text: `${teamline.users[0].firstname} ${teamline.users[0].lastname}`,
-            ts: '123'
-          }]
+            ts: '123',
+          }],
         });
 
         next();
@@ -353,14 +353,14 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const modifications = [{
         type: 'add',
         start: moment('20:00', 'HH:mm').weekday(0),
-        end: moment('21:00', 'HH:mm').weekday(0)
+        end: moment('21:00', 'HH:mm').weekday(0),
       }];
 
       const calculated = workhoursModifications(bot, workhours, modifications);
@@ -377,8 +377,8 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30:00',
-          end: '8:30'
-        }]
+          end: '8:30',
+        }],
       }];
 
       const modifications = [];
@@ -392,14 +392,14 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const modifications = [{
         type: 'sub',
         start: moment('9:00', 'HH:mm').weekday(0),
-        end: moment('16:00', 'HH:mm').weekday(0)
+        end: moment('16:00', 'HH:mm').weekday(0),
       }];
 
 
@@ -422,18 +422,18 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const modifications = [{
         type: 'add',
         start: moment('19:00', 'HH:mm').weekday(0),
-        end: moment('20:00', 'HH:mm').weekday(0)
+        end: moment('20:00', 'HH:mm').weekday(0),
       }, {
         type: 'sub',
         start: moment('9:00', 'HH:mm').weekday(0),
-        end: moment('11:00', 'HH:mm').weekday(0)
+        end: moment('11:00', 'HH:mm').weekday(0),
       }];
 
       // expected:
@@ -461,18 +461,18 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const modifications = [{
         type: 'add',
         start: moment('18:00', 'HH:mm').weekday(0),
-        end: moment('21:00', 'HH:mm').weekday(0)
+        end: moment('21:00', 'HH:mm').weekday(0),
       }, {
         type: 'add',
         start: moment('20:00', 'HH:mm').weekday(0),
-        end: moment('21:10', 'HH:mm').weekday(0)
+        end: moment('21:10', 'HH:mm').weekday(0),
       }];
 
       const [calculated] = workhoursModifications(bot, workhours, modifications);
@@ -490,22 +490,22 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const modifications = [{
         type: 'add',
         start: moment('7:00', 'HH:mm').weekday(0),
-        end: moment('8:30', 'HH:mm').weekday(0)
+        end: moment('8:30', 'HH:mm').weekday(0),
       }, {
         type: 'sub',
         start: moment('7:00', 'HH:mm').weekday(0),
-        end: moment('8:30', 'HH:mm').weekday(0)
+        end: moment('8:30', 'HH:mm').weekday(0),
       }, {
         type: 'add',
         start: moment('7:00', 'HH:mm').weekday(0),
-        end: moment('8:30', 'HH:mm').weekday(0)
+        end: moment('8:30', 'HH:mm').weekday(0),
       }];
 
       const [calculated] = workhoursModifications(bot, workhours, modifications);
@@ -522,18 +522,18 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const modifications = [{
         type: 'add',
         start: moment('7:00', 'HH:mm').weekday(0),
-        end: moment('8:30', 'HH:mm').weekday(0)
+        end: moment('8:30', 'HH:mm').weekday(0),
       }, {
         type: 'sub',
         start: moment('7:00', 'HH:mm').weekday(0),
-        end: moment('8:30', 'HH:mm').weekday(0)
+        end: moment('8:30', 'HH:mm').weekday(0),
       }];
 
       const [calculated] = workhoursModifications(bot, workhours, modifications);
@@ -550,37 +550,37 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }, {
         weekday: 1,
         Timeranges: [{
           start: '8:30',
-          end: '12:00'
+          end: '12:00',
         }, {
           start: '15:00',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }, {
         weekday: 2,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const cases = [{
         modifications: [{
           start: moment('9:00', 'HH:mm').weekday(0),
-          end: moment('16:00', 'HH:mm').weekday(2)
+          end: moment('16:00', 'HH:mm').weekday(2),
         }],
-        expected: [{ start: '8:30', end: '9:00' }, null, { start: '16:00', end: '18:00' }]
+        expected: [{ start: '8:30', end: '9:00' }, null, { start: '16:00', end: '18:00' }],
       }, {
         modifications: [{
           start: moment('7:00', 'HH:mm').weekday(0),
-          end: moment('10:00', 'HH:mm').weekday(3)
+          end: moment('10:00', 'HH:mm').weekday(3),
         }],
-        expected: [null, null, null]
+        expected: [null, null, null],
       }];
 
       cases.forEach(c => {
@@ -605,31 +605,31 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const cases = [{
         modifications: [{
           type: 'add',
           start: moment('7:00', 'HH:mm').weekday(0),
-          end: moment('19:00', 'HH:mm').weekday(0)
+          end: moment('19:00', 'HH:mm').weekday(0),
         }],
-        expected: ['7:00', '19:00']
+        expected: ['7:00', '19:00'],
       }, {
         modifications: [{
           type: 'add',
           start: moment('7:00', 'HH:mm').weekday(0),
-          end: moment('15:00', 'HH:mm').weekday(0)
+          end: moment('15:00', 'HH:mm').weekday(0),
         }],
-        expected: ['7:00', '18:00']
+        expected: ['7:00', '18:00'],
       }, {
         modifications: [{
           type: 'add',
           start: moment('15:00', 'HH:mm').weekday(0),
-          end: moment('19:00', 'HH:mm').weekday(0)
+          end: moment('19:00', 'HH:mm').weekday(0),
         }],
-        expected: ['8:30', '19:00']
+        expected: ['8:30', '19:00'],
       }];
 
       cases.forEach(c => {
@@ -649,14 +649,14 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const modifications = [{
         type: 'add',
         start: moment('20:00', 'HH:mm').weekday(1),
-        end: moment('21:00', 'HH:mm').weekday(1)
+        end: moment('21:00', 'HH:mm').weekday(1),
       }];
 
       const [first, second] = workhoursModifications(bot, workhours, modifications);
@@ -673,14 +673,14 @@ describe('functions', function functions() {
         weekday: 0,
         Timeranges: [{
           start: '8:30',
-          end: '18:00'
-        }]
+          end: '18:00',
+        }],
       }];
 
       const modifications = [{
         type: 'sub',
         start: moment('8:30', 'HH:mm').add(1, 'week').weekday(0),
-        end: moment('18:00', 'HH:mm').add(1, 'week').weekday(0)
+        end: moment('18:00', 'HH:mm').add(1, 'week').weekday(0),
       }];
 
       const [first] = workhoursModifications(bot, workhours, modifications);
@@ -763,7 +763,7 @@ describe('functions', function functions() {
       _.set(bot.config, 'teamline.schedules.notification.notify', false);
       app.get('/employee/:id/teams/open', (request, response, next) => {
         response.json([{
-          name: 'test'
+          name: 'test',
         }]);
         next();
       });
@@ -773,8 +773,8 @@ describe('functions', function functions() {
           weekday: 0,
           Timeranges: [{
             start: '9:00',
-            end: '18:00'
-          }]
+            end: '18:00',
+          }],
         }]);
 
         next();
@@ -784,7 +784,7 @@ describe('functions', function functions() {
         response.json([{
           start: moment('8:00', 'HH:mm').weekday(0).toISOString(),
           end: moment('9:00', 'HH:mm').weekday(0).toISOString(),
-          type: 'add'
+          type: 'add',
         }]);
 
         next();
@@ -803,7 +803,7 @@ describe('functions', function functions() {
         const text = bot.t('teamline.schedules.notification.out', {
           user: `@${teamline.users[0].username}`,
           start: start.calendar(),
-          end: end.calendar()
+          end: end.calendar(),
         });
         expect(request.query.text).to.equal(text);
         expect(request.query.username).to.equal(teamline.users[0].username);
@@ -817,7 +817,7 @@ describe('functions', function functions() {
 
       const modification = {
         type: 'sub',
-        start, end
+        start, end,
       };
 
       await notifyColleagues(bot, uri, [modification], teamline.users[0]);
@@ -831,7 +831,7 @@ describe('functions', function functions() {
         const text = bot.t('teamline.schedules.notification.in', {
           user: `@${teamline.users[0].username}`,
           start: start.calendar(),
-          end: end.calendar()
+          end: end.calendar(),
         });
         expect(request.query.text).to.equal(text);
         expect(request.query.username).to.equal(teamline.users[0].username);
@@ -845,7 +845,7 @@ describe('functions', function functions() {
 
       const modification = {
         type: 'add',
-        start, end
+        start, end,
       };
 
       await notifyColleagues(bot, uri, [modification], teamline.users[0]);
@@ -868,7 +868,7 @@ describe('functions', function functions() {
           user: `@${teamline.users[0].username}`,
           start: inStart.calendar(),
           end: inEnd.calendar(),
-        })
+        }),
       ];
       app.get('/chat.postMessage', (request, response, next) => {
         const text = expected[i++];
@@ -883,11 +883,11 @@ describe('functions', function functions() {
 
       const modifications = [{
         type: 'sub',
-        start, end
+        start, end,
       }, {
         type: 'add',
         start: inStart,
-        end: inEnd
+        end: inEnd,
       }];
 
       await notifyColleagues(bot, uri, modifications, teamline.users[0]);
@@ -901,7 +901,7 @@ describe('functions', function functions() {
         const text = bot.t('teamline.schedules.notification.leave', {
           user: `@${teamline.users[0].username}`,
           date: start.calendar(moment(), {
-            someElse: 'at HH:mm, dddd D MMMM'
+            someElse: 'at HH:mm, dddd D MMMM',
           }),
         });
         expect(request.query.text).to.equal(text);
@@ -916,7 +916,7 @@ describe('functions', function functions() {
 
       const modification = {
         type: 'sub',
-        start, end
+        start, end,
       };
 
       await notifyColleagues(bot, uri, [modification], teamline.users[0]);
@@ -930,7 +930,7 @@ describe('functions', function functions() {
         const text = bot.t('teamline.schedules.notification.leave', {
           user: `@${teamline.users[0].username}`,
           date: end.calendar(moment(), {
-            someElse: 'at HH:mm, dddd D MMMM'
+            someElse: 'at HH:mm, dddd D MMMM',
           }),
         });
         expect(request.query.text).to.equal(text);
@@ -945,7 +945,7 @@ describe('functions', function functions() {
 
       const modification = {
         type: 'add',
-        start, end
+        start, end,
       };
 
       await notifyColleagues(bot, uri, [modification], teamline.users[0]);
@@ -959,7 +959,7 @@ describe('functions', function functions() {
         const text = bot.t('teamline.schedules.notification.arrive', {
           user: `@${teamline.users[0].username}`,
           date: start.calendar(moment(), {
-            someElse: 'at HH:mm, dddd D MMMM'
+            someElse: 'at HH:mm, dddd D MMMM',
           }),
         });
         expect(request.query.text).to.equal(text);
@@ -974,7 +974,7 @@ describe('functions', function functions() {
 
       const modification = {
         type: 'add',
-        start, end
+        start, end,
       };
 
       await notifyColleagues(bot, uri, [modification], teamline.users[0]);
@@ -988,7 +988,7 @@ describe('functions', function functions() {
         const text = bot.t('teamline.schedules.notification.arrive', {
           user: `@${teamline.users[0].username}`,
           date: end.calendar(moment(), {
-            someElse: 'at HH:mm, dddd D MMMM'
+            someElse: 'at HH:mm, dddd D MMMM',
           }),
         });
         expect(request.query.text).to.equal(text);
@@ -1003,7 +1003,7 @@ describe('functions', function functions() {
 
       const modification = {
         type: 'sub',
-        start, end
+        start, end,
       };
 
       await notifyColleagues(bot, uri, [modification], teamline.users[0]);
@@ -1022,7 +1022,7 @@ describe('functions', function functions() {
             nextWeek: 'dddd',
             lastDay: '[Yesterday]',
             lastWeek: '[Last] dddd',
-            sameElse: 'dddd D MMMM'
+            sameElse: 'dddd D MMMM',
           }),
         });
         expect(request.query.text).to.equal(text);
@@ -1037,7 +1037,7 @@ describe('functions', function functions() {
 
       const modification = {
         type: 'sub',
-        start, end
+        start, end,
       };
 
       await notifyColleagues(bot, uri, [modification], teamline.users[0]);
@@ -1056,7 +1056,7 @@ describe('functions', function functions() {
             nextWeek: 'dddd',
             lastDay: '[Yesterday]',
             lastWeek: '[Last] dddd',
-            sameElse: 'dddd D MMMM'
+            sameElse: 'dddd D MMMM',
           }),
         });
         expect(request.query.text).to.equal(text);
@@ -1066,7 +1066,7 @@ describe('functions', function functions() {
         app._router.stack.length -= 1;
         response.json({
           ok: true,
-          ts: '123'
+          ts: '123',
         });
 
         next();
@@ -1075,7 +1075,7 @@ describe('functions', function functions() {
       const modification = {
         id: '000',
         type: 'sub',
-        start, end
+        start, end,
       };
 
       await notifyColleagues(bot, uri, [modification], teamline.users[0]);

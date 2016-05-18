@@ -192,9 +192,9 @@ export default (bot, uri) => {
     const query = {
       date: JSON.stringify({
         $gte: +fromDate,
-        $lte: +toDate
+        $lte: +toDate,
       }),
-      include: ['Project', 'Role']
+      include: ['Project', 'Role'],
     };
     const url = `employee/${employee.id}/actions`;
     const actions = (await get(url, query)).filter(action =>

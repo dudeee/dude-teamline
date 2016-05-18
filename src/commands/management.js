@@ -12,7 +12,7 @@ export default async (bot, uri) => {
 
     message.reply(`Created ${t} #${item.id} - ${item.name}`);
   }, {
-    permissions: ['admin', 'human-resource']
+    permissions: ['admin', 'human-resource'],
   });
 
   bot.listen(/^teamline manage done (\w+) (?:#)?(\d+)/i, async message => {
@@ -20,12 +20,12 @@ export default async (bot, uri) => {
     const t = type.toLowerCase();
 
     const item = await put(`${t}/${id}`, {
-      done: true
+      done: true,
     });
 
     message.reply(`Marked ${type} #${item.id} as done.`);
   }, {
-    permissions: ['admin', 'human-resource']
+    permissions: ['admin', 'human-resource'],
   });
 
   bot.listen(/^teamline manage undone (\w+) (?:#)?(\d+)/i, async message => {
@@ -33,12 +33,12 @@ export default async (bot, uri) => {
     const t = type.toLowerCase();
 
     const item = await put(`${t}/${id}`, {
-      done: false
+      done: false,
     });
 
     message.reply(`Marked ${type} #${item.id} as undone.`);
   }, {
-    permissions: ['admin', 'human-resource']
+    permissions: ['admin', 'human-resource'],
   });
 
   bot.listen(/^teamline manage delete (\w+) (?:#)?(\d+)/i, async message => {
@@ -49,7 +49,7 @@ export default async (bot, uri) => {
 
     message.reply(`Deleted ${type} #${item.id}.`);
   }, {
-    permissions: ['admin', 'human-resource']
+    permissions: ['admin', 'human-resource'],
   });
 
   bot.listen(/^teamline manage connect (\w+) (?:#)?(\d+) (?:with|to|->)?\s?(\w+) (?:#)?(\d+)/i, async message => { // eslint-disable-line
@@ -61,7 +61,7 @@ export default async (bot, uri) => {
 
     message.reply(`Connected ${sourceType} #${sourceId} with ${targetType} #${targetId}`);
   }, {
-    permissions: ['admin', 'human-resource']
+    permissions: ['admin', 'human-resource'],
   });
 
   bot.command('^teamline refresh', async message => {

@@ -14,7 +14,7 @@ export default (bot, uri) => {
         unirest.get(url)
           .query(qs.stringify(query))
           .query({
-            [auth.key]: auth.token
+            [auth.key]: auth.token,
           }).end(response => {
             if (response.error) {
               bot.log.error('[teamline] request GET', url, query, 'Error', response.error);
@@ -34,7 +34,7 @@ export default (bot, uri) => {
         unirest.post(url)
           .send(body)
           .query({
-            [auth.key]: auth.token
+            [auth.key]: auth.token,
           }).end(response => {
             if (response.error) {
               bot.log.error('[teamline] request POST', url, body, 'Error', response.error);
@@ -54,7 +54,7 @@ export default (bot, uri) => {
         unirest.put(url)
           .send(body)
           .query({
-            [auth.key]: auth.token
+            [auth.key]: auth.token,
           }).end(response => {
             if (response.error) {
               bot.log.error('[teamline] request PUT', url, body, 'Error', response.error);
@@ -74,7 +74,7 @@ export default (bot, uri) => {
         unirest.delete(url)
           .query(qs.stringify(query))
           .query({
-            [auth.key]: auth.token
+            [auth.key]: auth.token,
           }).end(response => {
             if (response.error) {
               bot.log.error('[teamline] request DELETE', url, query, 'Error', response.error);
@@ -84,6 +84,6 @@ export default (bot, uri) => {
             resolve(response.body);
           });
       });
-    }
+    },
   };
 };

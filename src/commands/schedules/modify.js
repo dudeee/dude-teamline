@@ -38,15 +38,15 @@ export default (bot, uri) => {
 
     const employee = await findEmployee(uri, bot, message);
     const whs = await get(`employee/${employee.id}/workhours`, {
-      include: 'Timerange'
+      include: 'Timerange',
     });
     const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
       start: {
-        $gte: day.toISOString()
+        $gte: day.toISOString(),
       },
       end: {
-        $lte: day.clone().add(1, 'week').toISOString()
-      }
+        $lte: day.clone().add(1, 'week').toISOString(),
+      },
     });
 
     const workhours = workhoursModifications(bot, whs, modifications);
@@ -94,14 +94,14 @@ export default (bot, uri) => {
         start: start.toISOString(),
         end: end.toISOString(),
         reason,
-        status: 'accepted'
+        status: 'accepted',
       };
 
       const m = await post(`employee/${employee.id}/schedulemodification`, modification);
 
       const formatted = {
         start: start.format('DD MMMM, HH:mm'),
-        end: end.format('DD MMMM, HH:mm')
+        end: end.format('DD MMMM, HH:mm'),
       };
 
       message.reply(t('modify.in', formatted));
@@ -169,14 +169,14 @@ export default (bot, uri) => {
         start: start.toISOString(),
         end: end.toISOString(),
         reason,
-        status: 'accepted'
+        status: 'accepted',
       };
 
       const m = await post(`employee/${employee.id}/schedulemodification`, modification);
 
       const formatted = {
         start: moment(start).format('DD MMMM, HH:mm'),
-        end: moment(end).format('DD MMMM, HH:mm')
+        end: moment(end).format('DD MMMM, HH:mm'),
       };
       message.reply(t('modify.out', formatted));
 
@@ -233,7 +233,7 @@ export default (bot, uri) => {
         end: end.toISOString(),
         reason,
         shift: true,
-        status: 'accepted'
+        status: 'accepted',
       };
 
       const mo = await post(`employee/${employee.id}/schedulemodification`, outModification);
@@ -246,17 +246,17 @@ export default (bot, uri) => {
         end: shiftEnd.toISOString(),
         reason,
         shift: true,
-        status: 'accepted'
+        status: 'accepted',
       };
       const mi = await post(`employee/${employee.id}/schedulemodification`, inModification);
 
       const unavailable = {
         start: start.format('DD MMMM, HH:mm'),
-        end: end.format('DD MMMM, HH:mm')
+        end: end.format('DD MMMM, HH:mm'),
       };
       const available = {
         start: tend.format('DD MMMM, HH:mm'),
-        end: shiftEnd.format('DD MMMM, HH:mm')
+        end: shiftEnd.format('DD MMMM, HH:mm'),
       };
 
       message.reply(t('modify.shift', { available, unavailable }));

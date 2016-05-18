@@ -61,8 +61,8 @@ describe('ask-for-actions', function functions() {
           weekday: moment().weekday(),
           Timeranges: [{
             start: moment().subtract(5, 'minutes').format('HH:mm'),
-            end: moment().add(2, 'hours').format('HH:mm')
-          }]
+            end: moment().add(2, 'hours').format('HH:mm'),
+          }],
         }]);
         next();
       });
@@ -70,11 +70,11 @@ describe('ask-for-actions', function functions() {
       app.get('/im.open', (request, response, next) => {
         bot.ims.push({
           user: slack.users[0].id,
-          id: 'D123456'
+          id: 'D123456',
         });
         response.json({
           ok: true,
-          channel: bot.ims[bot.ims.length - 1]
+          channel: bot.ims[bot.ims.length - 1],
         });
         next();
       });
@@ -99,7 +99,7 @@ describe('ask-for-actions', function functions() {
       const user = teamline.users[0];
       await bot.pocket.put('teamline.notified', [{
         id: user.id,
-        expireAt: moment().add(1, 'day')
+        expireAt: moment().add(1, 'day'),
       }]);
 
       const r = await job.job();
@@ -158,8 +158,8 @@ describe('ask-for-actions', function functions() {
           weekday: moment().weekday(),
           Timeranges: [{
             start: moment().subtract(1, 'minutes').format('HH:mm'),
-            end: moment().add(2, 'hours').format('HH:mm')
-          }]
+            end: moment().add(2, 'hours').format('HH:mm'),
+          }],
         }]);
         next();
       });

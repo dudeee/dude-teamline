@@ -55,15 +55,15 @@ export default async (bot, uri) => {
 
         const rawWorkhours = await get(`employee/${emp.id}/workhours`, {
           weekday: d.weekday(),
-          include: 'Timerange'
+          include: 'Timerange',
         });
         const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`, {
           start: {
-            $gte: d.clone().hours(0).minutes(0).seconds(0).toISOString()
+            $gte: d.clone().hours(0).minutes(0).seconds(0).toISOString(),
           },
           end: {
-            $lte: d.clone().hours(0).minutes(0).seconds(0).add(1, 'day').toISOString()
-          }
+            $lte: d.clone().hours(0).minutes(0).seconds(0).add(1, 'day').toISOString(),
+          },
         });
 
         const [workhours] = workhoursModifications(bot, rawWorkhours, modifications);
@@ -76,7 +76,7 @@ export default async (bot, uri) => {
         const firstTimerange = workhours.Timeranges[0];
         const schedule = {
           start: moment(firstTimerange.start, 'HH:mm'),
-          end: moment(firstTimerange.end, 'HH:mm')
+          end: moment(firstTimerange.end, 'HH:mm'),
         };
 
         const diff = (d.hours() - schedule.start.hours()) * 60

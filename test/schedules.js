@@ -45,7 +45,7 @@ describe('schedules', function functions() {
           expect(+request.body.weekday).to.be.oneOf([0, 6]);
           response.json({
             id: 'workhour_id',
-            ...request.body
+            ...request.body,
           });
           next();
         });
@@ -67,7 +67,7 @@ describe('schedules', function functions() {
         });
 
         bot.config.permissions = {
-          admin: [bot.users[0].name]
+          admin: [bot.users[0].name],
         };
 
         bot.inject('message', {
@@ -75,7 +75,7 @@ describe('schedules', function functions() {
                  saturday > 8:30 - 9:00, 10:00 - 18:00
                  sunday > 9:30 - 18:30`,
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
 
@@ -92,7 +92,7 @@ describe('schedules', function functions() {
           expect(+request.body.weekday).to.be.oneOf([0, 6]);
           response.json({
             id: 'workhour_id',
-            ...request.body
+            ...request.body,
           });
           next();
         });
@@ -114,7 +114,7 @@ describe('schedules', function functions() {
         });
 
         bot.config.permissions = {
-          admin: [bot.users[0].name]
+          admin: [bot.users[0].name],
         };
 
         bot.inject('message', {
@@ -122,7 +122,7 @@ describe('schedules', function functions() {
                  saturday > 8:30 - 9:00, 10:00 - 18:00
                  sunday > 9:30 - 18:30`,
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
 
@@ -147,12 +147,12 @@ describe('schedules', function functions() {
         });
 
         bot.config.permissions = {
-          admin: [bot.users[0].name]
+          admin: [bot.users[0].name],
         };
         bot.inject('message', {
           text: `schedules unset ${bot.users[0].name} sunday`,
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
 
@@ -166,13 +166,13 @@ describe('schedules', function functions() {
         });
 
         bot.config.permissions = {
-          admin: [bot.users[0].name]
+          admin: [bot.users[0].name],
         };
 
         bot.inject('message', {
           text: `schedules unset all sunday`,
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
 
@@ -206,8 +206,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: moment().subtract(1, 'hour').format('HH:mm'),
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -216,7 +216,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('sub');
@@ -235,7 +235,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules out\nsome reason`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -247,8 +247,8 @@ describe('schedules', function functions() {
               weekday: moment().add(1, 'day').weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -257,7 +257,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('sub');
@@ -276,7 +276,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules out tomorrow\nsome reason`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -288,8 +288,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -298,7 +298,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('sub');
@@ -317,7 +317,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules out from 12:00\nsome reason`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -329,8 +329,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: moment().subtract(1, 'hour').format('HH:mm'),
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -339,7 +339,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('sub');
@@ -357,7 +357,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules out to 12:00`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -372,8 +372,8 @@ describe('schedules', function functions() {
                 end: '11:00',
               }, {
                 start: '15:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -382,7 +382,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('sub');
@@ -400,7 +400,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules out 15:00 to 15:15`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
 
@@ -413,8 +413,8 @@ describe('schedules', function functions() {
                 end: '11:00',
               }, {
                 start: '15:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -423,7 +423,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('sub');
@@ -441,7 +441,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules out tomorrow 15:00 to 15:15`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -453,8 +453,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: moment().format('HH:mm'),
-                end: moment().add(2, 'hours').format('HH:mm')
-              }]
+                end: moment().add(2, 'hours').format('HH:mm'),
+              }],
             }]);
 
             next();
@@ -463,7 +463,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('sub');
@@ -481,7 +481,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules out for 2 hours`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
 
@@ -491,8 +491,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: moment().format('HH:mm'),
-                end: moment().add(2, 'hours').format('HH:mm')
-              }]
+                end: moment().add(2, 'hours').format('HH:mm'),
+              }],
             }]);
 
             next();
@@ -501,7 +501,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('sub');
@@ -519,7 +519,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules out 2 hours`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
 
@@ -529,8 +529,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -539,7 +539,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('sub');
@@ -557,7 +557,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules out 12:00 for 2 hours`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -568,8 +568,8 @@ describe('schedules', function functions() {
             weekday: moment().weekday(),
             Timeranges: [{
               start: '8:00',
-              end: '18:00'
-            }]
+              end: '18:00',
+            }],
           }]);
 
           next();
@@ -578,7 +578,7 @@ describe('schedules', function functions() {
         app.post('/employee/:id/schedulemodification', (request, response, next) => {
           response.json({
             id: 'workhour_id',
-            ...request.body
+            ...request.body,
           });
 
           expect(request.body.type).to.equal('sub');
@@ -597,7 +597,7 @@ describe('schedules', function functions() {
         bot.inject('message', {
           text: 'schedules out from 1:00 to 23:00',
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
     });
@@ -610,8 +610,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -620,7 +620,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('add');
@@ -638,7 +638,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules in from 5:00`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -650,8 +650,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -660,7 +660,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('add');
@@ -678,7 +678,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules in to 12:00`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -690,8 +690,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -700,7 +700,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('add');
@@ -718,7 +718,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules in from 11:00 to 12:00`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -730,8 +730,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -740,7 +740,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('add');
@@ -758,7 +758,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules in for 2 hours`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
 
@@ -768,8 +768,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -778,7 +778,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('add');
@@ -796,7 +796,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules in 12:00 for 2 hours`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -810,8 +810,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: start.format('HH:mm'),
-                end: end.format('HH:mm')
-              }]
+                end: end.format('HH:mm'),
+              }],
             }]);
 
             next();
@@ -820,7 +820,7 @@ describe('schedules', function functions() {
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal('add');
@@ -836,7 +836,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules in`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -850,8 +850,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -860,18 +860,18 @@ describe('schedules', function functions() {
           const expected = [{
             type: 'sub',
             start: moment('12:00', 'HH:mm').toISOString(),
-            end: moment('18:00', 'HH:mm').toISOString()
+            end: moment('18:00', 'HH:mm').toISOString(),
           }, {
             type: 'add',
             start: moment('18:00', 'HH:mm').toISOString(),
-            end: moment('00:00', 'HH:mm').add(1, 'day').toISOString()
+            end: moment('00:00', 'HH:mm').add(1, 'day').toISOString(),
           }];
           let i = 0;
 
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal(expected[i].type);
@@ -891,7 +891,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules shift from 12:00`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -903,8 +903,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: moment().add(1, 'hour').format('HH:mm'),
-                end: moment().add(3, 'hour').format('HH:mm')
-              }]
+                end: moment().add(3, 'hour').format('HH:mm'),
+              }],
             }]);
 
             next();
@@ -913,18 +913,18 @@ describe('schedules', function functions() {
           const expected = [{
             type: 'sub',
             start: moment().add(1, 'hour'),
-            end: moment().add(2, 'hour')
+            end: moment().add(2, 'hour'),
           }, {
             type: 'add',
             start: moment().add(3, 'hour'),
-            end: moment().add(4, 'hour')
+            end: moment().add(4, 'hour'),
           }];
           let i = 0;
 
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal(expected[i].type);
@@ -945,7 +945,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules shift to ${moment().add(1, 'hour').format('HH:mm')}`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -957,8 +957,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -967,18 +967,18 @@ describe('schedules', function functions() {
           const expected = [{
             type: 'sub',
             start: moment('11:00', 'HH:mm').toISOString(),
-            end: moment('12:00', 'HH:mm').toISOString()
+            end: moment('12:00', 'HH:mm').toISOString(),
           }, {
             type: 'add',
             start: moment('18:00', 'HH:mm').toISOString(),
-            end: moment('19:00', 'HH:mm').toISOString()
+            end: moment('19:00', 'HH:mm').toISOString(),
           }];
           let i = 0;
 
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal(expected[i].type);
@@ -998,7 +998,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules shift from 11:00 to 12:00`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -1010,8 +1010,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: moment().add(1, 'hour').format('HH:mm'),
-                end: moment().add(5, 'hour').format('HH:mm')
-              }]
+                end: moment().add(5, 'hour').format('HH:mm'),
+              }],
             }]);
 
             next();
@@ -1020,18 +1020,18 @@ describe('schedules', function functions() {
           const expected = [{
             type: 'sub',
             start: moment().add(1, 'hour'),
-            end: moment().add(3, 'hour')
+            end: moment().add(3, 'hour'),
           }, {
             type: 'add',
             start: moment().add(5, 'hour'),
-            end: moment().add(7, 'hour')
+            end: moment().add(7, 'hour'),
           }];
           let i = 0;
 
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal(expected[i].type);
@@ -1051,7 +1051,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules shift for 2 hours`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
 
@@ -1061,8 +1061,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: moment().subtract(1, 'hour').format('HH:mm'),
-                end: moment().add(3, 'hour').format('HH:mm')
-              }]
+                end: moment().add(3, 'hour').format('HH:mm'),
+              }],
             }]);
 
             next();
@@ -1071,18 +1071,18 @@ describe('schedules', function functions() {
           const expected = [{
             type: 'sub',
             start: moment(),
-            end: moment().add(2, 'hours')
+            end: moment().add(2, 'hours'),
           }, {
             type: 'add',
             start: moment().add(3, 'hour'),
-            end: moment().add(5, 'hour')
+            end: moment().add(5, 'hour'),
           }];
           let i = 0;
 
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal(expected[i].type);
@@ -1102,7 +1102,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules shift 2 hours`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
 
@@ -1112,8 +1112,8 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -1122,18 +1122,18 @@ describe('schedules', function functions() {
           const expected = [{
             type: 'sub',
             start: moment('12:00', 'HH:mm').toISOString(),
-            end: moment('14:00', 'HH:mm').toISOString()
+            end: moment('14:00', 'HH:mm').toISOString(),
           }, {
             type: 'add',
             start: moment('18:00', 'HH:mm').toISOString(),
-            end: moment('20:00', 'HH:mm').toISOString()
+            end: moment('20:00', 'HH:mm').toISOString(),
           }];
           let i = 0;
 
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal(expected[i].type);
@@ -1153,7 +1153,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules shift 12:00 for 2 hours`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
 
@@ -1163,8 +1163,8 @@ describe('schedules', function functions() {
               weekday: moment().subtract(1, 'day').weekday(),
               Timeranges: [{
                 start: '8:00',
-                end: '18:00'
-              }]
+                end: '18:00',
+              }],
             }]);
 
             next();
@@ -1173,18 +1173,18 @@ describe('schedules', function functions() {
           const expected = [{
             type: 'sub',
             start: moment('12:00', 'HH:mm').subtract(1, 'day').toISOString(),
-            end: moment('14:00', 'HH:mm').subtract(1, 'day').toISOString()
+            end: moment('14:00', 'HH:mm').subtract(1, 'day').toISOString(),
           }, {
             type: 'add',
             start: moment('18:00', 'HH:mm').subtract(1, 'day').toISOString(),
-            end: moment('20:00', 'HH:mm').subtract(1, 'day').toISOString()
+            end: moment('20:00', 'HH:mm').subtract(1, 'day').toISOString(),
           }];
           let i = 0;
 
           app.post('/employee/:id/schedulemodification', (request, response, next) => {
             response.json({
               id: 'workhour_id',
-              ...request.body
+              ...request.body,
             });
 
             expect(request.body.type).to.equal(expected[i].type);
@@ -1204,7 +1204,7 @@ describe('schedules', function functions() {
           bot.inject('message', {
             text: `schedules shift yesterday 12:00 for 2 hours`,
             mention: true,
-            user: bot.users[0].id
+            user: bot.users[0].id,
           });
         });
       });
@@ -1215,8 +1215,8 @@ describe('schedules', function functions() {
             weekday: moment().weekday(),
             Timeranges: [{
               start: '8:00',
-              end: '18:00'
-            }]
+              end: '18:00',
+            }],
           }]);
 
           next();
@@ -1224,10 +1224,10 @@ describe('schedules', function functions() {
 
         const expected = [{
           start: moment('8:00', 'HH:mm'),
-          end: moment('18:00', 'HH:mm')
+          end: moment('18:00', 'HH:mm'),
         }, {
           start: moment('18:00', 'HH:mm'),
-          end: moment('4:00', 'HH:mm').add(1, 'day')
+          end: moment('4:00', 'HH:mm').add(1, 'day'),
         }];
 
         let i = 0;
@@ -1235,7 +1235,7 @@ describe('schedules', function functions() {
         app.post('/employee/:id/schedulemodification', (request, response, next) => {
           response.json({
             id: 'workhour_id',
-            ...request.body
+            ...request.body,
           });
 
           const { start, end } = expected[i++];
@@ -1253,7 +1253,7 @@ describe('schedules', function functions() {
         bot.inject('message', {
           text: 'schedules shift from 1:00 to 23:00',
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
     });
@@ -1266,7 +1266,7 @@ describe('schedules', function functions() {
         app.get('/employee/:id/schedulemodifications', (request, response, next) => {
           response.json([{}, {
             id: 'last_modification',
-            start, end
+            start, end,
           }]);
           next();
         });
@@ -1283,7 +1283,7 @@ describe('schedules', function functions() {
         bot.inject('message', {
           text: 'schedules undo',
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
 
@@ -1295,11 +1295,11 @@ describe('schedules', function functions() {
           response.json([{}, {
             id: 'other_modification',
             start, end,
-            shift: true
+            shift: true,
           }, {
             id: 'last_modification',
             start, end,
-            shift: true
+            shift: true,
           }]);
 
           next();
@@ -1319,7 +1319,7 @@ describe('schedules', function functions() {
         bot.inject('message', {
           text: 'schedules undo',
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
 
@@ -1328,11 +1328,11 @@ describe('schedules', function functions() {
           response.json([{}, {
             id: 'other_modification',
             start: moment().add(1, 'day'),
-            end: moment().add(1, 'day')
+            end: moment().add(1, 'day'),
           }, {
             id: 'last_modification',
             start: moment(),
-            end: moment().add(1, 'hour')
+            end: moment().add(1, 'hour'),
           }]);
 
           next();
@@ -1350,7 +1350,7 @@ describe('schedules', function functions() {
         bot.inject('message', {
           text: 'schedules undo tomorrow',
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
 
@@ -1364,7 +1364,7 @@ describe('schedules', function functions() {
         app.get('/employee/:id/schedulemodifications', (request, response, next) => {
           response.json([{}, {
             id: 'last_modification',
-            start, end
+            start, end,
           }]);
           next();
         });
@@ -1387,7 +1387,7 @@ describe('schedules', function functions() {
         bot.inject('message', {
           text: 'schedules undo',
           mention: true,
-          user: bot.users[0].id
+          user: bot.users[0].id,
         });
       });
     });
@@ -1425,7 +1425,7 @@ describe('schedules', function functions() {
       bot.inject('message', {
         text: `schedule notify ${bot.users[1].name}`,
         mention: true,
-        user: bot.users[0].id
+        user: bot.users[0].id,
       });
     });
 
@@ -1443,7 +1443,7 @@ describe('schedules', function functions() {
       bot.inject('message', {
         text: `schedule notify blablabla`,
         mention: true,
-        user: bot.users[0].id
+        user: bot.users[0].id,
       });
     });
 
@@ -1464,7 +1464,7 @@ describe('schedules', function functions() {
       bot.inject('message', {
         text: `schedule notify ${bot.users[1].name}`,
         mention: true,
-        user: bot.users[0].id
+        user: bot.users[0].id,
       });
     });
 
@@ -1485,7 +1485,7 @@ describe('schedules', function functions() {
       bot.inject('message', {
         text: `schedule notify`,
         mention: true,
-        user: bot.users[0].id
+        user: bot.users[0].id,
       });
     });
 
@@ -1504,7 +1504,7 @@ describe('schedules', function functions() {
       bot.inject('message', {
         text: `schedule notify`,
         mention: true,
-        user: bot.users[0].id
+        user: bot.users[0].id,
       });
     });
 
@@ -1543,7 +1543,7 @@ describe('schedules', function functions() {
       bot.inject('message', {
         text: `schedule !notify ${bot.users[1].name}`,
         mention: true,
-        user: bot.users[0].id
+        user: bot.users[0].id,
       });
     });
 
@@ -1561,7 +1561,7 @@ describe('schedules', function functions() {
       bot.inject('message', {
         text: `schedule !notify blablabla`,
         mention: true,
-        user: bot.users[0].id
+        user: bot.users[0].id,
       });
     });
 
@@ -1580,7 +1580,7 @@ describe('schedules', function functions() {
       bot.inject('message', {
         text: `schedule !notify ${bot.users[1].name}`,
         mention: true,
-        user: bot.users[0].id
+        user: bot.users[0].id,
       });
     });
 
@@ -1603,8 +1603,8 @@ describe('schedules', function functions() {
           weekday: moment().weekday(),
           Timeranges: [{
             start: moment().subtract(1, 'hour').format('HH:mm'),
-            end: moment().add(1, 'hour').format('HH:mm')
-          }]
+            end: moment().add(1, 'hour').format('HH:mm'),
+          }],
         }]);
         next();
       });
@@ -1626,7 +1626,7 @@ describe('schedules', function functions() {
 
       bot.inject('message', {
         text: 'available someone',
-        mention: true
+        mention: true,
       });
     });
 
@@ -1636,11 +1636,11 @@ describe('schedules', function functions() {
           weekday: moment().weekday(),
           Timeranges: [{
             start: moment().subtract(2, 'hour').format('HH:mm'),
-            end: moment().subtract(1, 'hour').format('HH:mm')
+            end: moment().subtract(1, 'hour').format('HH:mm'),
           }, {
             start: moment().add(1, 'hour').format('HH:mm'),
-            end: moment().add(2, 'hour').format('HH:mm')
-          }]
+            end: moment().add(2, 'hour').format('HH:mm'),
+          }],
         }]);
         next();
       });
@@ -1654,7 +1654,7 @@ describe('schedules', function functions() {
       app.get('/chat.postMessage', (request, response, next) => {
         expect(request.query.text).to.equal(t('available.range', {
           start: `*${moment().add(1, 'hour').format('HH:mm')}*`,
-          end: `*${moment().add(2, 'hour').format('HH:mm')}*`
+          end: `*${moment().add(2, 'hour').format('HH:mm')}*`,
         }));
 
         app._router.stack.length -= 3;
@@ -1664,7 +1664,7 @@ describe('schedules', function functions() {
 
       bot.inject('message', {
         text: 'available someone',
-        mention: true
+        mention: true,
       });
     });
 
@@ -1691,7 +1691,7 @@ describe('schedules', function functions() {
 
       bot.inject('message', {
         text: 'available someone tomorrow',
-        mention: true
+        mention: true,
       });
     });
   });

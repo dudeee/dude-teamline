@@ -16,7 +16,7 @@ export default async (bot, uri, employee) => {
 
   const history = await bot.api.channels.history({
     channel: bot.find('actions').id,
-    oldest: moment().hours(0).minutes(0).seconds(0).unix()
+    oldest: moment().hours(0).minutes(0).seconds(0).unix(),
   });
 
   const userinfo = `${employee.firstname} ${employee.lastname}`;
@@ -34,7 +34,7 @@ export default async (bot, uri, employee) => {
       websocket: false,
       parse: 'full',
       link_names: true,
-      as_user: true
+      as_user: true,
     });
     return;
   }
@@ -45,7 +45,7 @@ export default async (bot, uri, employee) => {
     websocket: false,
     link_names: true,
     parse: 'full',
-    as_user: true
+    as_user: true,
   });
   return;
 };

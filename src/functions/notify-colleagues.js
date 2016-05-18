@@ -25,7 +25,7 @@ export default async (bot, uri, modifications, employee) => {
     notify = [];
   }
   const raw = await get(`employee/${employee.id}/workhours`, {
-    include: ['Timerange']
+    include: ['Timerange'],
   });
   const names = enableNotification ? notify.map(a => `@${a}`).join(', ') : '';
 
@@ -34,11 +34,11 @@ export default async (bot, uri, modifications, employee) => {
   async function send(modification) {
     const mods = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
       start: {
-        $gte: moment(modification.start).clone().hours(0).minutes(0).seconds(0).toISOString()
+        $gte: moment(modification.start).clone().hours(0).minutes(0).seconds(0).toISOString(),
       },
       end: {
-        $lte: moment(modification.end).clone().hours(0).minutes(0).seconds(0).toISOString()
-      }
+        $lte: moment(modification.end).clone().hours(0).minutes(0).seconds(0).toISOString(),
+      },
     });
     const workhours = workhoursModifications(bot, raw, mods);
 
@@ -51,7 +51,7 @@ export default async (bot, uri, modifications, employee) => {
     const formatted = {
       start: start.format('HH:mm'),
       end: end.format('HH:mm'),
-      date: start.format('dddd D MMMM')
+      date: start.format('dddd D MMMM'),
     };
 
     if (distance < 7) {
@@ -65,7 +65,7 @@ export default async (bot, uri, modifications, employee) => {
     const last = workhour.Timeranges[workhour.Timeranges.length - 1];
     const timerange = {
       start: moment(first.start, 'HH:mm').dayOfYear(start.dayOfYear()),
-      end: moment(last.end, 'HH:mm').dayOfYear(end.dayOfYear())
+      end: moment(last.end, 'HH:mm').dayOfYear(end.dayOfYear()),
     };
 
     let message = {
@@ -73,7 +73,7 @@ export default async (bot, uri, modifications, employee) => {
       end: formatted.end,
       date: formatted.date,
       names,
-      reason: modification.reason
+      reason: modification.reason,
     };
     let messageType = type;
 
@@ -86,10 +86,10 @@ export default async (bot, uri, modifications, employee) => {
       messageType = 'leave';
       message = {
         date: end.calendar(moment(), {
-          someElse: 'at HH:mm, dddd D MMMM'
+          someElse: 'at HH:mm, dddd D MMMM',
         }),
         names,
-        reason: modification.reason
+        reason: modification.reason,
       };
     }
 
@@ -97,10 +97,10 @@ export default async (bot, uri, modifications, employee) => {
       messageType = 'arrive';
       message = {
         date: start.calendar(moment(), {
-          someElse: 'at HH:mm, dddd D MMMM'
+          someElse: 'at HH:mm, dddd D MMMM',
         }),
         names,
-        reason: modification.reason
+        reason: modification.reason,
       };
     }
 
@@ -108,10 +108,10 @@ export default async (bot, uri, modifications, employee) => {
       messageType = 'leave';
       message = {
         date: start.calendar(moment(), {
-          someElse: 'at HH:mm, dddd D MMMM'
+          someElse: 'at HH:mm, dddd D MMMM',
         }),
         names,
-        reason: modification.reason
+        reason: modification.reason,
       };
     }
 
@@ -119,10 +119,10 @@ export default async (bot, uri, modifications, employee) => {
       messageType = 'arrive';
       message = {
         date: end.calendar(moment(), {
-          someElse: 'at HH:mm, dddd D MMMM'
+          someElse: 'at HH:mm, dddd D MMMM',
         }),
         names,
-        reason: modification.reason
+        reason: modification.reason,
       };
     }
 
@@ -135,10 +135,10 @@ export default async (bot, uri, modifications, employee) => {
           nextWeek: 'dddd',
           lastDay: '[Yesterday]',
           lastWeek: '[Last] dddd',
-          sameElse: 'dddd D MMMM'
+          sameElse: 'dddd D MMMM',
         }),
         names,
-        reason: modification.reason
+        reason: modification.reason,
       };
     }
 
@@ -146,7 +146,7 @@ export default async (bot, uri, modifications, employee) => {
 
     const msg = await bot.sendAsUser(employee.username, channel, text, {
       websocket: false,
-      parse: 'full'
+      parse: 'full',
     });
 
     list.push({ modification: modification.id, message: msg.ts });

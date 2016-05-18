@@ -1,9 +1,11 @@
 {
   "name": "dude-teamline",
-  "version": "1.22.58",
+  "version": "1.22.59",
   "description": "SMART Management assistant",
   "main": "build/index.js",
   "scripts": {
+    "lint": "eslint src test",
+    "lint-fix": "eslint src test --fix",
     "test": "grunt babel:test && mocha test --compilers js:babel/polyfill -w",
     "test:single": "istanbul cover -x test-build _mocha -- test-build --compilers js:babel/polyfill",
     "test:file": "mocha --compilers js:babel/register,js:babel/polyfill",
@@ -31,6 +33,8 @@
     "chai": "3.5.0",
     "codecov.io": "0.1.6",
     "dudeee": "1.18.7",
+    "eslint": "2.10.2",
+    "eslint-config-pichak": "1.0.0",
     "express": "4.13.4",
     "ghooks": "1.0.3",
     "grunt": "0.4.5",

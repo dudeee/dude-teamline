@@ -8,8 +8,8 @@ export const slack = {
       last_name: 'Test',
       email: 'test@test.com',
       phone: '919999999',
-      image_48: 'some_image_48.png'
-    }
+      image_48: 'some_image_48.png',
+    },
   }, {
     id: 'U234567',
     name: 'someone',
@@ -18,8 +18,8 @@ export const slack = {
       first_name: 'Mr',
       last_name: 'Test',
       email: 'test@test.com',
-      phone: '919999999'
-    }
+      phone: '919999999',
+    },
   }, {
     id: 'U345678',
     name: 'the guy',
@@ -28,19 +28,19 @@ export const slack = {
       first_name: 'The Great',
       last_name: 'Cyrus',
       email: 'cyrus@test.com',
-      phone: '918999999'
-    }
+      phone: '918999999',
+    },
   }],
 
   channels: [{
     id: 'C123456',
-    name: 'some-team'
+    name: 'some-team',
   }, {
     id: 'C123457',
-    name: 'actions'
+    name: 'actions',
   }, {
     id: 'C123458',
-    name: 'schedules'
+    name: 'schedules',
   }],
 
   ims: [],
@@ -49,8 +49,8 @@ export const slack = {
 
   self: {
     name: 'bot',
-    profile: {}
-  }
+    profile: {},
+  },
 };
 
 export const teamline = {
@@ -69,7 +69,7 @@ export const teamline = {
     lastname: slack.users[1].profile.last_name,
     email: slack.users[1].profile.email,
     phone: slack.users[1].profile.phone,
-    TeamId: 0
+    TeamId: 0,
   }, {
     id: 2,
     username: slack.users[2].name,
@@ -77,36 +77,36 @@ export const teamline = {
     lastname: slack.users[2].profile.last_name,
     email: slack.users[2].profile.email,
     phone: slack.users[2].profile.phone,
-    ManagerOf: 0
+    ManagerOf: 0,
   }],
 
   teams: [{
     id: 0,
-    name: 'some team'
+    name: 'some team',
   }],
 
   projects: [{
     id: 0,
     name: 'some project',
-    TeamId: 0
+    TeamId: 0,
   }, {
     id: 1,
-    name: 'some other project'
+    name: 'some other project',
   }, {
     id: 2,
     name: 'closed project',
     closed: true,
-    TeamId: 0
+    TeamId: 0,
   }],
 
   roles: [{
     id: 0,
     name: 'some role',
-    TeamId: 0
+    TeamId: 0,
   }, {
     id: 1,
     name: 'some other role',
-    TeamId: 0
+    TeamId: 0,
   }],
 
   actions: [{
@@ -114,12 +114,12 @@ export const teamline = {
     name: 'some action',
     date: Date.now(),
     ProjectId: 0,
-    UserId: 0
+    UserId: 0,
   }, {
     id: 1,
     name: 'some other action',
     date: Date.now(),
     RoleId: 0,
-    UserId: 1
-  }]
+    UserId: 1,
+  }],
 };

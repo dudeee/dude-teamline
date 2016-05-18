@@ -44,13 +44,13 @@ export default (bot, uri) => {
         if (!item.ranges.length) continue;
 
         const wh = await post(`employee/${emp.id}/workhour`, {
-          weekday: item.day.weekday()
+          weekday: item.day.weekday(),
         });
 
         await Promise.all(item.ranges.map(async range => {
           await post(`workhour/${wh.id}/timerange`, {
             start: range[0].format('HH:mm'),
-            end: range[1].format('HH:mm')
+            end: range[1].format('HH:mm'),
           });
 
           // await get(`associate/workhour/${wh.id}/timerange/${tr.id}`);
@@ -71,7 +71,7 @@ export default (bot, uri) => {
     const name = username === 'myself' ? 'Your' : `${employee.firstname}'s`;
     message.reply(t('workhours.list_head', { name }), {
       attachments: printHours(result),
-      websocket: false
+      websocket: false,
     });
   }, { permissions: ['human-resource', 'admin'] });
 
@@ -105,11 +105,11 @@ export default (bot, uri) => {
 
     const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
       start: {
-        $gte: start.toISOString()
+        $gte: start.toISOString(),
       },
       end: {
-        $lt: end.toISOString()
-      }
+        $lt: end.toISOString(),
+      },
     });
 
     if (!result.length && !modifications.length) {
@@ -186,14 +186,14 @@ export default (bot, uri) => {
           a.concat([{
             title: t('workhours.from'),
             value: moment(tr.start, 'HH:mm').format('HH:mm'),
-            short: true
+            short: true,
           }, {
             title: t('workhours.to'),
             value: moment(tr.end, 'HH:mm').format('HH:mm'),
-            short: true
+            short: true,
           }])
         , []),
-        text: Timeranges.length ? '' : t('workhours.not_available')
+        text: Timeranges.length ? '' : t('workhours.not_available'),
       };
     });
 
@@ -205,7 +205,7 @@ export default (bot, uri) => {
 
     const summary = {
       title: t('workhours.total'),
-      text: textify(sum)
+      text: textify(sum),
     };
 
     list.push(summary);

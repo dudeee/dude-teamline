@@ -16,7 +16,7 @@ export default (bot, string, base = moment(), separators = SEPARATORS) => { // e
     const [from, to] = string.split(separators);
     const dates = {
       from: moment(parse(from.trim())).add(1),
-      to: moment(parse(to.trim())).add(1)
+      to: moment(parse(to.trim())).add(1),
     };
 
     if (separator === 'for') {
@@ -40,7 +40,7 @@ export default (bot, string, base = moment(), separators = SEPARATORS) => { // e
     return {
       from: dates.from,
       to: dates.to,
-      range: true
+      range: true,
     };
   }
 

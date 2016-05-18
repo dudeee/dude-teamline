@@ -68,7 +68,7 @@ export default (bot, workhours, modifications) => {
               if (Math.abs(e.diff(iE), 'minutes')) {
                 wh.Timeranges.push({
                   start: e.format('H:mm'),
-                  end: time.end
+                  end: time.end,
                 });
               }
 

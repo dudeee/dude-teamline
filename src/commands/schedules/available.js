@@ -20,15 +20,15 @@ export default (bot, uri) => {
 
     const workhours = await get(`employee/${employee.id}/workhours`, {
       weekday: date.weekday(),
-      include: 'Timerange'
+      include: 'Timerange',
     });
     const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
       start: {
-        $gt: date.clone().hours(0).minutes(0).seconds(0).toISOString()
+        $gt: date.clone().hours(0).minutes(0).seconds(0).toISOString(),
       },
       end: {
-        $lt: date.clone().hours(0).minutes(0).seconds(0).add(1, 'day').toISOString()
-      }
+        $lt: date.clone().hours(0).minutes(0).seconds(0).add(1, 'day').toISOString(),
+      },
     });
 
     const [computed] = workhoursModifications(bot, workhours, modifications, date);
@@ -60,7 +60,7 @@ export default (bot, uri) => {
 
     message.reply(t('available.range', { start: `*${start}*`, end: `*${end}*` }), {
       websocket: false,
-      parse: 'full'
+      parse: 'full',
     });
   });
 };

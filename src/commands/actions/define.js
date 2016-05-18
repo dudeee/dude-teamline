@@ -39,12 +39,13 @@ export default (bot, uri) => {
         case DUPLICATE:
           attachments.warning(t('define.errors.duplicate-project', { model: modelName, name }));
           continue;
-        case NOT_FOUND:
+        case NOT_FOUND: {
           const newSyntax = role ? `+(${name})` : `+${name}`;
           attachments.danger(t('define.errors.notfound', {
-            model: modelName, name, action, newSyntax
+            model: modelName, name, action, newSyntax,
           }));
           continue;
+        }
         case TEAM_NOT_FOUND:
           attachments.danger(t('define.errors.team-notfound', { team }));
           continue;
@@ -77,9 +78,9 @@ export default (bot, uri) => {
         let ac = await get(`${model}/${pr.id}/action`, {
           name: action,
           date: {
-            $gt: moment().hours(0).minutes(0).seconds(0).toISOString()
+            $gt: moment().hours(0).minutes(0).seconds(0).toISOString(),
           },
-          include: ['Role', 'Project']
+          include: ['Role', 'Project'],
         });
 
         if (ac) {
@@ -94,7 +95,7 @@ export default (bot, uri) => {
         await get(`associate/${model}/${pr.id}/employee/${employee.id}`);
         if (model === 'project') {
           await put(`project/${pr.id}`, {
-            state: 'doing'
+            state: 'doing',
           });
         }
       } catch (e) {
@@ -109,7 +110,7 @@ export default (bot, uri) => {
     message.reply(list, {
       attachments,
       websocket: false,
-      parse: 'full'
+      parse: 'full',
     });
 
     await updateActionsMessage(bot, uri, employee);

@@ -28,7 +28,7 @@ describe('actions', function functions() {
     it('should clear all actions for today when calling `actions clear`', (done) => {
       app.delete('/employee/:id/actions/today', (request, response, next) => {
         response.json({
-          ok: true
+          ok: true,
         });
 
         next();
@@ -45,7 +45,7 @@ describe('actions', function functions() {
 
       bot.inject('message', {
         text: 'actions clear',
-        mention: true
+        mention: true,
       });
     });
 
@@ -59,7 +59,7 @@ describe('actions', function functions() {
       app.delete('/action/0', (request, response, next) => {
         response.json({
           ok: true,
-          name: 'some'
+          name: 'some',
         });
 
         next();
@@ -76,7 +76,7 @@ describe('actions', function functions() {
 
       bot.inject('message', {
         text: 'actions remove 1',
-        mention: true
+        mention: true,
       });
     });
   });
@@ -109,7 +109,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: 'list all projects',
-          mention: true
+          mention: true,
         });
       });
 
@@ -139,7 +139,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: 'list all roles',
-          mention: true
+          mention: true,
         });
       });
 
@@ -172,7 +172,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: 'list all actions',
-          mention: true
+          mention: true,
         });
       });
 
@@ -221,7 +221,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: 'list all teams',
-          mention: true
+          mention: true,
         });
       });
     });
@@ -254,7 +254,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: 'list all closed projects',
-          mention: true
+          mention: true,
         });
       });
     });
@@ -268,7 +268,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: 'list my projects',
-          mention: true
+          mention: true,
         });
       });
     });
@@ -355,7 +355,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: `actions ${teamline.projects[0].name} > ${ACTION}`,
-          mention: true
+          mention: true,
         });
       });
 
@@ -396,7 +396,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: `actions (${teamline.roles[0].name}) > ${ACTION}`,
-          mention: true
+          mention: true,
         });
       });
 
@@ -456,7 +456,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: `actions ${TEAM} > +${PROJECT} > ${ACTION}`,
-          mention: true
+          mention: true,
         });
       });
     });
@@ -484,7 +484,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: `actions ${TEAM} > +${PROJECT} > ${ACTION}`,
-          mention: true
+          mention: true,
         });
       });
 
@@ -498,7 +498,7 @@ describe('actions', function functions() {
 
           expect(attachment.color).to.equal('danger');
           const text = t('define.errors.notfound', {
-            model: 'Project', name: PROJECT, action: ACTION, newSyntax: `+${PROJECT}`
+            model: 'Project', name: PROJECT, action: ACTION, newSyntax: `+${PROJECT}`,
           });
           expect(attachment.text).to.equal(text);
 
@@ -509,7 +509,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: `actions ${PROJECT} > ${ACTION}`,
-          mention: true
+          mention: true,
         });
       });
 
@@ -533,7 +533,7 @@ describe('actions', function functions() {
 
         bot.inject('message', {
           text: `actions ${TEAM} > ${PROJECT} > ${ACTION}`,
-          mention: true
+          mention: true,
         });
       });
     });

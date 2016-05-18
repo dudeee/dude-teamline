@@ -16,12 +16,12 @@ export default async function initialize() {
 
   const bot = dude({
     log: {
-      level: 'silly'
+      level: 'silly',
     },
     teamline: {
       actionsChannel: false,
       teamsChannels: false,
-      uri: 'http://127.0.0.1:9091'
+      uri: 'http://127.0.0.1:9091',
     },
   }, true);
 
@@ -36,7 +36,7 @@ export default async function initialize() {
 
       s.send(JSON.stringify({
         ok: true,
-        reply_to: msg.id
+        reply_to: msg.id,
       }));
     });
   });
@@ -52,7 +52,7 @@ export default async function initialize() {
     bot.on('ready', async () => {
       await teamline(bot);
       instances = {
-        server, uri, bot, app, socket, ws
+        server, uri, bot, app, socket, ws,
       };
       resolve(instances);
     });

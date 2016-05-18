@@ -18,10 +18,10 @@ export default async (bot, uri, employee) => {
     try {
       const name = team.name.replace(/\s/, '-').toLowerCase();
       const projects = await get(`team/${team.id}/projects`, {
-        include: 'Action'
+        include: 'Action',
       });
       const roles = await get(`team/${team.id}/roles`, {
-        include: 'Action'
+        include: 'Action',
       });
       roles.forEach(r => r._role = true);
       const both = projects.concat(roles);
@@ -62,7 +62,7 @@ export default async (bot, uri, employee) => {
 
       const history = await bot.api.channels.history({
         channel: bot.find(name).id,
-        oldest: moment().hours(0).minutes(0).seconds(0).unix()
+        oldest: moment().hours(0).minutes(0).seconds(0).unix(),
       });
 
       let msg = history.messages.find(a => a.text.startsWith(head));
@@ -77,7 +77,7 @@ export default async (bot, uri, employee) => {
         bot.updateMessage(channel, msg.ts, text, {
           as_user: true,
           link_names: true,
-          parse: 'full'
+          parse: 'full',
         });
       } else {
         if (!list.length) continue;
@@ -86,13 +86,13 @@ export default async (bot, uri, employee) => {
           websocket: false,
           parse: 'full',
           link_names: true,
-          as_user: true
+          as_user: true,
         });
 
         if (_.get(bot.config, 'teamline.log.pin')) {
           await bot.api.pins.add({
             channel,
-            timestamp: msg.ts
+            timestamp: msg.ts,
           });
         }
       }

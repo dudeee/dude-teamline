@@ -6,7 +6,7 @@ export default async function sync(bot, uri) {
     created: 0,
     updated: 0,
     deleted: 0,
-    untouched: 0
+    untouched: 0,
   };
 
   try {
@@ -20,7 +20,7 @@ export default async function sync(bot, uri) {
         email: user.profile.email,
         firstname: user.profile.first_name,
         lastname: user.profile.last_name,
-        phone: user.profile.phone || null
+        phone: user.profile.phone || null,
       };
 
       let employee = await get(`employee?username=${user.name}`);

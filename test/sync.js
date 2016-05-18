@@ -28,8 +28,8 @@ describe('sync users', function main() {
         first_name: 'Mr',
         last_name: 'Test',
         email: 'test@test.com',
-        phone: '919999999'
-      }
+        phone: '919999999',
+      },
     };
 
     bot.users = [user];
@@ -68,8 +68,8 @@ describe('sync users', function main() {
         first_name: 'Mr',
         last_name: 'Test',
         email: 'test@test.com',
-        phone: '919999999'
-      }
+        phone: '919999999',
+      },
     };
 
     bot.users = [user];
@@ -82,7 +82,7 @@ describe('sync users', function main() {
         firstname: user.profile.first_name,
         lastname: user.profile.last_name,
         email: user.profile.email,
-        phone: user.profile.phone
+        phone: user.profile.phone,
       });
       next();
     });
@@ -109,8 +109,8 @@ describe('sync users', function main() {
         first_name: 'Mr',
         last_name: 'Test',
         email: 'test@test.com',
-        phone: '919999999'
-      }
+        phone: '919999999',
+      },
     };
     const oldUser = _.cloneDeep(user);
 
@@ -124,7 +124,7 @@ describe('sync users', function main() {
         firstname: oldUser.profile.first_name,
         lastname: oldUser.profile.last_name,
         email: oldUser.profile.email,
-        phone: oldUser.profile.phone
+        phone: oldUser.profile.phone,
       });
       next();
     });
