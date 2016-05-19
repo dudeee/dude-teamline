@@ -342,13 +342,13 @@ export default (bot, uri) => {
     }
 
     // will throw an error and bail out if username doesn't exist
-    await findEmployee(uri, bot, message, username);
+    const target = await findEmployee(uri, bot, message, username);
 
-    list.push(username);
+    list.push(target.username);
     list = _.uniq(list);
     await bot.pocket.put(`schedules.notify.${employee.username}`, list);
 
-    message.reply(t('notify.add', { username }));
+    message.reply(t('notify.add', { username: target.username }));
   });
 
   bot.command('^(schedules?|sch) !notify [char]', async message => {
@@ -357,7 +357,7 @@ export default (bot, uri) => {
     const employee = await findEmployee(uri, bot, message);
 
     // will throw an error and bail out if username doesn't exist
-    await findEmployee(uri, bot, message, username);
+    const target = await findEmployee(uri, bot, message, username);
 
     let list;
     try {
@@ -368,15 +368,15 @@ export default (bot, uri) => {
     }
 
     if (list.indexOf(username) > -1) {
-      list.splice(list.indexOf(username), 1);
+      list.splice(list.indexOf(target.username), 1);
       list = _.uniq(list);
       await bot.pocket.put(`schedules.notify.${employee.username}`, list);
 
-      message.reply(t('notify.remove', { username }));
+      message.reply(t('notify.remove', { username: target.username }));
       return;
     }
 
-    message.reply(t('notify.notfound', { username }));
+    message.reply(t('notify.notfound', { username: target.username }));
   });
 };
 

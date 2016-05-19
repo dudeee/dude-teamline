@@ -41,10 +41,10 @@
       "notify": {
         "list": "Your notify list: %list%.",
         "empty": "Your notify list is empty",
-        "duplicate": "You already have %username% in your notify list!",
-        "add": "Added %username% to your notify list.",
-        "remove": "Removed %username% from your notify list.",
-        "notfound": "You don't have %username% in your notify list!"
+        "duplicate": "You already have *%username%* in your notify list!",
+        "add": "Added *%username%* to your notify list.",
+        "remove": "Removed *%username%* from your notify list.",
+        "notfound": "You don't have *%username%* in your notify list!"
       },
       "modify": {
         "date_not_understood": "Sorry, but I could not understand the date *%date%*.\nYou might want to take a look at `help schedules`.",
