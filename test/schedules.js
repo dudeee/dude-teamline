@@ -175,9 +175,202 @@ describe('schedules', function functions() {
           user: bot.users[0].id,
         });
       });
-
-      after(cleanup);
     });
+
+    describe('view schedules', () => {
+      before(() => {
+        app.get('/employee/:id/workhours', (request, response, next) => {
+          response.json([{
+            weekday: 0,
+            Timeranges: [{
+              start: '8:30',
+              end: '18:00',
+            }],
+          }, {
+            weekday: 1,
+            Timeranges: [{
+              start: '8:30',
+              end: '18:00',
+            }],
+          }, {
+            weekday: 2,
+            Timeranges: [{
+              start: '14:00',
+              end: '18:00',
+            }],
+          }]);
+
+          next();
+        });
+
+        app.get('/employee/:id/schedulemodifications/accepted', (request, response, next) => {
+          const modifications = [{
+            type: 'sub',
+            start: moment('9:00', 'HH:mm').weekday(0),
+            end: moment('17:00', 'HH:mm').weekday(0),
+          }, {
+            type: 'add',
+            start: moment('18:00', 'HH:mm').weekday(1),
+            end: moment('19:00', 'HH:mm').weekday(1),
+          }, {
+            type: 'add',
+            start: moment('10:00', 'HH:mm').add(1, 'week').weekday(2),
+            end: moment('14:00', 'HH:mm').add(1, 'week').weekday(2),
+          }];
+
+          const filtered = modifications.filter(m =>
+            moment(request.query.start.$gte).isBefore(m.start) &&
+            moment(request.query.end.$lt).isAfter(m.end)
+          );
+          response.json(filtered);
+
+          next();
+        });
+      })
+
+      it('should list current week\'s schedule', async done => {
+        const expected = [
+          [{
+            start: '08:30',
+            end: '09:00',
+          }, {
+            start: '17:00',
+            end: '18:00',
+          }],
+          [{
+            start: '08:30',
+            end: '19:00',
+          }],
+          [{
+            start: '14:00',
+            end: '18:00',
+          }],
+        ];
+
+        app.get('/chat.postMessage', (request, response, next) => {
+          const attachments = JSON.parse(request.query.attachments);
+
+          attachments.forEach((attachment, index) => {
+            if (!attachment.fields) return;
+            const times = attachment.fields.reduce((t, field) => {
+              if (field.title === 'From') {
+                t.push({ start: field.value });
+              } else {
+                t[t.length - 1].end = field.value;
+              }
+
+              return t;
+            }, []);
+
+            expect(times).to.eql(expected[index]);
+          });
+
+          next();
+          done();
+
+          app._router.stack.length -= 1;
+        });
+
+        bot.inject('message', {
+          text: 'sch',
+          mention: true,
+        });
+      });
+
+      it('should list next week\'s schedule', async done => {
+        const expected = [
+          [{
+            start: '08:30',
+            end: '18:00',
+          }],
+          [{
+            start: '08:30',
+            end: '18:00',
+          }],
+          [{
+            start: '10:00',
+            end: '18:00',
+          }],
+        ];
+
+        app.get('/chat.postMessage', (request, response, next) => {
+          const attachments = JSON.parse(request.query.attachments);
+
+          attachments.forEach((attachment, index) => {
+            if (!attachment.fields) return;
+            const times = attachment.fields.reduce((t, field) => {
+              if (field.title === 'From') {
+                t.push({ start: field.value });
+              } else {
+                t[t.length - 1].end = field.value;
+              }
+
+              return t;
+            }, []);
+
+            expect(times).to.eql(expected[index]);
+          });
+
+          next();
+          done();
+
+          app._router.stack.length -= 1;
+        });
+
+        bot.inject('message', {
+          text: 'sch myself next week',
+          mention: true,
+        });
+      });
+
+      it('should list default schedule', async done => {
+        const expected = [
+          [{
+            start: '08:30',
+            end: '18:00',
+          }],
+          [{
+            start: '08:30',
+            end: '18:00',
+          }],
+          [{
+            start: '14:00',
+            end: '18:00',
+          }],
+        ];
+
+        app.get('/chat.postMessage', (request, response, next) => {
+          const attachments = JSON.parse(request.query.attachments);
+
+          attachments.forEach((attachment, index) => {
+            if (!attachment.fields) return;
+            const times = attachment.fields.reduce((t, field) => {
+              if (field.title === 'From') {
+                t.push({ start: field.value });
+              } else {
+                t[t.length - 1].end = field.value;
+              }
+
+              return t;
+            }, []);
+
+            expect(times).to.eql(expected[index]);
+          });
+
+          next();
+          done();
+
+          app._router.stack.length -= 1;
+        });
+
+        bot.inject('message', {
+          text: 'sch myself default',
+          mention: true,
+        });
+      });
+    })
+
+    after(cleanup);
   });
 
   describe('modify', () => {

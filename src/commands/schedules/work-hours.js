@@ -94,6 +94,11 @@ export default (bot, uri) => {
       }
     }
 
+    if (vdate === 'default') {
+      date.from = moment();
+      date.to = moment();
+    }
+
     const exclude = ['in', 'out', 'shift', 'undo',
                      'set', 'unset', 'notify', '!notify'];
     if (exclude.includes(username)) return;

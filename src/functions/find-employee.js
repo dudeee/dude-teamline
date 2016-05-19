@@ -1,12 +1,12 @@
 import request from './request';
 
-const self = ['me', 'my', 'myself'];
+const self = /\b(?:me|my|myself)\b/i;
 export default async (uri, bot, message, user, exclude = []) => {
   const { get } = request(bot, uri);
   let employee;
   let username;
 
-  if (user && !self.includes(user)) {
+  if (user && !self.test(user)) {
     username = user.replace('@', '');
 
     employee = await get('employee', { username });
