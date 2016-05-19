@@ -88,7 +88,8 @@ These filters include:
 bot.help('schedules', 'Teamline: Manage weekly schedules', `
 *View someone's weekly schedule*:
 \`schedules @username [date]\` – View \`@username\`'s weekly schedule on the specified time (e.g. next week)
-\`schedules [date]\` – View your own weekly schedule
+\`schedules myself [date]\` – View your own weekly schedule
+\`schedules @username default\` – View \`username\`'s default schedule (modifications are not shown)
 
 *Temporary modifications*:
 Sometimes you want to make a change to your current week's schedule, maybe you are going
