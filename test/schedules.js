@@ -1596,7 +1596,7 @@ describe('schedules', function functions() {
         next();
       });
 
-      await bot.pocket.del(`schedules.notify.${bot.users[0].name}`);
+      await bot.pocket.del(`schedules.notify`);
     });
 
     it('should add username to notify list if it\'s valid', done => {
@@ -1607,12 +1607,13 @@ describe('schedules', function functions() {
         const text = bot.t('teamline.schedules.notify.add', { username });
         expect(msg.text).to.equal(text);
 
-        const list = await bot.pocket.get(`schedules.notify.${bot.users[0].name}`);
-        expect(list).to.include(bot.users[1].name);
+        const notify = await bot.pocket.get(`schedules.notify`);
+        console.log(notify);
+        expect(notify[bot.users[1].name]).to.include(bot.users[0].name);
 
         done();
         socket._events.message.length -= 1;
-        await bot.pocket.del(`schedules.notify.${bot.users[0].name}`);
+        await bot.pocket.del(`schedules.notify`);
       });
 
       bot.inject('message', {
@@ -1641,7 +1642,7 @@ describe('schedules', function functions() {
     });
 
     it('should not add username to notify list if it\'s a duplicate', async done => {
-      await bot.pocket.put(`schedules.notify.${bot.users[0].name}`, [bot.users[1].name]);
+      await bot.pocket.put(`schedules.notify`, { [bot.users[1].name]: [bot.users[0].name] });
 
       socket.on('message', async message => {
         const msg = JSON.parse(message);
@@ -1662,12 +1663,15 @@ describe('schedules', function functions() {
     });
 
     it('should list users in notify list if no argument is given', async done => {
-      await bot.pocket.put(`schedules.notify.${bot.users[0].name}`, [bot.users[1].name]);
+      await bot.pocket.put(`schedules.notify`, {
+        [bot.users[1].name]: [bot.users[0].name],
+        [bot.users[2].name]: [bot.users[0].name],
+      });
 
       socket.on('message', async message => {
         const msg = JSON.parse(message);
 
-        const list = await bot.pocket.get(`schedules.notify.${bot.users[0].name}`);
+        const list = [bot.users[1].name, bot.users[2].name];
         const text = bot.t('teamline.schedules.notify.list', { list: list.join(', ') });
         expect(msg.text).to.equal(text);
 
@@ -1683,7 +1687,7 @@ describe('schedules', function functions() {
     });
 
     it('should indicate the notify list is empty', async done => {
-      await bot.pocket.del(`schedules.notify.${bot.users[0].name}`);
+      await bot.pocket.del(`schedules.notify`);
       socket.on('message', async message => {
         const msg = JSON.parse(message);
 
@@ -1716,7 +1720,7 @@ describe('schedules', function functions() {
     });
 
     it('should remove username from notify list if it\'s valid', async done => {
-      await bot.pocket.put(`schedules.notify.${bot.users[0].name}`, [bot.users[1].name]);
+      await bot.pocket.put(`schedules.notify`, { [bot.users[1].name]: [bot.users[0].name] });
 
       socket.on('message', async message => {
         const msg = JSON.parse(message);
@@ -1725,12 +1729,12 @@ describe('schedules', function functions() {
         const text = bot.t('teamline.schedules.notify.remove', { username });
         expect(msg.text).to.equal(text);
 
-        const list = await bot.pocket.get(`schedules.notify.${bot.users[0].name}`);
-        expect(list).to.not.include(bot.users[1].name);
+        const notify = await bot.pocket.get(`schedules.notify`);
+        expect(notify[bot.users[1].name]).to.not.include(bot.users[0].name);
 
         done();
         socket._events.message.length -= 1;
-        await bot.pocket.del(`schedules.notify.${bot.users[0].name}`);
+        await bot.pocket.del(`schedules.notify`);
       });
 
       bot.inject('message', {
@@ -1768,6 +1772,7 @@ describe('schedules', function functions() {
 
         done();
         socket._events.message.length -= 1;
+        await bot.pocket.del(`schedules.notify`);
       });
 
       bot.inject('message', {

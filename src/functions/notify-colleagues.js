@@ -20,10 +20,11 @@ export default async (bot, uri, modifications, employee) => {
 
   let notify;
   try {
-    notify = await bot.pocket.get(`schedules.notify.${employee.username}`);
+    notify = (await bot.pocket.get(`schedules.notify`))[employee.username];
   } catch (e) {
     notify = [];
   }
+
   const raw = await get(`employee/${employee.id}/workhours`, {
     include: ['Timerange'],
   });

@@ -318,16 +318,24 @@ export default (bot, uri) => {
     const [username] = message.match;
 
     const employee = await findEmployee(uri, bot, message);
+    // will throw an error and bail out if username doesn't exist
+    const target = await findEmployee(uri, bot, message, username);
 
-    let list;
+    let notify;
     try {
-      list = await bot.pocket.get(`schedules.notify.${employee.username}`);
+      notify = await bot.pocket.get(`schedules.notify`);
     } catch (e) {
-      await bot.pocket.put(`schedules.notify.${employee.username}`, []);
-      list = [];
+      await bot.pocket.put(`schedules.notify`, {});
+      notify = {};
     }
 
     if (!username) {
+      const list = Object.keys(notify).map(username => {
+        const l = notify[username];
+
+        if (l.includes(employee.username)) return username;
+      }).filter(a => a);
+
       if (list.length) {
         message.reply(t('notify.list', { list: list.join(', ') }));
       } else {
@@ -336,17 +344,16 @@ export default (bot, uri) => {
       return;
     }
 
-    if (list.indexOf(username) > -1) {
-      message.reply(t('notify.duplicate', { username }));
+    if (!notify[target.username]) notify[target.username] = [];
+
+    if (notify[target.username].includes(employee.username)) {
+      message.reply(t('notify.duplicate', { username: target.username }));
       return;
     }
 
-    // will throw an error and bail out if username doesn't exist
-    const target = await findEmployee(uri, bot, message, username);
-
-    list.push(target.username);
-    list = _.uniq(list);
-    await bot.pocket.put(`schedules.notify.${employee.username}`, list);
+    notify[target.username].push(employee.username);
+    notify[target.username] = _.uniq(notify[target.username]);
+    await bot.pocket.put(`schedules.notify`, notify);
 
     message.reply(t('notify.add', { username: target.username }));
   });
@@ -359,18 +366,20 @@ export default (bot, uri) => {
     // will throw an error and bail out if username doesn't exist
     const target = await findEmployee(uri, bot, message, username);
 
-    let list;
+    let notify;
     try {
-      list = await bot.pocket.get(`schedules.notify.${employee.username}`);
+      notify = await bot.pocket.get(`schedules.notify`);
     } catch (e) {
-      await bot.pocket.put(`schedules.notify.${employee.username}`, []);
-      list = [];
+      await bot.pocket.put(`schedules.notify`, {});
+      notify = {};
     }
 
-    if (list.indexOf(username) > -1) {
-      list.splice(list.indexOf(target.username), 1);
-      list = _.uniq(list);
-      await bot.pocket.put(`schedules.notify.${employee.username}`, list);
+    if (!notify[target.username]) notify[target.username] = [];
+
+    if (notify[target.username].includes(employee.username)) {
+      _.pull(notify[target.username], employee.username);
+      notify[target.username] = _.uniq(notify[target.username]);
+      await bot.pocket.put(`schedules.notify`, notify);
 
       message.reply(t('notify.remove', { username: target.username }));
       return;
