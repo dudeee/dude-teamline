@@ -101,7 +101,8 @@ export default async (bot, uri) => {
 
       return stats;
     } catch (e) {
-      bot.log.error('[teamline, ask-for-actions]', e);
+      console.error(e);
+      bot.log.error('[teamline, daily-schedule-report]', e);
     }
   });
 

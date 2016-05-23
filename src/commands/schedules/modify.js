@@ -6,7 +6,6 @@ import request from '../../functions/request';
 import moment from 'moment';
 import _ from 'lodash';
 
-const POCKET_KEY = 'teamline.schedules.notify.messages';
 export default (bot, uri) => {
   const { get, post, del } = request(bot, uri);
   moment.relativeTimeThreshold('m', 60);
@@ -301,7 +300,7 @@ export default (bot, uri) => {
 
     let pairs;
     try {
-      pairs = await bot.pocket.get(POCKET_KEY);
+      pairs = await bot.pocket.get('teamline.schedules.notify.messages');
     } catch (e) {
       pairs = [];
     }
