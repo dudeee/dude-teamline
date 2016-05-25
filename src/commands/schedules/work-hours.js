@@ -83,10 +83,11 @@ export default (bot, uri) => {
     if (exclude.includes(username)) return;
     const employee = await findEmployee(uri, bot, message, username, exclude);
 
-    // if (vdate === 'monthly') {
-    //   monthlyReport(employee);
-    //   return;
-    // }
+    if (vdate === 'monthly') {
+      const attachments = await monthlyReport(employee);
+      message.reply('', { attachments, websocket: false });
+      return;
+    }
 
     const date = vdate ? parseDate(bot, vdate) || moment().weekday(0) : moment().weekday(0);
     if (date.range) {
@@ -209,12 +210,6 @@ export default (bot, uri) => {
       };
     });
 
-    const textify = s => {
-      const duration = moment.duration(s, 'minutes');
-      return `${parseInt(duration.asHours(), 10)} hours` + // eslint-disable-line
-                        (duration.minutes() ? ` and ${duration.minutes()} minutes` : ``);
-    };
-
     const summary = {
       title: t('workhours.total'),
       text: textify(sum),
@@ -225,18 +220,84 @@ export default (bot, uri) => {
     return list;
   };
 
-  // async function monthlyReport(employee) {
-  //   const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
-  //   const start = moment().day(0).hours(0).minutes(0).seconds(0).milliseconds(0);
-  //   const end = start.clone().add(1, 'month');
-  //
-  //   const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
-  //     start: {
-  //       $gte: start.toISOString(),
-  //     },
-  //     end: {
-  //       $lt: end.toISOString(),
-  //     },
-  //   });
-  // }
+  async function monthlyReport(employee) {
+    try {
+      const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
+
+      let month = [];
+
+      // const monthStart = moment().date(1).hours(0).minutes(0).seconds(0).milliseconds(0);
+      // const monthEnd = monthStart.clone().add(1, 'month').subtract(1, 'day');
+      const monthStart = moment().subtract(1, 'month').hours(0).minutes(0).seconds(0).milliseconds(0);
+      const monthEnd = moment().hours(0).minutes(0).seconds(0).milliseconds(0);
+
+      for (let i = 0; i <= Math.floor(30 / 7); i++) {
+        const start = monthStart.clone().add(i * 7, 'day');
+        const end = moment.min(start.clone().add(1, 'week'), monthEnd);
+
+        const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
+          start: {
+            $gte: start.toISOString(),
+          },
+          end: {
+            $lt: end.toISOString(),
+          },
+        });
+
+        const calculated = workhoursModifications(bot, result, modifications);
+        calculated.start = start;
+        calculated.end = end;
+        const absent = calculated.reduce((a, c) =>
+          a + (c.Timeranges.length == 0 ? 1 : 0)
+        , 0);
+        calculated.absent = absent;
+        month.push(calculated);
+      }
+
+      const attachments = month.map((week, w) => {
+        const sum = week.reduce((s, day) => {
+          const tsum = day.Timeranges.reduce((ts, tr) => {
+            const start = moment(tr.start, 'HH:mm');
+            const end = moment(tr.end, 'HH:mm');
+
+            return ts + Math.abs(end.diff(start, 'minutes', true));
+          }, 0);
+
+          return s + tsum;
+        }, 0);
+
+        return {
+          title: `Week ${w + 1}`,
+          fields: [{
+            title: 'From',
+            value: week.start.format('dddd, DD MMMM'),
+            short: true,
+          }, {
+            title: 'To',
+            value: week.end.format('dddd, DD MMMM'),
+            short: true,
+          }, {
+            title: 'Working hours',
+            value: textify(sum),
+            short: true,
+          }, {
+            title: 'Absent days',
+            value: `${week.absent} days`,
+            short: true,
+          }],
+          color: DAY_COLORS[w],
+        };
+      });
+
+      return attachments;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const textify = s => {
+    const duration = moment.duration(s, 'minutes');
+    return `${parseInt(duration.asHours(), 10)} hours` + // eslint-disable-line
+                      (duration.minutes() ? ` and ${duration.minutes()} minutes` : ``);
+  };
 };
