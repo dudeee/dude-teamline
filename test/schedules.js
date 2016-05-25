@@ -368,7 +368,11 @@ describe('schedules', function functions() {
           mention: true,
         });
       });
-    })
+    });
+
+    describe('monthly report', () => {
+
+    });
 
     after(cleanup);
   });

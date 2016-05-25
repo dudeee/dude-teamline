@@ -97,8 +97,6 @@ export default (bot, uri) => {
         start = date.hours(0).minutes(0).seconds(0).milliseconds(0);
         end = start.clone().add(1, 'month');
       }
-      console.log('start', start);
-      console.log('end', end);
 
       const attachments = await monthlyReport(employee, start, end);
       message.reply('', { attachments, websocket: false });
@@ -249,7 +247,7 @@ export default (bot, uri) => {
 
       for (let i = 0; i <= Math.floor(30 / 7); i++) {
         const start = monthStart.clone().add(i * 7, 'day');
-        const end = moment.min(start.clone().add(1, 'week'), monthEnd);
+        const end = moment.min(start.clone().add(1, 'week').subtract(1, 'day'), monthEnd);
 
         const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
           start: {
