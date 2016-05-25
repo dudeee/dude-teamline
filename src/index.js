@@ -156,7 +156,10 @@ bot.help('available', 'See when someone is available in one day',
 The usage is simple:
 \`available @someone\` – See if he's available today (or right now).
 \`available @someone [date]\`
-\`available @someone tomorrow\` – See if someone is available on a certain date`)
+\`available @someone tomorrow\` – See if someone is available on a certain date
+
+You can also check if a some employees are available on a specified time (maybe you want to setup a meeting!):
+\`available (@someone,@guy,@dude) [date]\``)
   /*eslint-enable */
 
   try {
