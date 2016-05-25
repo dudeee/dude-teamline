@@ -1892,6 +1892,75 @@ describe('schedules', function functions() {
         mention: true,
       });
     });
+
+    it('should indicate of a list of employees are available on a certain time', done => {
+      app._router.stack.length--;
+
+      app.get('/employee', (request, response, next) => {
+        const index = bot.users.findIndex(b => b.name === request.query.username);
+        response.json(teamline.users[index]);
+
+        next();
+      });
+
+      const workhours = [{
+        start: '8:30',
+        end: '18:00',
+      }, {
+        start: '15:00',
+        end: '18:00',
+      }];
+
+      let i = 0;
+      app.get('/employee/:id/workhours', (request, response, next) => {
+        response.json([{
+          weekday: moment().weekday(0),
+          Timeranges: [workhours[i++]],
+        }]);
+
+        if (i === 2) {
+          i = 0;
+        }
+        next();
+      });
+
+      app.get('/employee/:id/schedulemodifications/accepted', (request, response, next) => {
+        response.json([]);
+
+        next();
+      });
+
+      const expected = [
+        [t('available.group_available', { user: `${teamline.users[0].firstname} ${teamline.users[0].lastname}` }),
+        t('available.group_unavailable', { user: `${teamline.users[1].firstname} ${teamline.users[1].lastname}` })],
+        [t('available.group_available', { user: `${teamline.users[0].firstname} ${teamline.users[0].lastname}` }),
+        t('available.group_available', { user: `${teamline.users[1].firstname} ${teamline.users[1].lastname}` })],
+      ];
+      let j = 0;
+      app.get('/chat.postMessage', (request, response, next) => {
+        const msg = request.query;
+        const exp = expected[j++];
+        for (const e of exp) {
+          expect(msg.text).to.include(e);
+        }
+
+        if (j == 2) {
+          app._router.stack.length -= 4;
+          next();
+          done();
+        }
+      });
+
+      bot.inject('message', {
+        text: `available (${bot.users[0].name},${bot.users[1].name}) 9:00`,
+        mention: true,
+      });
+
+      bot.inject('message', {
+        text: `available (${bot.users[0].name},${bot.users[1].name}) 15:00`,
+        mention: true,
+      });
+    });
   });
 
   after(cleanup);

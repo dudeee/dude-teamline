@@ -18,6 +18,61 @@ export default (bot, uri) => {
     const d = parseDate(bot, vdate);
     const date = d.isValid() ? d : moment();
 
+    if (Array.isArray(employee)) {
+      const availabilities = await Promise.all(employee.map(async emp => {
+        const workhours = await get(`employee/${emp.id}/workhours`, {
+          weekday: date.weekday(),
+          include: 'Timerange',
+        });
+        const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`, {
+          start: {
+            $gt: date.clone().hours(0).minutes(0).seconds(0).toISOString(),
+          },
+          end: {
+            $lt: date.clone().hours(0).minutes(0).seconds(0).add(1, 'day').toISOString(),
+          },
+        });
+
+        const [computed] = workhoursModifications(bot, workhours, modifications, date);
+
+        if (!computed || !computed.Timeranges.length) {
+          return false;
+        }
+
+        const now = computed.Timeranges.some(timerange =>
+          moment(timerange.start, 'HH:mm').isSameOrBefore(date) &&
+          moment(timerange.end, 'HH:mm').isSameOrAfter(date)
+        );
+
+        if (now) {
+          return true;
+        }
+
+        const tr = next(computed.Timeranges, date) || nearest(computed.Timeranges, date);
+
+        if (!tr) {
+          return false;
+        }
+
+        return false;
+      }));
+
+      const msg = availabilities.map((av, index) => {
+        const emp = employee[index];
+
+        const name = `${emp.firstname} ${emp.lastname}`;
+
+        const key = av ? 'available' : 'unavailable';
+        return t(`available.group_${key}`, { user: name });
+      }).join('\n');
+
+      const text = `Employees availability on ${vdate}:\n${msg}`;
+      message.reply(text, {
+        websocket: false,
+      });
+      return;
+    }
+
     const workhours = await get(`employee/${employee.id}/workhours`, {
       weekday: date.weekday(),
       include: 'Timerange',

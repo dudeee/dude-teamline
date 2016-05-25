@@ -29,7 +29,9 @@
       "available": {
         "now": "As far as I know, he should be available right now.",
         "range": "He should be available between %start% and %end%.",
-        "not": "He won't be available %date%."
+        "not": "He won't be available %date%.",
+        "group_available": ":white_check_mark: *%user%* will be available.",
+        "group_unavailable": ":negative_squared_cross_mark: *%user%* won't be available."
       },
       "notification": {
         "out": ":clock4: I *won't be available* from `%start%` until `%end%` %date%.\n%names%\n%reason%",

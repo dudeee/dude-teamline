@@ -85,6 +85,27 @@ describe('functions', function functions() {
       }
     });
 
+    it('should request all users in case of parantheses', async () => {
+      const spy = sinon.spy();
+      let i = 0;
+      app.get('/employee', (request, response, next) => {
+        expect(request.query.username).to.equal(bot.users[i++].name);
+
+        response.json(teamline.users[i - 1]);
+        next();
+      });
+      app.get('/employee', spy);
+
+      const message = {
+        user: bot.users[0].id,
+      };
+
+      await findEmployee(uri, bot, message, `(${bot.users[0].name}, ${bot.users[1].name})`);
+      expect(spy.callCount).to.equal(2);
+
+      app._router.stack.length -= 2;
+    });
+
     after(cleanup);
   });
 

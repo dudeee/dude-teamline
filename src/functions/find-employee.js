@@ -6,6 +6,16 @@ export default async (uri, bot, message, user, exclude = []) => {
   let employee;
   let username;
 
+  if (user && user.startsWith('(') && user.endsWith(')')) {
+    const usernames = user.slice(1, -1).split(',');
+
+    const employees = await Promise.all(usernames.map(u =>
+      get('employee', { username: u.trim().replace('@', '') })
+    ));
+
+    return employees.filter(a => a);
+  }
+
   if (user && !self.test(user)) {
     username = user.replace('@', '');
 
