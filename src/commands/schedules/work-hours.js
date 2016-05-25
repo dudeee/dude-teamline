@@ -77,6 +77,17 @@ export default (bot, uri) => {
 
   bot.command('^(schedules?|sch) [char] [string]$', async message => {
     const [username, vdate] = message.match;
+
+    const exclude = ['in', 'out', 'shift', 'undo',
+                     'set', 'unset', 'notify', '!notify'];
+    if (exclude.includes(username)) return;
+    const employee = await findEmployee(uri, bot, message, username, exclude);
+
+    // if (vdate === 'monthly') {
+    //   monthlyReport(employee);
+    //   return;
+    // }
+
     const date = vdate ? parseDate(bot, vdate) || moment().weekday(0) : moment().weekday(0);
     if (date.range) {
       date.from.hours(0).minutes(0).seconds(0).milliseconds(0);
@@ -99,10 +110,6 @@ export default (bot, uri) => {
       date.to = moment();
     }
 
-    const exclude = ['in', 'out', 'shift', 'undo',
-                     'set', 'unset', 'notify', '!notify'];
-    if (exclude.includes(username)) return;
-    const employee = await findEmployee(uri, bot, message, username, exclude);
 
     const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
     const start = (date.range ? date.from : date).clone().hours(0).minutes(0).seconds(0);
@@ -217,4 +224,19 @@ export default (bot, uri) => {
 
     return list;
   };
+
+  // async function monthlyReport(employee) {
+  //   const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
+  //   const start = moment().day(0).hours(0).minutes(0).seconds(0).milliseconds(0);
+  //   const end = start.clone().add(1, 'month');
+  //
+  //   const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
+  //     start: {
+  //       $gte: start.toISOString(),
+  //     },
+  //     end: {
+  //       $lt: end.toISOString(),
+  //     },
+  //   });
+  // }
 };

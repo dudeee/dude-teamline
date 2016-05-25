@@ -40,8 +40,8 @@ export default (bot, uri) => {
         }
 
         const now = computed.Timeranges.some(timerange =>
-          moment(timerange.start, 'HH:mm').isSameOrBefore(date) &&
-          moment(timerange.end, 'HH:mm').isSameOrAfter(date)
+          moment(timerange.start, 'HH:mm').dayOfYear(date.dayOfYear()).isSameOrBefore(date) &&
+          moment(timerange.end, 'HH:mm').dayOfYear(date.dayOfYear()).isSameOrAfter(date)
         );
 
         if (now) {
@@ -66,7 +66,7 @@ export default (bot, uri) => {
         return t(`available.group_${key}`, { user: name });
       }).join('\n');
 
-      const text = `Employees availability on ${vdate}:\n${msg}`;
+      const text = `Employees availability on ${date.calendar()}:\n${msg}`;
       message.reply(text, {
         websocket: false,
       });

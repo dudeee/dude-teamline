@@ -1608,7 +1608,6 @@ describe('schedules', function functions() {
         expect(msg.text).to.equal(text);
 
         const notify = await bot.pocket.get(`schedules.notify`);
-        console.log(notify);
         expect(notify[bot.users[1].name]).to.include(bot.users[0].name);
 
         done();
@@ -1914,7 +1913,7 @@ describe('schedules', function functions() {
       let i = 0;
       app.get('/employee/:id/workhours', (request, response, next) => {
         response.json([{
-          weekday: moment().weekday(0),
+          weekday: moment().add(1, 'day').weekday(),
           Timeranges: [workhours[i++]],
         }]);
 
@@ -1952,12 +1951,12 @@ describe('schedules', function functions() {
       });
 
       bot.inject('message', {
-        text: `available (${bot.users[0].name},${bot.users[1].name}) 9:00`,
+        text: `available (${bot.users[0].name},${bot.users[1].name}) tomorrow 9:00`,
         mention: true,
       });
 
       bot.inject('message', {
-        text: `available (${bot.users[0].name},${bot.users[1].name}) 15:00`,
+        text: `available (${bot.users[0].name},${bot.users[1].name}) tomorrow 15:00`,
         mention: true,
       });
     });
