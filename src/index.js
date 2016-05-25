@@ -149,6 +149,14 @@ Wednesday > 8:30 to 15:00, 16:00 to 18:00
 \`\`\`
 
 \`schedules unset @someone Wednesday\`
+
+*Monthly report*:
+You also have the ability to view someone's monthly report (working hours and absent days):
+
+\`schedules @someone monthly\` – last 30 days
+\`schedules @someone monthly [date]\`
+\`schedules @someone monthly 21 May\` – from 21 May until 30 days after
+\`schedules @someone monthly 21 May to 15 June\` – report of specified range
 `);
 
 bot.help('available', 'See when someone is available in one day',

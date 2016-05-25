@@ -83,8 +83,24 @@ export default (bot, uri) => {
     if (exclude.includes(username)) return;
     const employee = await findEmployee(uri, bot, message, username, exclude);
 
-    if (vdate === 'monthly') {
-      const attachments = await monthlyReport(employee);
+    if (vdate.startsWith('monthly')) {
+      const d = vdate.replace('monthly', '');
+      const date = d ? parseDate(bot, d) || moment().subtract(1, 'month')
+                     : moment().subtract(1, 'month');
+
+      let start;
+      let end;
+      if (date.range) {
+        start = date.from.hours(0).minutes(0).seconds(0).milliseconds(0);
+        end = date.to.hours(0).minutes(0).seconds(0).milliseconds(0);
+      } else {
+        start = date.hours(0).minutes(0).seconds(0).milliseconds(0);
+        end = start.clone().add(1, 'month');
+      }
+      console.log('start', start);
+      console.log('end', end);
+
+      const attachments = await monthlyReport(employee, start, end);
       message.reply('', { attachments, websocket: false });
       return;
     }
@@ -220,7 +236,7 @@ export default (bot, uri) => {
     return list;
   };
 
-  async function monthlyReport(employee) {
+  async function monthlyReport(employee, monthStart, monthEnd) {
     try {
       const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
 
@@ -228,8 +244,8 @@ export default (bot, uri) => {
 
       // const monthStart = moment().date(1).hours(0).minutes(0).seconds(0).milliseconds(0);
       // const monthEnd = monthStart.clone().add(1, 'month').subtract(1, 'day');
-      const monthStart = moment().subtract(1, 'month').hours(0).minutes(0).seconds(0).milliseconds(0);
-      const monthEnd = moment().hours(0).minutes(0).seconds(0).milliseconds(0);
+      // const monthStart = moment().subtract(1, 'month').hours(0).minutes(0).seconds(0).milliseconds(0);
+      // const monthEnd = moment().hours(0).minutes(0).seconds(0).milliseconds(0);
 
       for (let i = 0; i <= Math.floor(30 / 7); i++) {
         const start = monthStart.clone().add(i * 7, 'day');
