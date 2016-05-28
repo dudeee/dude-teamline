@@ -11,7 +11,7 @@ export default (bot, uri) => {
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
-  bot.listen(/^available\s*((?:\([^)]+\))|(?:\w*))\s*(.*)/igm, async message => {
+  bot.listen(/^available\s*((?:\([^)]+\))|(?:\S*))\s*(.*)/igm, async message => {
     const [username, vdate] = message.match;
     const employee = await findEmployee(uri, bot, message, username);
 
