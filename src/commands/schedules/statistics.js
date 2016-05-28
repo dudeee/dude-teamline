@@ -25,6 +25,20 @@ export default (bot, uri) => {
     const employees = await get('employees', { username });
 
     const scores = await Promise.all(employees.map(async employee => {
+      const workhours = await get(`employee/${employee.id}/workhours`, {
+        include: ['Timerange'],
+      });
+
+      const wsum = workhours.reduce((s, a) => {
+        const innersum = a.Timeranges.reduce((p, b) => {
+          const start = moment(b.start, 'HH:mm');
+          const end = moment(b.end, 'HH:mm');
+          return p + Math.abs(start.diff(end, 'minutes'));
+        }, 0);
+
+        return s + innersum;
+      }, 0);
+
       const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
         start: {
           $gte: start.toISOString(),
@@ -40,13 +54,14 @@ export default (bot, uri) => {
         return s + (a.type === 'sub' ? -diff : diff);
       }, 0);
 
-      return sum;
+      const calculated = (sum * 100) / (wsum * 4);
+      return isNaN(calculated) || Math.abs(calculated) === Infinity ? 0 : calculated;
     }));
 
     try {
     const ranks = scores.sort((a, b) => a - b).map((score, index) => {
       const color = score < 0 ? 'danger' : 'good';
-      const h = textify(Math.abs(score));
+      const h = score + '%';
       const emp = employees[index];
       console.log(emp.username, score)
 
@@ -62,10 +77,4 @@ export default (bot, uri) => {
     console.error(e);
   }
   });
-
-  const textify = s => {
-    const duration = moment.duration(s, 'minutes');
-    return `${parseInt(duration.asHours(), 10)} hours` + // eslint-disable-line
-                      (duration.minutes() ? ` and ${duration.minutes()} minutes` : ``);
-  };
 };
