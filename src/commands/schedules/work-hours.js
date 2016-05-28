@@ -268,6 +268,10 @@ export default (bot, uri) => {
         month.push(calculated);
       }
 
+      const monthDetails = {
+        sum: 0,
+        absent: 0,
+      };
       const attachments = month.map((week, w) => {
         const sum = week.reduce((s, day) => {
           const tsum = day.Timeranges.reduce((ts, tr) => {
@@ -279,6 +283,9 @@ export default (bot, uri) => {
 
           return s + tsum;
         }, 0);
+
+        monthDetails.sum += sum;
+        monthDetails.absent += week.absent;
 
         return {
           title: `Week ${w + 1}`,
@@ -303,7 +310,21 @@ export default (bot, uri) => {
         };
       });
 
-      return attachments;
+      const monthAttachment = {
+        title: `Month summary`,
+        fields: [{
+          title: 'Working hours',
+          value: textify(monthDetails.sum),
+          short: true,
+        }, {
+          title: 'Absent days',
+          value: `${monthDetails.absent} days`,
+          short: true,
+        }],
+      };
+
+
+      return attachments.concat(monthAttachment);
     } catch (e) {
       console.error(e);
     }
