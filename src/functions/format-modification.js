@@ -10,6 +10,7 @@ export default (bot, modification, workhours, names) => {
   const end = moment(modification.end);
   const distance = Math.abs(moment('00:00', 'HH:mm')
                           .diff(start.clone().hours(0).minutes(0).seconds(0), 'days'));
+  const duration = Math.abs(end.diff(start, 'hours')) / 24;
 
   const formatted = {
     start: start.format('HH:mm'),
@@ -93,6 +94,30 @@ export default (bot, modification, workhours, names) => {
     messageType = 'absent';
     message = {
       date: start.calendar(null, {
+        sameDay: '[Today]',
+        nextDay: '[Tomorrow]',
+        nextWeek: 'dddd',
+        lastDay: '[Yesterday]',
+        lastWeek: '[Last] dddd',
+        sameElse: 'dddd D MMMM',
+      }),
+      names,
+      reason: modification.reason,
+    };
+  }
+
+  if (duration >= 1) {
+    messageType = 'absent_multiday';
+    message = {
+      start: start.calendar(null, {
+        sameDay: '[Today]',
+        nextDay: '[Tomorrow]',
+        nextWeek: 'dddd',
+        lastDay: '[Yesterday]',
+        lastWeek: '[Last] dddd',
+        sameElse: 'dddd D MMMM',
+      }),
+      end: end.calendar(null, {
         sameDay: '[Today]',
         nextDay: '[Tomorrow]',
         nextWeek: 'dddd',

@@ -219,8 +219,8 @@ describe('schedules', function functions() {
           }];
 
           const filtered = modifications.filter(m =>
-            moment(request.query.start.$gte).isBefore(m.start) &&
-            moment(request.query.end.$lt).isAfter(m.end)
+            moment(request.query.$or[0].start.$gte).isBefore(m.start) &&
+            moment(request.query.$or[1].end.$lt).isAfter(m.end)
           );
           response.json(filtered);
 
@@ -337,6 +337,60 @@ describe('schedules', function functions() {
             start: '14:00',
             end: '18:00',
           }],
+        ];
+
+        app.get('/chat.postMessage', (request, response, next) => {
+          const attachments = JSON.parse(request.query.attachments);
+
+          attachments.forEach((attachment, index) => {
+            if (!attachment.fields) return;
+            const times = attachment.fields.reduce((t, field) => {
+              if (field.title === 'From') {
+                t.push({ start: field.value });
+              } else {
+                t[t.length - 1].end = field.value;
+              }
+
+              return t;
+            }, []);
+
+            expect(times).to.eql(expected[index]);
+          });
+
+          next();
+          done();
+
+          app._router.stack.length -= 1;
+        });
+
+        bot.inject('message', {
+          text: 'sch myself default',
+          mention: true,
+        });
+      });
+
+      it('should work with multi-day modifications', async done => {
+        app._router.stack.length -= 1;
+
+        app.get('/employee/:id/schedulemodifications/accepted', (request, response, next) => {
+          const modifications = [{
+            type: 'sub',
+            start: moment('8:30', 'HH:mm').weekday(1),
+            end: moment('18:00', 'HH:mm').weekday(2),
+          }];
+
+          response.json(modifications);
+
+          next();
+        });
+
+        const expected = [
+          [{
+            start: '08:30',
+            end: '18:00',
+          }],
+          [],
+          [],
         ];
 
         app.get('/chat.postMessage', (request, response, next) => {
@@ -519,6 +573,7 @@ describe('schedules', function functions() {
         });
       });
 
+
       context('to', () => {
         it('should set a `sub` modifications from now to the specified time', done => { //eslint-disable-line
           app.get('/employee/:id/workhours', (request, response, next) => {
@@ -553,6 +608,51 @@ describe('schedules', function functions() {
 
           bot.inject('message', {
             text: `schedules out to 12:00`,
+            mention: true,
+            user: bot.users[0].id,
+          });
+        });
+
+        it('should set a `sub` modifications from today to the end of working hour of specified day (multiday)', done => { //eslint-disable-line
+          app.get('/employee/:id/workhours', (request, response, next) => {
+            response.json([{
+              weekday: moment().weekday(),
+              Timeranges: [{
+                start: '8:00',
+                end: '17:00',
+              }],
+            }, {
+              weekday: moment().add(1, 'day').weekday(),
+              Timeranges: [{
+                start: '7:00',
+                end: '18:00',
+              }],
+            }]);
+
+            next();
+          });
+
+          app.post('/employee/:id/schedulemodification', (request, response, next) => {
+            response.json({
+              id: 'workhour_id',
+              ...request.body,
+            });
+
+            expect(request.body.type).to.equal('sub');
+            const start = moment('8:00', 'HH:mm');
+            const end = moment('18:00', 'HH:mm').add(1, 'day');
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
+            expect(request.body.reason).to.equal('some reason');
+
+            done();
+            next();
+
+            app._router.stack.length -= 2;
+          });
+
+          bot.inject('message', {
+            text: `schedules out today to tomorrow\nsome reason`,
             mention: true,
             user: bot.users[0].id,
           });
@@ -637,6 +737,57 @@ describe('schedules', function functions() {
 
           bot.inject('message', {
             text: `schedules out tomorrow 15:00 to 15:15`,
+            mention: true,
+            user: bot.users[0].id,
+          });
+        });
+
+        it('should set a `sub` modifications in range of days (multiday)', done => { //eslint-disable-line
+          app.get('/employee/:id/workhours', (request, response, next) => {
+            response.json([{
+              weekday: moment().weekday(),
+              Timeranges: [{
+                start: '8:00',
+                end: '17:00',
+              }],
+            }, {
+              weekday: moment().add(1, 'day').weekday(),
+              Timeranges: [{
+                start: '7:00',
+                end: '18:00',
+              }],
+            }, {
+              weekday: moment().add(2, 'day').weekday(),
+              Timeranges: [{
+                start: '6:00',
+                end: '19:00',
+              }],
+            }]);
+
+            next();
+          });
+
+          app.post('/employee/:id/schedulemodification', (request, response, next) => {
+            response.json({
+              id: 'workhour_id',
+              ...request.body,
+            });
+
+            expect(request.body.type).to.equal('sub');
+            const start = moment('7:00', 'HH:mm').add(1, 'day');
+            const end = moment('19:00', 'HH:mm').add(2, 'day');
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
+            expect(request.body.reason).to.equal('some reason');
+
+            done();
+            next();
+
+            app._router.stack.length -= 2;
+          });
+
+          bot.inject('message', {
+            text: `schedules out from tomorrow to 2 days\nsome reason`,
             mention: true,
             user: bot.users[0].id,
           });
@@ -753,6 +904,63 @@ describe('schedules', function functions() {
 
           bot.inject('message', {
             text: `schedules out 12:00 for 2 hours`,
+            mention: true,
+            user: bot.users[0].id,
+          });
+        });
+
+        it('should set a `sub` modifications for the duration (multiday)', done => { //eslint-disable-line
+          app.get('/employee/:id/workhours', (request, response, next) => {
+            response.json([{
+              weekday: moment().weekday(),
+              Timeranges: [{
+                start: '8:00',
+                end: '17:00',
+              }],
+            }, {
+              weekday: moment().add(1, 'day').weekday(),
+              Timeranges: [{
+                start: '7:00',
+                end: '18:00',
+              }],
+            }, {
+              weekday: moment().add(2, 'day').weekday(),
+              Timeranges: [{
+                start: '6:00',
+                end: '19:00',
+              }],
+            }, {
+              weekday: moment().add(3, 'day').weekday(),
+              Timeranges: [{
+                start: '5:00',
+                end: '20:00',
+              }],
+            }]);
+
+            next();
+          });
+
+          app.post('/employee/:id/schedulemodification', (request, response, next) => {
+            response.json({
+              id: 'workhour_id',
+              ...request.body,
+            });
+
+            expect(request.body.type).to.equal('sub');
+            const start = moment('7:00', 'HH:mm').add(1, 'day');
+            const end = moment('20:00', 'HH:mm').add(3, 'day');
+            almostEqual(request.body.start, start);
+            almostEqual(request.body.end, end);
+            expect(request.body.reason).to.equal('some reason');
+
+            done();
+            next();
+
+            app._router.stack.length -= 2;
+          });
+
+          bot.inject('message', {
+            text: `schedules out from tomorrow for 2 days\nsome reason`,
             mention: true,
             user: bot.users[0].id,
           });

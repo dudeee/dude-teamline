@@ -39,6 +39,7 @@
         "leave": ":door: I will *leave* the office `%date%`\n%names%\n%reason%",
         "arrive": ":runner: I will *arrive* at the office `%date%`\n%names%\n%reason%",
         "absent": ":zzz: I will be *absent* `%date%`\n%names%\n%reason%",
+        "absent_multiday": ":zzz: I will be *absent* from `%start%` to `%end%`\n%names%\n%reason%",
         "daily_report_head": "*Today's modifications*"
       },
       "notify": {

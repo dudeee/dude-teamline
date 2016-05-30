@@ -149,13 +149,40 @@ export default (bot, uri) => {
         end = moment(timerange.end, 'HH:mm');
       }
 
+      const duration = Math.abs(end.diff(start, 'hours')) / 24;
+
       if (timerange) {
-        const b = moment(timerange.start, 'HH:mm');
+        const swh = _.find(workhours, { weekday: start.weekday() });
+        const st = swh.Timeranges[0]; // first working hour, start must be greater than this
+        const b = moment(st.start, 'HH:mm');
         const beginning = start.clone().hours(b.hours()).minutes(b.minutes());
         start = moment.max(start, beginning);
-        const e = moment(timerange.end, 'HH:mm');
+
+        const sbt = _.last(swh.Timeranges); // last working hour, start must be less than this
+        const be = moment(sbt.end, 'HH:mm');
+        const bfinish = start.clone().hours(be.hours()).minutes(be.minutes());
+        start = moment.min(start, bfinish);
+
+        const ewh = _.find(workhours, { weekday: end.weekday() });
+        const et = _.last(ewh.Timeranges); // last working hour, end must be less than this
+        const e = moment(et.end, 'HH:mm');
         const finish = end.clone().hours(e.hours()).minutes(e.minutes());
         end = moment.min(end, finish);
+
+        const ebt = ewh.Timeranges[0]; // first working hour, end msut be greater than this
+        const es = moment(ebt.start, 'HH:mm');
+        const ebeginning = end.clone().hours(es.hours()).minutes(es.minutes());
+        end = moment.max(end, ebeginning);
+      }
+
+      if (duration >= 1) {
+        const st = _.find(workhours, { weekday: start.weekday() }).Timeranges[0];
+        const b = moment(st.start, 'HH:mm');
+        start.hours(b.hours()).minutes(b.minutes()).seconds(b.seconds());
+
+        const et = _.last(_.find(workhours, { weekday: end.weekday() }).Timeranges);
+        const e = moment(et.end, 'HH:mm');
+        end.hours(e.hours()).minutes(e.minutes()).seconds(e.seconds());
       }
 
       if (!start.isValid() || !end.isValid()) {

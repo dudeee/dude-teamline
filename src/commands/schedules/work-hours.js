@@ -1,5 +1,6 @@
 import findEmployee from '../../functions/find-employee';
 import workhoursModifications from '../../functions/workhours-modifications';
+import computeWorkhours from '../../functions/compute-workhours';
 import request from '../../functions/request';
 import moment from 'moment';
 import _ from 'lodash';
@@ -126,26 +127,17 @@ export default (bot, uri) => {
     }
 
 
-    const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
     const start = (date.range ? date.from : date).clone().hours(0).minutes(0).seconds(0);
     const end = (date.range ? date.to : moment(date).add(1, 'week')).hours(0).minutes(0).seconds(0);
 
-    const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
-      start: {
-        $gte: start.toISOString(),
-      },
-      end: {
-        $lt: end.toISOString(),
-      },
-    });
+    const final = await computeWorkhours(bot, uri, employee, start, end);
 
-    if (!result.length && !modifications.length) {
+    if (!final.length) {
       message.reply(t('workhours.not_set'));
       return;
     }
 
     const name = username ? `${employee.firstname}'s` : 'Your';
-    const final = workhoursModifications(bot, result, modifications);
     const attachments = printHours(final);
     message.reply(t('workhours.list_head', { name }), { attachments, websocket: false });
   });

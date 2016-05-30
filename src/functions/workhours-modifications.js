@@ -47,7 +47,8 @@ export default (bot, workhours, modifications) => {
       const s = moment(item.start);
       const e = moment(item.end);
 
-      const whs = final.filter(a => a.weekday >= s.weekday() && a.weekday <= e.weekday());
+      // const whs = final.filter(a => a.weekday >= s.weekday() && a.weekday <= e.weekday());
+      const whs = final;
       if (whs.length) {
         whs.forEach(wh => {
           if (!wh.Timeranges) return;
