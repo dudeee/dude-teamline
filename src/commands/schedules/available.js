@@ -1,12 +1,13 @@
 import findEmployee from '../../functions/find-employee';
-import workhoursModifications from '../../functions/workhours-modifications';
+// import workhoursModifications from '../../functions/workhours-modifications';
+import computeWorkhours from '../../functions/compute-workhours';
 import parseDate from '../../functions/parse-date';
-import request from '../../functions/request';
+// import request from '../../functions/request';
 import moment from 'moment';
 import _ from 'lodash';
 
 export default (bot, uri) => {
-  const { get } = request(bot, uri);
+  // const { get } = request(bot, uri);
   const t = (key, ...args) => bot.t(`teamline.schedules.${key}`, ...args);
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
@@ -17,23 +18,13 @@ export default (bot, uri) => {
 
     const d = parseDate(bot, vdate);
     const date = d.isValid() ? d : moment();
+    const start = date.clone().hours(0).minutes(0).seconds(0);
+    const end = start.clone().add(1, 'day');
 
     if (Array.isArray(employee)) {
       const availabilities = await Promise.all(employee.map(async emp => {
-        const workhours = await get(`employee/${emp.id}/workhours`, {
-          weekday: date.weekday(),
-          include: 'Timerange',
-        });
-        const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`, {
-          start: {
-            $gt: date.clone().hours(0).minutes(0).seconds(0).toISOString(),
-          },
-          end: {
-            $lt: date.clone().hours(0).minutes(0).seconds(0).add(1, 'day').toISOString(),
-          },
-        });
-
-        const [computed] = workhoursModifications(bot, workhours, modifications, date);
+        const workhours = await computeWorkhours(bot, uri, emp, start, end);
+        const computed = _.find(workhours, { weekday: start.weekday() });
 
         if (!computed || !computed.Timeranges.length) {
           return false;
@@ -73,20 +64,8 @@ export default (bot, uri) => {
       return;
     }
 
-    const workhours = await get(`employee/${employee.id}/workhours`, {
-      weekday: date.weekday(),
-      include: 'Timerange',
-    });
-    const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
-      start: {
-        $gt: date.clone().hours(0).minutes(0).seconds(0).toISOString(),
-      },
-      end: {
-        $lt: date.clone().hours(0).minutes(0).seconds(0).add(1, 'day').toISOString(),
-      },
-    });
-
-    const [computed] = workhoursModifications(bot, workhours, modifications, date);
+    const workhours = await computeWorkhours(bot, uri, employee, start, end);
+    const computed = _.find(workhours, { weekday: start.weekday() });
 
     if (!computed || !computed.Timeranges.length) {
       message.reply(t('available.not', { date: vdate || 'today' }));
@@ -110,10 +89,10 @@ export default (bot, uri) => {
       return;
     }
 
-    const start = moment(tr.start, 'HH:mm').format('HH:mm');
-    const end = moment(tr.end, 'HH:mm').format('HH:mm');
+    const startFormatted = moment(tr.start, 'HH:mm').format('HH:mm');
+    const endFormatted = moment(tr.end, 'HH:mm').format('HH:mm');
 
-    message.reply(t('available.range', { start: `*${start}*`, end: `*${end}*` }), {
+    message.reply(t('available.range', { start: `*${startFormatted}*`, end: `*${endFormatted}*` }), {
       websocket: false,
       parse: 'full',
     });

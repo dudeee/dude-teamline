@@ -1,7 +1,7 @@
 import { wait } from '../functions/utils';
 import moment from 'moment';
 import request from '../functions/request';
-import workhoursModifications from '../functions/workhours-modifications';
+import computeWorkhours from '../functions/compute-workhours';
 import _ from 'lodash';
 
 export default async (bot, uri) => {
@@ -53,20 +53,10 @@ export default async (bot, uri) => {
           continue;
         }
 
-        const rawWorkhours = await get(`employee/${emp.id}/workhours`, {
-          weekday: d.weekday(),
-          include: 'Timerange',
-        });
-        const modifications = await get(`employee/${emp.id}/schedulemodifications/accepted`, {
-          start: {
-            $gte: d.clone().hours(0).minutes(0).seconds(0).toISOString(),
-          },
-          end: {
-            $lte: d.clone().hours(0).minutes(0).seconds(0).add(1, 'day').toISOString(),
-          },
-        });
+        const start = d.clone().hours(0).minutes(0).seconds(0);
+        const end = start.clone().add(1, 'day');
 
-        const [workhours] = workhoursModifications(bot, rawWorkhours, modifications);
+        const [workhours] = await computeWorkhours(bot, uri, emp, start, end);
 
         if (!workhours || !workhours.Timeranges.length) {
           stats.skipped++;

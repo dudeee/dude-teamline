@@ -1,7 +1,7 @@
 import moment from 'moment';
 import _ from 'lodash';
 
-export default (bot, workhours, modifications) => {
+export default (bot, workhours, modifications, start, end) => { // eslint-disable-line
   moment.updateLocale('en', _.get(bot.config, 'moment') || {});
   moment.locale('en');
 
@@ -55,8 +55,8 @@ export default (bot, workhours, modifications) => {
 
           for (let i = 0; i < wh.Timeranges.length; i++) {
             const time = wh.Timeranges[i];
-            const iS = moment(time.start, 'HH:mm').dayOfYear(s.dayOfYear()).weekday(wh.weekday);
-            const iE = moment(time.end, 'HH:mm').dayOfYear(s.dayOfYear()).weekday(wh.weekday);
+            const iS = moment(time.start, 'HH:mm').dayOfYear((start || s).dayOfYear()).weekday(wh.weekday);
+            const iE = moment(time.end, 'HH:mm').dayOfYear((start || s).dayOfYear()).weekday(wh.weekday);
 
             if (s.isSameOrBefore(iS) && e.isSameOrAfter(iE)) {
               wh.Timeranges.splice(i, 1);

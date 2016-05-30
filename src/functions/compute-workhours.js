@@ -1,7 +1,7 @@
 import request from './request';
 import workhoursModifications from './workhours-modifications';
 
-export default async (bot, uri, employee, start, end) => {
+export default async (bot, uri, employee, start, end, options = {}) => {
   const { get } = request(bot, uri);
   const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
 
@@ -17,7 +17,8 @@ export default async (bot, uri, employee, start, end) => {
         $lt: end.toISOString(),
       },
     }],
+    ...options,
   });
 
-  return workhoursModifications(bot, result, modifications);
+  return workhoursModifications(bot, result, modifications, start, end);
 }

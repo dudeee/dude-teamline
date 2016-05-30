@@ -1,6 +1,6 @@
 import findEmployee from '../../functions/find-employee';
 import notifyColleagues from '../../functions/notify-colleagues';
-import workhoursModifications from '../../functions/workhours-modifications';
+import computeWorkhours from '../../functions/compute-workhours';
 import parseDate from '../../functions/parse-date';
 import request from '../../functions/request';
 import moment from 'moment';
@@ -36,19 +36,8 @@ export default (bot, uri) => {
     const day = weekday.clone().hours(0).minutes(0).seconds(0).milliseconds(0);
 
     const employee = await findEmployee(uri, bot, message);
-    const whs = await get(`employee/${employee.id}/workhours`, {
-      include: 'Timerange',
-    });
-    const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
-      start: {
-        $gte: day.toISOString(),
-      },
-      end: {
-        $lte: day.clone().add(1, 'week').toISOString(),
-      },
-    });
 
-    const workhours = workhoursModifications(bot, whs, modifications);
+    const workhours = await computeWorkhours(bot, uri, employee, day, day.clone().add(1, 'week'));
 
     let wh = _.find(workhours, { weekday: weekday.weekday() }) || { Timeranges: [] };
     let timerange = between(wh.Timeranges, weekday) || nearest(wh.Timeranges, weekday);

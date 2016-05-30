@@ -1,7 +1,6 @@
 import moment from 'moment';
 import _ from 'lodash';
-import request from './request';
-import workhoursModifications from './workhours-modifications';
+import computeWorkhours from './compute-workhours';
 import formatModification from './format-modification';
 
 const POCKET_KEY = 'teamline.schedules.notify.messages';
@@ -17,7 +16,6 @@ export default async (bot, uri, modifications, employee) => {
 
   const channel = _.get(bot.config, 'teamline.schedules.notification.channel', 'schedules');
   const enableNotification = _.get(bot.config, 'teamline.schedules.notification.notify', true);
-  const { get } = await request(bot, uri);
 
   let notify;
   try {
@@ -27,25 +25,17 @@ export default async (bot, uri, modifications, employee) => {
   }
   const names = enableNotification ? notify.map(a => `@${a}`).join(', ') : '';
 
-  const raw = await get(`employee/${employee.id}/workhours`, {
-    include: ['Timerange'],
-  });
-
   return Promise.all(modifications.map(send));
 
   async function send(modification) {
-    const mods = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
+    const start = moment(modification.start).hours(0).minutes(0).seconds(0);
+    const end = moment(modification.end).hours(0).minutes(0).seconds(0).add(1, 'day');
+
+    const workhours = await computeWorkhours(bot, uri, employee, start, end, {
       id: {
         $not: modification.id,
       },
-      start: {
-        $gte: moment(modification.start).hours(0).minutes(0).seconds(0).toISOString(),
-      },
-      end: {
-        $lte: moment(modification.end).hours(0).minutes(0).seconds(0).add(1, 'day').toISOString(),
-      },
     });
-    const workhours = workhoursModifications(bot, raw, mods);
 
     const text = formatModification(bot, modification, workhours, names);
 

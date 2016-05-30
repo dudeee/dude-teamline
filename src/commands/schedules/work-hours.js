@@ -1,5 +1,4 @@
 import findEmployee from '../../functions/find-employee';
-import workhoursModifications from '../../functions/workhours-modifications';
 import computeWorkhours from '../../functions/compute-workhours';
 import request from '../../functions/request';
 import moment from 'moment';
@@ -228,8 +227,6 @@ export default (bot, uri) => {
 
   async function monthlyReport(employee, monthStart, monthEnd) {
     try {
-      const result = await get(`employee/${employee.id}/workhours`, { include: 'Timerange' });
-
       let month = [];
 
       // const monthStart = moment().date(1).hours(0).minutes(0).seconds(0).milliseconds(0);
@@ -241,16 +238,7 @@ export default (bot, uri) => {
         const start = monthStart.clone().add(i * 7, 'day');
         const end = moment.min(start.clone().add(1, 'week').subtract(1, 'day'), monthEnd);
 
-        const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
-          start: {
-            $gte: start.toISOString(),
-          },
-          end: {
-            $lt: end.toISOString(),
-          },
-        });
-
-        const calculated = workhoursModifications(bot, result, modifications);
+        const calculated = await computeWorkhours(bot, uri, employee, start, end);
         calculated.start = start;
         calculated.end = end;
         const absent = calculated.reduce((a, c) =>

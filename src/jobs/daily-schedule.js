@@ -1,6 +1,6 @@
 import moment from 'moment';
 import request from '../functions/request';
-import workhoursModifications from '../functions/workhours-modifications';
+import computeWorkhours from '../functions/compute-workhours';
 import formatModification from '../functions/format-modification';
 import messageUrl from '../functions/message-url';
 import _ from 'lodash';
@@ -49,21 +49,13 @@ export default async (bot, uri) => {
     const attachments = _.filter(await Promise.all(modifications.map(async mod => {
       try {
         const employee = mod.Employee;
-        const raw = await get(`employee/${employee.id}/workhours`, {
-          include: ['Timerange'],
-        });
-        const userMods = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
+        const start = today;
+        const end = start.clone().add(1, 'day');
+        const workhours = await computeWorkhours(bot, uri, employee, start, end, {
           id: {
             $not: mod.id,
           },
-          start: {
-            $gte: today.toISOString(),
-          },
-          end: {
-            $lt: today.clone().add(1, 'day').toISOString(),
-          },
         });
-        const workhours = await workhoursModifications(bot, raw, userMods);
         const text = formatModification(bot, mod, workhours, []);
 
         return {
