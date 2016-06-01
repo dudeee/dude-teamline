@@ -431,6 +431,106 @@ describe('schedules', function functions() {
     after(cleanup);
   });
 
+  describe('stats', () => {
+    const wsum = (18 - 8.5) * 5;
+
+    before(() => {
+      app.get('/employees', (request, response, next) => {
+        response.json(teamline.users);
+
+        next();
+      });
+
+      app.get('/employee/:id/workhours', (request, response, next) => {
+        response.json([{
+          weekday: 0,
+          Timeranges: [{
+            start: '8:30',
+            end: '18:00',
+          }],
+        }, {
+          weekday: 1,
+          Timeranges: [{
+            start: '8:30',
+            end: '18:00',
+          }],
+        }, {
+          weekday: 2,
+          Timeranges: [{
+            start: '8:30',
+            end: '18:00',
+          }],
+        }, {
+          weekday: 3,
+          Timeranges: [{
+            start: '8:30',
+            end: '18:00',
+          }],
+        }, {
+          weekday: 4,
+          Timeranges: [{
+            start: '8:30',
+            end: '18:00',
+          }],
+        }]);
+
+        next();
+      });
+    });
+
+    it('should show everyone\'s stats for past 30 days', async done => {
+      let values = [{
+        type: 'sub',
+        start: moment('8:30', 'HH:mm').subtract(30, 'days'),
+        end: moment('18:00', 'HH:mm').subtract(30, 'days'),
+        sum: 18 - 8.5,
+      }, {
+        type: 'add',
+        sum: 0,
+      }, {
+        type: 'add',
+        start: moment('8:30', 'HH:mm'),
+        end: moment('18:00', 'HH:mm'),
+        sum: 18 - 8.5,
+      }];
+
+      let i = 0;
+      app.get('/employee/:id/schedulemodifications/accepted', (request, response, next) => {
+        response.json([values[i++]]);
+
+        next();
+      });
+
+      app.get('/chat.postMessage', (request, response, next) => {
+        const attachments = JSON.parse(request.query.attachments);
+        attachments.forEach((a, index) => {
+          const value = values[index];
+
+          if (value.type === 'add') {
+            expect(a.color).to.equal('good');
+          } else {
+            expect(a.color).to.equal('danger');
+          }
+
+          const percentage = (value.sum * 100) / (wsum * 4);
+
+          expect(a.text).to.include(`${percentage}%`);
+        });
+
+        next();
+        done();
+        app._router.stack.length -= 2;
+      });
+
+      bot.inject('message', {
+        text: 'stats',
+        mention: true,
+      });
+    });
+
+    after(cleanup);
+  });
+
   describe('modify', () => {
     before(() => {
       app.get('/employees', (request, response, next) => {

@@ -15,11 +15,11 @@ export default (bot, uri) => {
   bot.command('^(stats?) [char] [string]', async message => {
     const [user, vdate] = message.match;
 
-    const date = vdate ? parseDate(bot, vdate) || moment().subtract(1, 'month')
-                       : moment().subtract(1, 'month');
+    const date = vdate ? parseDate(bot, vdate) || moment().subtract(30, 'day')
+                       : moment().subtract(30, 'day');
 
     const start = (date.range ? date.from : date).clone().hours(0).minutes(0).seconds(0);
-    const end = (date.range ? date.to : moment(date).add(1, 'week')).hours(0).minutes(0).seconds(0);
+    const end = (date.range ? date.to : moment(date).add(30, 'day')).hours(0).minutes(0).seconds(0);
 
     const username = all.includes(user) ? undefined : username;
     const employees = await get('employees', { username });
@@ -33,19 +33,28 @@ export default (bot, uri) => {
         const innersum = a.Timeranges.reduce((p, b) => {
           const start = moment(b.start, 'HH:mm');
           const end = moment(b.end, 'HH:mm');
-          return p + Math.abs(start.diff(end, 'minutes'));
+          return p + Math.abs(end.diff(start, 'minutes'));
         }, 0);
 
         return s + innersum;
       }, 0);
 
+      if (wsum === 0) return { employee, score: 0 };
+
       const modifications = await get(`employee/${employee.id}/schedulemodifications/accepted`, {
-        start: {
-          $gte: start.toISOString(),
-        },
-        end: {
-          $lt: end.toISOString(),
-        },
+        $or: [{
+            start: {
+              $gte: start.toISOString(),
+              $lt: end.toISOString(),
+            },
+          },
+          {
+            end: {
+              $gte: start.toISOString(),
+              $lt: end.toISOString(),
+            },
+          },
+        ],
       });
 
       const sum = modifications.reduce((s, a) => {
@@ -55,16 +64,16 @@ export default (bot, uri) => {
       }, 0);
 
       const calculated = (sum * 100) / (wsum * 4);
-      return isNaN(calculated) || Math.abs(calculated) === Infinity ? 0 : calculated;
+      const score = isNaN(calculated) || Math.abs(calculated) === Infinity ? 0 : calculated;
+      return { employee, score };
     }));
 
     try {
-    const ranks = scores.sort((a, b) => a - b).map((score, index) => {
+    const ranks = scores.sort((a, b) => a.score - b.score).map(({ score, employee }) => {
       const color = score < 0 ? 'danger' : 'good';
       const h = Math.abs(Math.round(score)) + '%';
-      const emp = employees[index];
 
-      const name = `${emp.firstname} ${emp.lastname}`;
+      const name = `${employee.firstname} ${employee.lastname}`;
 
       return {
         text: `${name} – ${h}`,
