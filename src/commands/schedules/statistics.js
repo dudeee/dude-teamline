@@ -61,9 +61,8 @@ export default (bot, uri) => {
     try {
     const ranks = scores.sort((a, b) => a - b).map((score, index) => {
       const color = score < 0 ? 'danger' : 'good';
-      const h = score + '%';
+      const h = Math.abs(Math.round(score)) + '%';
       const emp = employees[index];
-      console.log(emp.username, score)
 
       const name = `${emp.firstname} ${emp.lastname}`;
 
