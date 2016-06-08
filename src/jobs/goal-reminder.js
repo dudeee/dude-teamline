@@ -8,7 +8,7 @@ export default async (bot, uri) => {
   moment.locale('en');
   moment.relativeTimeThreshold('h', 20);
 
-  const job = bot.schedule.scheduleJob('*/5 * * * * * *', async () => {
+  const job = bot.schedule.scheduleJob('0 0 9 * * * *', async () => {
     const enabled = _.get(bot.config, 'teamline.daily_goal_reminder', true);
     if (!enabled) return null;
     const channel = _.get(bot.config, 'teamline.daily_goal_reminder.channel', 'deadlines');
