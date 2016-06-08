@@ -10,6 +10,7 @@ export default async (bot, uri) => {
   const job = bot.schedule.scheduleJob('0 0 9 * * * *', async () => {
     const enabled = _.get(bot.config, 'teamline.daily_goal_reminder', true);
     if (!enabled) return null;
+    const channel = _.get(bot.config, 'teamline.daily_goal_reminder.channel', 'deadlines');
 
     const goals = await get('goals', {
       include: [{
@@ -24,9 +25,13 @@ export default async (bot, uri) => {
         const msg = bot.t('teamline.goals.reminder', {
           left,
           goal: goal.name,
+          owner: goal.Owner.username,
         });
 
-        await bot.sendMessage(goal.Owner.username, msg);
+        await bot.sendMessage(channel, msg, {
+          websocket: false,
+          parse: 'full',
+        });
       }
     });
   });

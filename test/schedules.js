@@ -681,7 +681,7 @@ describe('schedules', function functions() {
               weekday: moment().weekday(),
               Timeranges: [{
                 start: moment().subtract(1, 'hour').format('HH:mm'),
-                end: '18:00',
+                end: moment().add(2, 'hour').format('HH:mm'),
               }],
             }]);
 
@@ -696,7 +696,7 @@ describe('schedules', function functions() {
 
             expect(request.body.type).to.equal('sub');
             const start = moment();
-            const end = moment('12:00', 'HH:mm');
+            const end = moment().add(1, 'hour');
             almostEqual(request.body.start, start);
             almostEqual(request.body.end, end);
 
@@ -707,7 +707,7 @@ describe('schedules', function functions() {
           });
 
           bot.inject('message', {
-            text: `schedules out to 12:00`,
+            text: `schedules out to ${moment().add(1, 'hour').format('HH:mm')}`,
             mention: true,
             user: bot.users[0].id,
           });

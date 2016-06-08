@@ -41,6 +41,9 @@ export const slack = {
   }, {
     id: 'C123458',
     name: 'schedules',
+  }, {
+    id: 'C123412',
+    name: 'deadlines',
   }],
 
   ims: [],
