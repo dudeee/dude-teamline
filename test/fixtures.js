@@ -122,4 +122,16 @@ export const teamline = {
     RoleId: 0,
     UserId: 1,
   }],
+
+  goals: [{
+    id: 0,
+    name: 'some goal',
+    deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    Owner: {
+      username: 'test',
+    },
+  }, {
+    id: 1,
+    name: 'some other goal',
+  }],
 };

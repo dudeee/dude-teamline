@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import _ from 'lodash';
 import askForActions from '../build/jobs/ask-for-actions';
 import dailySchedule from '../build/jobs/daily-schedule';
+import goalReminder from '../build/jobs/goal-reminder';
 import messageUrl from '../build/functions/message-url';
 import { teamline, slack } from './fixtures';
 import initialize from './initialize';
@@ -291,6 +292,44 @@ describe('jobs', function jobs() {
 
         job.job();
       });
+    });
+
+    after(cleanup);
+  });
+
+  describe('goal-reminder', function functions() {
+    this.timeout(LONG_DELAY);
+
+    before(async () => {
+      app.get('/goals', (request, response, next) => {
+        response.json(teamline.goals);
+        next();
+      });
+    });
+
+    let job;
+    before(async () => {
+      job = await goalReminder(bot, uri);
+    });
+
+    it('should send a message to goal owner with time left until deadline', async done => {
+      socket.on('message', message => {
+        const msg = JSON.parse(message);
+        const { text } = msg;
+
+        const expected = bot.t('teamline.goals.reminder', {
+          left: moment().from(moment().add(1, 'day'), true),
+          goal: teamline.goals[0].name,
+        });
+
+        console.log(text, expected);
+        expect(text).to.equal(expected);
+
+        done();
+        socket._events.message.length -= 1;
+      });
+
+      job.job();
     });
 
     after(cleanup);

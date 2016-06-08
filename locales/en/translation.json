@@ -73,6 +73,9 @@
         "to": "To",
         "total": "Total"
       }
+    },
+    "goals": {
+      "reminder": "Reminder: *%left%* left until *%goal%*'s deadline!"
     }
   }
 }

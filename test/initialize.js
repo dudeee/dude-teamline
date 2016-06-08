@@ -54,6 +54,7 @@ export default async function initialize() {
       instances = {
         server, uri, bot, app, socket, ws,
       };
+
       resolve(instances);
     });
   });
