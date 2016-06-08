@@ -106,7 +106,7 @@ export default (bot, modification, workhours, names) => {
     };
   }
 
-  if (duration >= 1) {
+  if (duration >= 1 && type === 'out') {
     messageType = 'absent_multiday';
     message = {
       start: start.calendar(null, {
