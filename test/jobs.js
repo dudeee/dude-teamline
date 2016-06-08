@@ -316,8 +316,9 @@ describe('jobs', function jobs() {
       app.get('/chat.postMessage', (request, response, next) => {
         const { text } = request.query;
 
+        moment.relativeTimeThreshold('h', 20);
         const expected = bot.t('teamline.goals.reminder', {
-          left: moment().from(moment().add(1, 'day'), true),
+          left: moment().add(1, 'day').toNow(true),
           goal: teamline.goals[0].name,
           owner: slack.users[0].name,
         });
