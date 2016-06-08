@@ -315,15 +315,21 @@ describe('jobs', function jobs() {
     it('should send a message to goal owner with time left until deadline', async done => {
       app.get('/chat.postMessage', (request, response, next) => {
         const { text } = request.query;
+        const attachments = JSON.parse(request.query.attachments);
 
         moment.relativeTimeThreshold('h', 20);
-        const expected = bot.t('teamline.goals.reminder', {
-          left: moment().add(1, 'day').toNow(true),
-          goal: teamline.goals[0].name,
-          owner: slack.users[0].name,
-        });
+        const expected = moment().format('dddd, D MMMM, YYYY');
 
         expect(text).to.equal(expected);
+
+        attachments.forEach(attachment => {
+          const txt = bot.t('teamline.goals.reminder', {
+            left: moment().add(1, 'day').toNow(true),
+            goal: teamline.goals[0].name,
+          });
+
+          expect(attachment.text).to.equal(txt);
+        })
 
         next();
         done();

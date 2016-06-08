@@ -75,7 +75,8 @@
       }
     },
     "goals": {
-      "reminder": "Reminder: *%left%* left until *%goal%*'s deadline!\n@%owner%"
+      "reminder": "*%left%* left until *%goal%*'s deadline!",
+      "reminder_title": "*Goal reminder*:"
     }
   }
 }
