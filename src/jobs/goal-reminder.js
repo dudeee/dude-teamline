@@ -1,6 +1,7 @@
 import moment from 'moment';
 import request from '../functions/request';
 import _ from 'lodash';
+import { wait } from '../functions/utils';
 
 export default async (bot, uri) => {
   const { get } = request(bot, uri);
@@ -28,7 +29,7 @@ export default async (bot, uri) => {
         const mb = moment(b.deadline);
 
         return ma.isSameOrBefore(mb) ? -1 : 1;
-      }).map(async goal => {
+      }).map(async (goal, index) => {
         if (moment(goal.deadline).isSameOrBefore(moment())) return;
 
         const left = moment(goal.deadline).toNow(true);
@@ -51,9 +52,12 @@ export default async (bot, uri) => {
         });
         const reminder = bot.t('teamline.goals.reminder_title');
 
+        // avoid flooding
+        await wait(index * 1000);
         await bot.sendMessage(goal.Owner.username, `${reminder} ${msg}`);
       }));
 
+      await wait(1000);
       await bot.sendMessage(channel, moment().format('dddd, D MMMM, YYYY'), {
         attachments: messages,
         websocket: false,
